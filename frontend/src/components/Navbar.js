@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Use Link for navigation
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
-  const [activeTab, setActiveTab] = useState("Leaderboard");
+  const location = useLocation(); // Get the current route path
 
   const navLinks = [
     { name: "Leaderboard", href: "/" },
@@ -19,15 +19,14 @@ const Navbar = () => {
             <Link
               key={link.name}
               to={link.href}
-              onClick={() => setActiveTab(link.name)}
               className={`relative py-3 text-sm font-medium ${
-                activeTab === link.name
+                location.pathname === link.href
                   ? "text-blue-600"
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
               {link.name}
-              {activeTab === link.name && (
+              {location.pathname === link.href && (
                 <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
               )}
             </Link>
