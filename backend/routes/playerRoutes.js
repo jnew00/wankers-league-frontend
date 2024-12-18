@@ -2,57 +2,64 @@ const express = require("express");
 const router = express.Router(); // Initialize the router
 const pool = require("../config/db"); // Import database connection
 
-// Fetch player details and stats
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Fetch player details and total points
+    // Fetch player details
     const playerDetails = await pool.query(
-      `SELECT p.id, p.name, p.image_path, p.email, p.phone_number, p.current_quota, sp.total_points
-       FROM players p
-       JOIN season_points sp ON p.id = sp.player_id
-       WHERE p.id = $1 AND sp.season = '2024'`,
+      `SELECT p.id, p.name, p.image_path, p.email, p.phone_number, p.current_quota
+         FROM players p
+         WHERE p.id = $1`,
       [id]
     );
 
-    // Fetch last 10 games for average quota calculation
-    const last10Games = await pool.query(
-      `SELECT quota
-       FROM games_played
-       WHERE player_id = $1
-       ORDER BY game_date DESC
-       LIMIT 10`,
+    // Fetch current season stats
+    const currentSeasonStats = await pool.query(
+      `SELECT 
+          COUNT(*) AS events_played,
+          SUM(sp.money_won) AS total_money_won,
+          SUM(sp.ctps) AS total_ctps,
+          SUM(sp.skins) AS total_skins,
+          SUM(CASE WHEN sp.placed_points > 0 THEN 1 ELSE 0 END) AS total_places
+         FROM season_points sp
+         WHERE sp.player_id = $1 AND sp.season = '2024'`,
       [id]
     );
 
-    const quotas = last10Games.rows.map((game) => game.quota);
-    const averageQuota =
-      quotas.length > 0 ? quotas.reduce((a, b) => a + b, 0) / quotas.length : 0;
-
-    // Fetch rank based on total points
     const rankResult = await pool.query(
       `SELECT COUNT(*) + 1 AS rank
-       FROM players p
-       JOIN season_points sp ON p.id = sp.player_id
-       WHERE sp.total_points > (
-         SELECT total_points FROM season_points WHERE player_id = $1 AND season = '2024'
-       )`,
+         FROM players p
+         JOIN season_points sp ON p.id = sp.player_id
+         WHERE sp.total_points > (
+           SELECT total_points FROM season_points WHERE player_id = $1 AND season = '2024'
+         )`,
       [id]
     );
+    const rank = rankResult.rows[0]?.rank || "N/A";
 
-    const rank = rankResult.rows[0].rank;
-
+    // Fetch historical stats (all seasons)
+    const historicalStats = await pool.query(
+      `SELECT 
+          COUNT(*) AS events_played,
+          SUM(sp.money_won) AS total_money_won,
+          SUM(sp.ctps) AS total_ctps,
+          SUM(sp.skins) AS total_skins,
+          SUM(CASE WHEN sp.placed_points > 0 THEN 1 ELSE 0 END) AS total_places
+         FROM season_points sp
+         WHERE sp.player_id = $1`,
+      [id]
+    );
     res.json({
       ...playerDetails.rows[0],
-      averageQuota: Math.round(averageQuota),
+      currentSeasonStats: currentSeasonStats.rows[0],
+      historicalStats: historicalStats.rows[0],
       rank,
     });
   } catch (err) {
-    console.error("Error fetching player details:", err.message);
+    console.error("Error fetching player stats:", err.message);
     res.status(500).send("Server Error");
   }
 });
 
-// Export the router
 module.exports = router;

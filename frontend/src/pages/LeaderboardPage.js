@@ -10,22 +10,23 @@ const LeaderboardPage = () => {
     key: "total_points",
     direction: "desc",
   });
+
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [showHistorical, setShowHistorical] = useState(false);
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   // Fetch leaderboard data from the backend
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:4000/api/leaderboard"
-        );
+        const response = await axios.get(`${API_BASE_URL}/api/leaderboard`);
         setPlayers(response.data);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       }
     };
     fetchLeaderboard();
-  }, []);
+  }, [API_BASE_URL]);
 
   // Handle sorting
   const handleSort = (key) => {
@@ -47,7 +48,7 @@ const LeaderboardPage = () => {
   const handleImageClick = async (playerId) => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/player/${playerId}`
+        `${API_BASE_URL}/api/player/${playerId}`
       );
       setSelectedPlayer(response.data);
     } catch (error) {
@@ -188,13 +189,15 @@ const LeaderboardPage = () => {
           </tbody>
         </table>
       </div>
-
       {selectedPlayer && (
         <Modal onClose={closeModal}>
           <div className="relative p-6">
+            {/* Rank */}
             <div className="absolute top-2 right-4 text-lg font-bold text-blue-600">
-              Rank: #{selectedPlayer.rank}
+              Rank: #{selectedPlayer.rank || "N/A"}
             </div>
+
+            {/* Player Information */}
             <div className="text-center mb-6">
               <img
                 src={`http://localhost:4000${selectedPlayer.image_path}`}
@@ -202,32 +205,83 @@ const LeaderboardPage = () => {
                 className="w-24 h-24 rounded-full mx-auto mb-4"
               />
               <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
+              <p className="text-gray-500 text-sm">
+                {selectedPlayer.email || "N/A"}
+              </p>
+              <p className="text-gray-500 text-sm">
+                {selectedPlayer.phone_number || "N/A"}
+              </p>
             </div>
+
+            {/* Current Season Stats */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Contact Information
+              <h3 className="text-lg font-semibold text-gray-700 mb-2 border-b pb-2">
+                Current Season Stats
               </h3>
               <p>
-                <strong>Email:</strong> {selectedPlayer.email || "N/A"}
+                <strong>
+                  <a
+                    href="/past-events"
+                    className="text-blue-500 underline hover:text-blue-700"
+                  >
+                    Events Played
+                  </a>
+                  :
+                </strong>{" "}
+                {selectedPlayer.currentSeasonStats.events_played || 0}
               </p>
               <p>
-                <strong>Phone:</strong> {selectedPlayer.phone_number || "N/A"}
+                <strong>Total Money Won:</strong> $
+                {selectedPlayer.currentSeasonStats.total_money_won || 0}
+              </p>
+              <p>
+                <strong>Total CTPs:</strong>{" "}
+                {selectedPlayer.currentSeasonStats.total_ctps || 0}
+              </p>
+              <p>
+                <strong>Total Skins:</strong>{" "}
+                {selectedPlayer.currentSeasonStats.total_skins || 0}
+              </p>
+              <p>
+                <strong>Total Places:</strong>{" "}
+                {selectedPlayer.currentSeasonStats.total_places || 0}
               </p>
             </div>
+
+            {/* Collapsible Historical Stats */}
+            {/* Collapsible Historical Stats */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Player Stats
+              <h3
+                className="text-lg font-semibold text-gray-700 mb-2 border-b pb-2 cursor-pointer flex items-center justify-between"
+                onClick={() => setShowHistorical(!showHistorical)}
+              >
+                Historical Stats
+                <span>{showHistorical ? "▼" : "►"}</span>
               </h3>
-              <p>
-                <strong>Current Quota:</strong> {selectedPlayer.current_quota}
-              </p>
-              <p>
-                <strong>Average Quota (Last 10):</strong>{" "}
-                {selectedPlayer.averageQuota || "N/A"}
-              </p>
-              <p>
-                <strong>Total Points:</strong> {selectedPlayer.total_points}
-              </p>
+              {showHistorical && (
+                <div className="mt-4">
+                  <p>
+                    <strong>Events Played:</strong>{" "}
+                    {selectedPlayer.historicalStats.events_played || 0}
+                  </p>
+                  <p>
+                    <strong>Total Money Won:</strong> $
+                    {selectedPlayer.historicalStats.total_money_won || 0}
+                  </p>
+                  <p>
+                    <strong>Total CTPs:</strong>{" "}
+                    {selectedPlayer.historicalStats.total_ctps || 0}
+                  </p>
+                  <p>
+                    <strong>Total Skins:</strong>{" "}
+                    {selectedPlayer.historicalStats.total_skins || 0}
+                  </p>
+                  <p>
+                    <strong>Total Places:</strong>{" "}
+                    {selectedPlayer.historicalStats.total_places || 0}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </Modal>
