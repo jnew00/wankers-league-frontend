@@ -4,7 +4,9 @@ const router = express.Router();
 
 router.get("/points-config", async (req, res) => {
   try {
-    const config = await pool.query("SELECT key, value FROM points_config");
+    const config = await pool.query(
+      "SELECT key, value FROM points_config ORDER BY value DESC"
+    );
     res.json(config.rows);
   } catch (err) {
     console.error("Error fetching points configuration:", err.message);
