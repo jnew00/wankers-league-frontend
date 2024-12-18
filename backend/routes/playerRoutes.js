@@ -50,6 +50,7 @@ router.get("/:id", async (req, res) => {
          WHERE sp.player_id = $1`,
       [id]
     );
+
     res.json({
       ...playerDetails.rows[0],
       currentSeasonStats: currentSeasonStats.rows[0],

@@ -9,6 +9,7 @@ const Navbar = () => {
     { name: "Upcoming Events", href: "/upcoming" },
     { name: "Current Quotas", href: "/quotas" },
     { name: "Past Events", href: "/past-events" },
+    { name: "Admin", href: "/admin" },
   ];
 
   return (

@@ -90,14 +90,22 @@ const PastEventsPage = () => {
         {events.map((event) => (
           <div
             key={event.id}
-            className="border border-gray-300 rounded-lg mb-4 shadow-md"
+            className={`border border-gray-300 rounded-lg mb-4 shadow-md ${
+              event.major ? "bg-yellow-50" : ""
+            }`}
           >
             <div
               className="cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50"
               onClick={() => fetchEventDetails(event.id)}
             >
               {new Date(event.date).toLocaleDateString()} - {event.course_name}
+              {event.major && (
+                <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                  Major
+                </span>
+              )}
             </div>
+
             {selectedEvent === event.id && (
               <div className="mt-4 p-4">
                 <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">

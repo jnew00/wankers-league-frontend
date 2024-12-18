@@ -7,6 +7,7 @@ const quotaRoutes = require("./routes/quotaRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const playerRoutes = require("./routes/playerRoutes");
 const pastEventsRoutes = require("./routes/pastEventsRoutes");
+const playersRoutes = require("./routes/playersRoutes");
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use("/api/quotas", quotaRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/player", playerRoutes);
 app.use("/api/past-events", pastEventsRoutes);
+app.use("/api/players", playersRoutes);
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
