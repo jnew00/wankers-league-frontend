@@ -14,48 +14,136 @@ router.get("/points-config", async (req, res) => {
   }
 });
 
-router.put("/points-config", async (req, res) => {
-  const { key, value } = req.body;
+router.put("/event/:eventId/player/:playerId", async (req, res) => {
+  const { eventId, playerId } = req.params;
+  const { ctps, skins, money_won, total_points, rank } = req.body;
 
   try {
-    await pool.query("UPDATE points_config SET value = $1 WHERE key = $2", [
-      value,
-      key,
-    ]);
-    res.status(200).send("Points configuration updated.");
+    const result = await pool.query(
+      `UPDATE event_players
+         SET ctps = $1, skins = $2, money_won = $3, total_points = $4, rank = $5
+         WHERE event_id = $6 AND player_id = $7`,
+      [ctps, skins, money_won, total_points, rank, eventId, playerId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).send("Player or event not found.");
+    }
+
+    res.status(200).send("Player data updated successfully.");
   } catch (err) {
-    console.error("Error updating points configuration:", err.message);
-    res.status(500).send("Server Error");
+    console.error("Error updating player data:", err.message);
+    res.status(500).send("Failed to update player data.");
   }
 });
 
-router.post("/save-event", async (req, res) => {
-  const { eventId, players, pointsConfig } = req.body;
+// Fetch players for a specific event
+router.get("/event/:eventId", async (req, res) => {
+  const { eventId } = req.params;
 
   try {
-    // Insert or update players' event data
+    const result = await pool.query(
+      `
+        SELECT ep.player_id, p.name, ep.ctps, ep.skins, ep.rank, ep.money_won, ep.total_points
+        FROM event_players ep
+        JOIN players p ON ep.player_id = p.id
+        WHERE ep.event_id = $1
+        `,
+      [eventId]
+    );
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching event data:", error);
+    res.status(500).send("Failed to fetch event data.");
+  }
+});
+
+router.put("/event/:eventId", async (req, res) => {
+  const { eventId } = req.params;
+  const { players } = req.body;
+
+  try {
+    // Update each player's data
     for (const player of players) {
       await pool.query(
-        `INSERT INTO event_players (event_id, player_id, rank, money_won, total_points, ctps, skins)
-           VALUES ($1, (SELECT id FROM players WHERE name = $2), $3, $4, $5, $6, $7)
-           ON CONFLICT (event_id, player_id) DO UPDATE SET
-           rank = $3, money_won = $4, total_points = $5, ctps = $6, skins = $7`,
+        `UPDATE event_players
+           SET ctps = $1,
+               skins = $2,
+               money_won = $3,
+               total_points = $4,
+               rank = $5
+           WHERE event_id = $6 AND player_id = $7`,
         [
+          player.ctps || 0,
+          player.skins || 0,
+          player.money_won || 0,
+          player.total_points || 0,
+          player.rank || null,
           eventId,
-          player.name,
-          player.place,
-          player.money_won,
-          player.points,
-          player.ctp ? 1 : 0,
-          player.skin ? 1 : 0,
+          player.player_id,
         ]
       );
     }
 
-    res.status(200).send("Event data saved successfully.");
+    res.status(200).send("Event players updated successfully.");
   } catch (err) {
-    console.error("Error saving event data:", err.message);
-    res.status(500).send("Server Error");
+    console.error("Error updating event players:", err.message);
+    res.status(500).send("Failed to update event players.");
+  }
+});
+
+router.delete("/event/:eventId/player/:playerId", async (req, res) => {
+  const { eventId, playerId } = req.params;
+  try {
+    await pool.query(
+      "DELETE FROM event_players WHERE event_id = $1 AND player_id = $2",
+      [eventId, playerId]
+    );
+    res.status(200).json({ message: "Player deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting player:", err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+router.post("/save-event", async (req, res) => {
+  const { eventId, players } = req.body;
+
+  try {
+    const client = await pool.connect();
+
+    // Loop through players to insert or update their data
+    for (const player of players) {
+      await client.query(
+        `
+        INSERT INTO event_players (event_id, player_id, ctp, skin, place, money_won, points)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (event_id, player_id) -- Use the unique constraint
+        DO UPDATE SET
+          ctp = EXCLUDED.ctp,
+          skin = EXCLUDED.skin,
+          place = EXCLUDED.place,
+          money_won = EXCLUDED.money_won,
+          points = EXCLUDED.points;
+        `,
+        [
+          eventId,
+          player.id,
+          player.ctp || 0,
+          player.skin || 0,
+          player.place || null,
+          player.money_won || 0,
+          player.points || 0,
+        ]
+      );
+    }
+
+    client.release();
+    res.status(200).send("Event data saved successfully!");
+  } catch (error) {
+    console.error("Error saving event data:", error);
+    res.status(500).send("Failed to save event data.");
   }
 });
 
