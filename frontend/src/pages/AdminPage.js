@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import PointsAllocation from "../components/PointsAllocation";
@@ -11,21 +12,24 @@ import axios from "axios";
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [allPlayers, setAllPlayers] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [pointsConfig, setPointsConfig] = useState({});
   const [isEditingPoints, setIsEditingPoints] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [eventsRes, pointsConfigRes] = await Promise.all([
+        const [eventsRes, pointsConfigRes, playersRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/past-events`),
           axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/admin/points-config`
           ),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/players`),
         ]);
 
         setEvents(eventsRes.data);
@@ -35,6 +39,7 @@ const AdminPage = () => {
             return acc;
           }, {})
         );
+        setAllPlayers(playersRes.data); // Store all players for dropdown
       } catch (error) {
         console.error("Error fetching initial data:", error.message);
       }
@@ -78,9 +83,17 @@ const AdminPage = () => {
           rank: player.rank || null,
         }
       );
+
       alert(`Player ${player.name}'s data saved successfully!`);
     } catch (error) {
       console.error("Error saving player data:", error.message);
+      console.log("Saving player data:", selectedEvent, player.player_id, {
+        ctps: player.ctps,
+        skins: player.skins,
+        money_won: player.money_won,
+        total_points: player.total_points,
+        rank: player.rank,
+      });
       alert("Failed to save player data.");
     }
   };
@@ -103,6 +116,26 @@ const AdminPage = () => {
         i === index ? { ...player, isEditing: !player.isEditing } : player
       )
     );
+  };
+
+  const handleAddPlayer = () => {
+    setPlayers((prevPlayers) => [
+      ...prevPlayers,
+      {
+        player_id: null,
+        name: "",
+        ctps: 0,
+        skins: 0,
+        money_won: 0,
+        total_points: 0,
+        rank: null,
+        isEditing: true,
+      },
+    ]);
+  };
+
+  const handleAddEvent = () => {
+    navigate("/admin/add-event");
   };
 
   const handlePlayerChange = (index, field, value) => {
@@ -200,6 +233,24 @@ const AdminPage = () => {
               </div>
             )}
           </div>
+          <div className="flex justify-between items-center mb-4">
+            {/* {selectedEvent && (
+              <div className="mt-4">
+                <button
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+                  onClick={handleAddPlayer}
+                >
+                  Add Player
+                </button>
+              </div>
+            )} */}
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+              onClick={handleAddEvent}
+            >
+              Add Event
+            </button>
+          </div>
 
           <EventSelector
             events={events}
@@ -212,6 +263,9 @@ const AdminPage = () => {
             handlePlayerChange={handlePlayerChange}
             handleDeletePlayer={handleDeletePlayer}
             handleSavePlayer={handleSavePlayer}
+            allPlayers={allPlayers}
+            selectedEvent={selectedEvent}
+            handleAddPlayer={handleAddPlayer}
           />
         </div>
 

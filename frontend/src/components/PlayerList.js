@@ -2,10 +2,13 @@ import React from "react";
 
 const PlayerList = ({
   players = [],
+  allPlayers = [],
   handlePlayerChange,
   toggleEditMode,
   handleDeletePlayer,
   handleSavePlayer,
+  selectedEvent,
+  handleAddPlayer,
 }) => {
   return (
     <div className="mt-6">
@@ -55,7 +58,39 @@ const PlayerList = ({
                     player.rank || "N/A"
                   )}
                 </td>
-                <td className="p-4 text-left">{player.name || "N/A"}</td>
+                <td className="p-4 text-left">
+                  {player.isEditing && !player.player_id ? (
+                    <select
+                      value={player.player_id || ""}
+                      onChange={(e) => {
+                        const selectedPlayer = allPlayers.find(
+                          (p) => p.id === Number(e.target.value)
+                        );
+                        handlePlayerChange(
+                          index,
+                          "player_id",
+                          selectedPlayer?.id || null
+                        );
+                        handlePlayerChange(
+                          index,
+                          "name",
+                          selectedPlayer?.name || "N/A"
+                        );
+                      }}
+                      className="border border-gray-300 rounded-lg p-2 w-full"
+                    >
+                      <option value="">-- Select Player --</option>
+                      {allPlayers.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    player.name || "N/A"
+                  )}
+                </td>
+
                 <td className="p-4 text-center">
                   {player.isEditing ? (
                     <input
@@ -134,6 +169,19 @@ const PlayerList = ({
                 </td>
               </tr>
             ))}
+            {/* Add Player Button Row */}
+            {selectedEvent && (
+              <tr className="bg-gray-100 hover:bg-gray-200">
+                <td colSpan="7" className="p-4 text-center">
+                  <button
+                    onClick={handleAddPlayer}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Add Player
+                  </button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
