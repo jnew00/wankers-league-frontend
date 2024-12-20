@@ -6,5 +6,7 @@
     "source.fixAll.eslint": "explicit"
   },
   "files.autoSave": "onFocusChange",
-  "docker.host": "unix:///var/run/docker.sock"
+  "docker.environment": {
+    "DOCKER_HOST": "unix:///var/run/docker.sock"
+  }
 }
