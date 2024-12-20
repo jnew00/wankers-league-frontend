@@ -64,14 +64,16 @@ const PlayerList = ({
                     <select
                       value={player.player_id || ""}
                       onChange={(e) => {
+                        const selectedPlayerId = Number(e.target.value);
                         const selectedPlayer = allPlayers.find(
                           (p) => p.id === Number(e.target.value)
                         );
                         handlePlayerChange(
                           index,
                           "player_id",
-                          selectedPlayer?.id || null
+                          selectedPlayerId
                         );
+
                         handlePlayerChange(
                           index,
                           "name",

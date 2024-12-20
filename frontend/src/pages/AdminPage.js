@@ -6,6 +6,7 @@ import PointsAllocation from "../components/PointsAllocation";
 import EventSelector from "../components/EventSelector";
 import PlayerList from "../components/PlayerList";
 import { labelMapping } from "../components/PointsAllocation";
+import { calculateTotalPoints, MAJOR_MULTIPLIER } from "../utils/pointsUtils";
 
 import axios from "axios";
 
@@ -49,22 +50,35 @@ const AdminPage = () => {
   }, []);
 
   const handleEventChange = async (eventId) => {
-    setSelectedEvent(eventId);
-
     if (!eventId) {
+      setSelectedEvent(null);
       setPlayers([]);
       return;
     }
 
     try {
-      const playersRes = await axios.get(
+      const eventRes = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${eventId}`
       );
+
+      const { id, is_major: isMajor, players } = eventRes.data;
+
+      setSelectedEvent({
+        id,
+        isMajor,
+      });
+
       setPlayers(
-        playersRes.data.map((player) => ({
-          ...player,
-          isEditing: false,
-        }))
+        players
+          .map((player) => ({
+            ...player,
+            isEditing: false,
+          }))
+          .sort(
+            (a, b) =>
+              (a.rank || Number.MAX_SAFE_INTEGER) -
+              (b.rank || Number.MAX_SAFE_INTEGER)
+          )
       );
     } catch (error) {
       console.error("Error fetching players:", error.message);
@@ -90,8 +104,12 @@ const AdminPage = () => {
 
   const handleSavePlayer = async (player, index) => {
     try {
+      if (!selectedEvent || !selectedEvent.id) {
+        throw new Error("Invalid event ID.");
+      }
+
       await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent}/player/${player.player_id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent.id}/player/${player.player_id}`,
         {
           ctps: player.ctps || 0,
           skins: player.skins || 0,
@@ -117,7 +135,7 @@ const AdminPage = () => {
   const handleDeletePlayer = async (index, playerId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent}/player/${playerId}`
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent.id}/player/${playerId}`
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
     } catch (error) {
@@ -159,28 +177,31 @@ const AdminPage = () => {
       const updatedPlayers = [...prevPlayers];
       const player = updatedPlayers[index];
 
-      // Update the specific field
-      player[field] = value;
+      player[field] =
+        field === "player_id" || field === "rank" ? Number(value) : value;
 
-      // Recalculate total points
-      const ctpPoints = Math.min(
-        player.ctps * pointsConfig.ctp,
-        pointsConfig.ctp_skin_cap
+      player.total_points = calculateTotalPoints(
+        player,
+        pointsConfig,
+        selectedEvent?.isMajor
       );
-      const skinPoints = Math.min(
-        player.skins * pointsConfig.skin,
-        pointsConfig.ctp_skin_cap
-      );
-      const rankPoints =
-        player.rank && pointsConfig[`place${player.rank}`]
-          ? pointsConfig[`place${player.rank}`]
-          : 0;
-
-      player.total_points =
-        ctpPoints + skinPoints + rankPoints + pointsConfig.participation;
 
       return updatedPlayers;
     });
+  };
+
+  const savePointsConfig = async () => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/points-config`,
+        pointsConfig
+      );
+      setIsEditingPoints(false);
+      alert("Points configuration saved successfully!");
+    } catch (error) {
+      console.error("Error saving points configuration:", error.message);
+      alert("Failed to save points configuration.");
+    }
   };
 
   const toggleDrawer = () => {
@@ -241,7 +262,11 @@ const AdminPage = () => {
                     {Object.entries(pointsConfig).map(([key, value]) => (
                       <tr key={key}>
                         <td>{labelMapping[key] || key}</td>
-                        <td className="text-right">{value}</td>
+                        <td className="text-right">
+                          {selectedEvent?.isMajor
+                            ? Math.ceil(value * MAJOR_MULTIPLIER).toFixed(2)
+                            : value.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -273,6 +298,11 @@ const AdminPage = () => {
             selectedEvent={selectedEvent}
             handleEventChange={handleEventChange}
           />
+          {selectedEvent?.isMajor && (
+            <div className="bg-yellow-300 text-yellow-800 text-sm font-semibold rounded-lg px-2 py-1 mt-2 inline-block">
+              Major Event
+            </div>
+          )}
           <PlayerList
             players={players}
             toggleEditMode={toggleEditMode}
@@ -303,7 +333,8 @@ const AdminPage = () => {
                 [key]: value,
               }))
             }
-            savePointsConfig={() => {}}
+            savePointsConfig={savePointsConfig}
+            isMajor={selectedEvent?.isMajor}
           />
         </div>
       </div>

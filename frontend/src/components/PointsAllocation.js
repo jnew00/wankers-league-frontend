@@ -1,4 +1,5 @@
 import React from "react";
+import { MAJOR_MULTIPLIER } from "../utils/pointsUtils";
 
 export const labelMapping = {
   place1: "1st Place",
@@ -21,11 +22,23 @@ const PointsAllocation = ({
   toggleEditPoints,
   handlePointsChange,
   savePointsConfig,
+  isMajor,
 }) => {
+  const adjustedPointsConfig = isMajor
+    ? Object.fromEntries(
+        Object.entries(pointsConfig).map(([key, value]) => [
+          key,
+          Math.ceil(value * MAJOR_MULTIPLIER),
+        ])
+      )
+    : pointsConfig;
+
   return (
     <div className="w-full h-full bg-gray-50 shadow-md rounded-lg p-3 border border-gray-200">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Points Allocation</h3>
+        <h3 className="text-sm font-semibold">
+          {isMajor ? "Major Event Allocation" : "Points Allocation"}
+        </h3>
         <button
           onClick={toggleEditPoints}
           className="text-blue-600 text-xs hover:underline"
@@ -41,7 +54,7 @@ const PointsAllocation = ({
           </tr>
         </thead>
         <tbody>
-          {Object.entries(pointsConfig).map(([key, value]) => (
+          {Object.entries(adjustedPointsConfig).map(([key, value]) => (
             <tr key={key}>
               <td className="p-2 border-b border-gray-200">
                 {labelMapping[key] || key}
@@ -50,14 +63,14 @@ const PointsAllocation = ({
                 {isEditingPoints ? (
                   <input
                     type="number"
-                    value={value}
+                    value={pointsConfig[key]} // Original unadjusted value for editing
                     onChange={(e) =>
                       handlePointsChange(key, Number(e.target.value))
                     }
                     className="border border-gray-300 rounded-lg p-1 w-full text-right"
                   />
                 ) : (
-                  value
+                  value // Adjusted value for display
                 )}
               </td>
             </tr>

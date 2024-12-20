@@ -12,8 +12,11 @@ const EventSelector = ({ events = [], selectedEvent, handleEventChange }) => {
       <select
         id="event"
         className="w-full border border-gray-300 rounded-lg p-2"
-        value={selectedEvent}
-        onChange={(e) => handleEventChange(e.target.value)}
+        value={selectedEvent?.id || ""}
+        onChange={(e) => {
+          const eventId = Number(e.target.value);
+          handleEventChange(eventId);
+        }}
       >
         <option value="">-- Select Event --</option>
         {events.map((event) => (

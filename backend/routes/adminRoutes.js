@@ -19,6 +19,13 @@ router.put("/event/:eventId/player/:playerId", async (req, res) => {
   const { ctps, skins, money_won, total_points, rank } = req.body;
 
   try {
+    const playerIdInt = parseInt(playerId, 10);
+    const eventIdInt = parseInt(eventId, 10);
+
+    if (isNaN(playerIdInt) || isNaN(eventIdInt)) {
+      return res.status(400).send("Invalid playerId or eventId.");
+    }
+
     await pool.query(
       `
         INSERT INTO event_players (event_id, player_id, ctps, skins, money_won, total_points, rank)
@@ -48,24 +55,44 @@ router.put("/event/:eventId/player/:playerId", async (req, res) => {
   }
 });
 
-// Fetch players for a specific event
 router.get("/event/:eventId", async (req, res) => {
   const { eventId } = req.params;
 
   try {
-    const result = await pool.query(
+    // Fetch event-level details including the major flag
+    const eventDetailsQuery = await pool.query(
       `
-        SELECT ep.player_id, p.name, ep.ctps, ep.skins, ep.rank, ep.money_won, ep.total_points
-        FROM event_players ep
-        JOIN players p ON ep.player_id = p.id
-        WHERE ep.event_id = $1
+          SELECT id, major
+          FROM events
+          WHERE id = $1
         `,
       [eventId]
     );
 
-    res.status(200).json(result.rows);
+    if (eventDetailsQuery.rows.length === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const eventDetails = eventDetailsQuery.rows[0];
+
+    // Fetch player-level details for the event
+    const playersQuery = await pool.query(
+      `
+          SELECT ep.player_id, p.name, ep.ctps, ep.skins, ep.rank, ep.money_won, ep.total_points
+          FROM event_players ep
+          JOIN players p ON ep.player_id = p.id
+          WHERE ep.event_id = $1
+        `,
+      [eventId]
+    );
+
+    res.status(200).json({
+      id: eventDetails.id,
+      is_major: eventDetails.major,
+      players: playersQuery.rows,
+    });
   } catch (error) {
-    console.error("Error fetching event data:", error);
+    console.error("Error fetching event data:", error.message);
     res.status(500).send("Failed to fetch event data.");
   }
 });
@@ -115,6 +142,27 @@ router.delete("/event/:eventId/player/:playerId", async (req, res) => {
   } catch (err) {
     console.error("Error deleting player:", err.message);
     res.status(500).send("Server error");
+  }
+});
+
+router.put("/points-config", async (req, res) => {
+  const pointsConfig = req.body; // Expecting a JSON object of key-value pairs
+
+  try {
+    const queries = Object.entries(pointsConfig).map(([key, value]) =>
+      pool.query(`UPDATE points_config SET value = $2 WHERE key = $1`, [
+        key,
+        value,
+      ])
+    );
+
+    // Execute all queries
+    await Promise.all(queries);
+
+    res.status(200).send("Points configuration updated successfully.");
+  } catch (error) {
+    console.error("Error updating points configuration:", error.message);
+    res.status(500).send("Error updating points configuration.");
   }
 });
 
