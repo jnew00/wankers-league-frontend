@@ -71,7 +71,24 @@ const AdminPage = () => {
     }
   };
 
-  const handleSavePlayer = async (player) => {
+  const handleCancelEdit = (index) => {
+    setPlayers((prevPlayers) =>
+      prevPlayers.map((player, i) =>
+        i === index
+          ? {
+              ...player,
+              isEditing: false, // Exit edit mode
+              ctps: player.originalCtps || player.ctps,
+              skins: player.originalSkins || player.skins,
+              money_won: player.originalMoneyWon || player.money_won,
+              rank: player.originalRank || player.rank,
+            }
+          : player
+      )
+    );
+  };
+
+  const handleSavePlayer = async (player, index) => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent}/player/${player.player_id}`,
@@ -85,15 +102,14 @@ const AdminPage = () => {
       );
 
       alert(`Player ${player.name}'s data saved successfully!`);
+      // Exit edit mode
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((p, i) =>
+          i === index ? { ...p, isEditing: false } : p
+        )
+      );
     } catch (error) {
       console.error("Error saving player data:", error.message);
-      console.log("Saving player data:", selectedEvent, player.player_id, {
-        ctps: player.ctps,
-        skins: player.skins,
-        money_won: player.money_won,
-        total_points: player.total_points,
-        rank: player.rank,
-      });
       alert("Failed to save player data.");
     }
   };
@@ -266,6 +282,7 @@ const AdminPage = () => {
             allPlayers={allPlayers}
             selectedEvent={selectedEvent}
             handleAddPlayer={handleAddPlayer}
+            handleCancelEdit={handleCancelEdit}
           />
         </div>
 

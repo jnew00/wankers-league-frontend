@@ -9,6 +9,7 @@ const PlayerList = ({
   handleSavePlayer,
   selectedEvent,
   handleAddPlayer,
+  handleCancelEdit,
 }) => {
   return (
     <div className="mt-6">
@@ -149,23 +150,39 @@ const PlayerList = ({
                   {player.total_points || 0}
                 </td>
                 <td className="p-4 text-center">
-                  <button
-                    onClick={() => {
-                      if (player.isEditing) {
-                        handleSavePlayer(player);
-                      }
-                      toggleEditMode(index);
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
-                  >
-                    {player.isEditing ? "Save" : "Edit"}
-                  </button>
-                  <button
-                    onClick={() => handleDeletePlayer(index, player.player_id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs"
-                  >
-                    Delete
-                  </button>
+                  {player.isEditing ? (
+                    <>
+                      <button
+                        onClick={() => handleSavePlayer(player, index)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => handleCancelEdit(index)}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded-lg text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleEditMode(index)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeletePlayer(index, player.player_id)
+                        }
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
