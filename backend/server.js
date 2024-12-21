@@ -5,7 +5,7 @@ const path = require("path");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const quotaRoutes = require("./routes/quotaRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const playerRoutes = require("./routes/playerRoutes");
+// const playerRoutes = require("./routes/admin/playerRoutes");
 const pastEventsRoutes = require("./routes/pastEventsRoutes");
 const playersRoutes = require("./routes/playersRoutes");
 
@@ -19,7 +19,6 @@ app.use(bodyParser.json());
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/quotas", quotaRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/player", playerRoutes);
 app.use("/api/past-events", pastEventsRoutes);
 app.use("/api/players", playersRoutes);
 

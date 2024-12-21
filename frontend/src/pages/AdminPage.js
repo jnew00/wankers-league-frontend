@@ -26,14 +26,19 @@ const AdminPage = () => {
     const fetchInitialData = async () => {
       try {
         const [eventsRes, pointsConfigRes, playersRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/past-events`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/admin/events`),
           axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/api/admin/points-config`
+            `${process.env.REACT_APP_API_BASE_URL}/api/admin/points/config`
           ),
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/players`),
         ]);
 
-        setEvents(eventsRes.data);
+        setEvents(
+          eventsRes.data.map((event) => ({
+            ...event,
+            displayName: `${event.date} - ${event.course_name}`,
+          }))
+        );
         setPointsConfig(
           pointsConfigRes.data.reduce((acc, item) => {
             acc[item.key] = item.value;
@@ -58,14 +63,15 @@ const AdminPage = () => {
 
     try {
       const eventRes = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${eventId}`
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
       );
 
-      const { id, is_major: isMajor, players } = eventRes.data;
+      const { id, is_major: isMajor, course, players } = eventRes.data;
 
       setSelectedEvent({
         id,
         isMajor,
+        course,
       });
 
       setPlayers(
@@ -109,7 +115,7 @@ const AdminPage = () => {
       }
 
       await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent.id}/player/${player.player_id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${selectedEvent.id}/player/${player.player_id}`,
         {
           ctps: player.ctps || 0,
           skins: player.skins || 0,
@@ -135,7 +141,7 @@ const AdminPage = () => {
   const handleDeletePlayer = async (index, playerId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/event/${selectedEvent.id}/player/${playerId}`
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${selectedEvent.id}/player/${playerId}`
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
     } catch (error) {
@@ -193,7 +199,7 @@ const AdminPage = () => {
   const savePointsConfig = async () => {
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/points-config`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/points/config`,
         pointsConfig
       );
       setIsEditingPoints(false);
@@ -294,7 +300,10 @@ const AdminPage = () => {
           </div>
 
           <EventSelector
-            events={events}
+            events={events.map((event) => ({
+              ...event,
+              displayName: `${event.date} - ${event.course_name}`, // Customize display
+            }))}
             selectedEvent={selectedEvent}
             handleEventChange={handleEventChange}
           />

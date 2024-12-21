@@ -5,7 +5,7 @@ const pool = require("../config/db");
 router.get("/", async (req, res) => {
   try {
     const events = await pool.query(`
-        SELECT id, date, course_name, major
+        SELECT id, date, name, major
         FROM events
         ORDER BY date DESC
       `);
