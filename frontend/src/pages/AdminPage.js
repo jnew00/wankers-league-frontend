@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
@@ -12,9 +18,6 @@ import axios from "axios";
 
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
-  const [eventDate, setEventDate] = useState("");
-  const [isMajor, setIsMajor] = useState(false);
-  const [winner, setWinner] = useState("");
   const [players, setPlayers] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -42,13 +45,15 @@ const AdminPage = () => {
             displayName: `${event.date} - ${event.course_name}`,
           }))
         );
+
         setPointsConfig(
           pointsConfigRes.data.reduce((acc, item) => {
             acc[item.key] = item.value;
             return acc;
           }, {})
         );
-        setAllPlayers(playersRes.data); // Store all players for dropdown
+
+        setAllPlayers(playersRes.data);
       } catch (error) {
         console.error("Error fetching initial data:", error.message);
       }
@@ -57,43 +62,51 @@ const AdminPage = () => {
     fetchInitialData();
   }, []);
 
-  const handleEventChange = async (eventId) => {
-    const event = events.find((e) => e.id === eventId);
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
-      );
+  const memoizedAllPlayers = useMemo(() => allPlayers, [allPlayers]);
 
-      setSelectedEvent({
-        id: event.id,
-        date: event.date,
-        isMajor: event.is_major,
-        courseName: event.course_name,
-        winner: event.winner_name || "N/A",
-      });
+  const handleEventChange = useCallback(
+    async (eventId) => {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) {
+        console.error("Event not found");
+        return;
+      }
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
+        );
 
-      const players = response.data.map((player) => ({
-        player_id: player.player_id,
-        name: player.player_name || "N/A",
-        image: player.image_path || null,
-        quota: player.quota || 0,
-        score: player.score || 0,
-        rank: player.rank || null,
-        ctps: player.ctps || 0,
-        skins: player.skins || 0,
-        money_won: player.money_won || 0,
-        total_points: player.total_points || 0,
-        isEditing: false,
-      }));
-      setEventDate(response.data[0]?.date || "");
-      setIsMajor(response.data[0]?.is_major || false);
-      setPlayers(players);
-      const winner = players.find((player) => player.rank === 1) || null;
-      setWinner(winner);
-    } catch (error) {
-      console.error("Error fetching event data:", error.message);
-    }
-  };
+        setSelectedEvent({
+          id: event.id,
+          date: event.date,
+          isMajor: event.is_major,
+          courseName: event.course_name,
+          winner: event.winner_name || "N/A",
+        });
+
+        const players = response.data
+          .filter((player) => player.player_id)
+          .map((player) => ({
+            player_id: player.player_id,
+            name: player.player_name || "N/A",
+            image: player.image_path || null,
+            quota: player.quota || 0,
+            score: player.score || 0,
+            rank: player.rank || null,
+            ctps: player.ctps || 0,
+            skins: player.skins || 0,
+            money_won: player.money_won || 0,
+            total_points: player.total_points || 0,
+            isEditing: false,
+          }));
+
+        setPlayers(players);
+      } catch (error) {
+        console.error("Error fetching event data:", error.message);
+      }
+    },
+    [events, setSelectedEvent, setPlayers] // Dependencies
+  );
 
   const handleCancelEdit = (index) => {
     setPlayers((prevPlayers) =>
@@ -156,13 +169,16 @@ const AdminPage = () => {
     }
   };
 
-  const toggleEditMode = (index) => {
-    setPlayers((prevPlayers) =>
-      prevPlayers.map((player, i) =>
-        i === index ? { ...player, isEditing: !player.isEditing } : player
-      )
-    );
-  };
+  const toggleEditMode = useCallback((index) => {
+    setPlayers((prevPlayers) => {
+      const updatedPlayers = [...prevPlayers];
+      updatedPlayers[index] = {
+        ...updatedPlayers[index],
+        isEditing: !updatedPlayers[index].isEditing,
+      };
+      return updatedPlayers;
+    });
+  }, []);
 
   const handleAddPlayer = () => {
     setPlayers((prevPlayers) => [
@@ -185,23 +201,26 @@ const AdminPage = () => {
     navigate("/admin/add-event");
   };
 
-  const handlePlayerChange = (index, field, value) => {
-    setPlayers((prevPlayers) => {
-      const updatedPlayers = [...prevPlayers];
-      const player = updatedPlayers[index];
+  const handlePlayerChange = useCallback(
+    (index, field, value) => {
+      setPlayers((prevPlayers) => {
+        const updatedPlayers = [...prevPlayers];
+        const player = updatedPlayers[index];
 
-      player[field] =
-        field === "player_id" || field === "rank" ? Number(value) : value;
+        player[field] =
+          field === "player_id" || field === "rank" ? Number(value) : value;
 
-      player.total_points = calculateTotalPoints(
-        player,
-        pointsConfig,
-        selectedEvent?.isMajor
-      );
+        player.total_points = calculateTotalPoints(
+          player,
+          pointsConfig,
+          selectedEvent?.isMajor
+        );
 
-      return updatedPlayers;
-    });
-  };
+        return updatedPlayers;
+      });
+    },
+    [pointsConfig, selectedEvent?.isMajor] // Only recalculate if these dependencies change
+  );
 
   const savePointsConfig = async () => {
     try {
@@ -226,6 +245,14 @@ const AdminPage = () => {
       setIsDrawerOpen(false);
     }
   };
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+  const handleHover = debounce((hovering) => setIsHovering(hovering), 200);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -247,8 +274,8 @@ const AdminPage = () => {
         <div className="flex-1 bg-gray-50 shadow-md rounded-lg p-6 border border-gray-200">
           <div
             className="absolute -top-12 right-0 group"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+            onMouseEnter={() => handleHover(true)}
+            onMouseLeave={() => handleHover(false)}
           >
             <button
               onClick={toggleDrawer}
@@ -327,7 +354,7 @@ const AdminPage = () => {
             handlePlayerChange={handlePlayerChange}
             handleDeletePlayer={handleDeletePlayer}
             handleSavePlayer={handleSavePlayer}
-            allPlayers={allPlayers}
+            allPlayers={memoizedAllPlayers}
             selectedEvent={selectedEvent}
             handleAddPlayer={handleAddPlayer}
             handleCancelEdit={handleCancelEdit}

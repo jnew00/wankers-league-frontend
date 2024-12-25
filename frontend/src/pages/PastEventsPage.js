@@ -144,52 +144,56 @@ const PastEventsPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {eventDetails.map((player, index) => (
-                      <tr
-                        key={player.player_name}
-                        className={`${
-                          index % 2 === 0 ? "bg-blue-50" : "bg-white"
-                        } hover:bg-blue-100 border-b`}
-                      >
-                        <td className="p-4 text-center">
-                          {player.rank || "N/A"}
-                        </td>
-                        <td className="p-4 text-left">{player.player_name}</td>
-                        <td className="p-4 text-center">
-                          {player.quota || "N/A"}
-                        </td>
-                        <td className="p-4 text-center">
-                          {player.score || "N/A"}
-                        </td>
-                        <td className="p-4 text-center font-bold">
-                          {player.score !== null && player.quota !== null ? (
-                            <>
-                              {player.score - player.quota > 0 && (
-                                <span className="text-green-500">
-                                  +{player.score - player.quota}
-                                </span>
-                              )}
-                              {player.score - player.quota < 0 && (
-                                <span className="text-red-500">
-                                  {player.score - player.quota}
-                                </span>
-                              )}
-                              {player.score - player.quota === 0 && "0"}
-                            </>
-                          ) : (
-                            "N/A"
-                          )}
-                        </td>
-                        <td className="p-4 text-center">{player.ctps}</td>
-                        <td className="p-4 text-center">{player.skins}</td>
-                        <td className="p-4 text-center">
-                          ${parseFloat(player.money_won).toFixed(2)}
-                        </td>
-                        <td className="p-4 text-center">
-                          {player.total_points}
-                        </td>
-                      </tr>
-                    ))}
+                    {eventDetails
+                      .filter((player) => player.player_id)
+                      .map((player, index) => (
+                        <tr
+                          key={player.player_name}
+                          className={`${
+                            index % 2 === 0 ? "bg-blue-50" : "bg-white"
+                          } hover:bg-blue-100 border-b`}
+                        >
+                          <td className="p-4 text-center">
+                            {player.rank || "N/A"}
+                          </td>
+                          <td className="p-4 text-left">
+                            {player.player_name}
+                          </td>
+                          <td className="p-4 text-center">
+                            {player.quota || "N/A"}
+                          </td>
+                          <td className="p-4 text-center">
+                            {player.score || "N/A"}
+                          </td>
+                          <td className="p-4 text-center font-bold">
+                            {player.score !== null && player.quota !== null ? (
+                              <>
+                                {player.score - player.quota > 0 && (
+                                  <span className="text-green-500">
+                                    +{player.score - player.quota}
+                                  </span>
+                                )}
+                                {player.score - player.quota < 0 && (
+                                  <span className="text-red-500">
+                                    {player.score - player.quota}
+                                  </span>
+                                )}
+                                {player.score - player.quota === 0 && "0"}
+                              </>
+                            ) : (
+                              "N/A"
+                            )}
+                          </td>
+                          <td className="p-4 text-center">{player.ctps}</td>
+                          <td className="p-4 text-center">{player.skins}</td>
+                          <td className="p-4 text-center">
+                            ${parseFloat(player.money_won).toFixed(2)}
+                          </td>
+                          <td className="p-4 text-center">
+                            {player.total_points}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

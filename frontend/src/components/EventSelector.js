@@ -12,7 +12,7 @@ const EventSelector = ({ events = [], selectedEvent, handleEventChange }) => {
       <select
         id="event"
         className="w-full border border-gray-300 rounded-lg p-2"
-        value={selectedEvent || ""}
+        value={selectedEvent?.id || ""}
         onChange={(e) => {
           const eventId = Number(e.target.value);
           handleEventChange(eventId);
@@ -29,4 +29,4 @@ const EventSelector = ({ events = [], selectedEvent, handleEventChange }) => {
   );
 };
 
-export default EventSelector;
+export default React.memo(EventSelector);

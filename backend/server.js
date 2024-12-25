@@ -5,14 +5,13 @@ const path = require("path");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const quotaRoutes = require("./routes/quotaRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-// const playerRoutes = require("./routes/admin/playerRoutes");
 const pastEventsRoutes = require("./routes/pastEventsRoutes");
 const playersRoutes = require("./routes/playersRoutes");
 
 const app = express();
 
 // Middleware
-app.use(cors()); // Allow all origins for development
+app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
