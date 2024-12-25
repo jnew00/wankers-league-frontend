@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
-import Modal from "../components/Modal"; // Ensure this component exists
+import Modal from "../components/Modal";
 
 const LeaderboardPage = () => {
   const [players, setPlayers] = useState([]);
@@ -10,25 +10,22 @@ const LeaderboardPage = () => {
     key: "total_points",
     direction: "desc",
   });
-
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showHistorical, setShowHistorical] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  // Fetch leaderboard data from the backend
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/leaderboard`);
         setPlayers(response.data);
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Error fetching leaderboard:", error.message);
       }
     };
     fetchLeaderboard();
   }, [API_BASE_URL]);
 
-  // Handle sorting
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -44,27 +41,37 @@ const LeaderboardPage = () => {
     setPlayers(sortedPlayers);
   };
 
-  // Handle image click to show modal
   const handleImageClick = async (playerId) => {
+    console.log("Player ID clicked:", playerId);
+    if (!playerId) {
+      console.error("Player ID is undefined.");
+      return;
+    }
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/player/${playerId}`
+        `${API_BASE_URL}/api/players/${playerId}`
       );
       setSelectedPlayer(response.data);
     } catch (error) {
-      console.error("Error fetching player details:", error);
+      console.error("Error fetching player details:", error.message);
     }
   };
 
-  // Close the modal
   const closeModal = () => {
     setSelectedPlayer(null);
   };
 
+  const isTop8 = (index) =>
+    sortConfig.key === "total_points" &&
+    sortConfig.direction === "desc" &&
+    index < 8;
+
   return (
     <div>
       <Navbar />
-      <PageHeader title="Leaderboard" />
+      <div className="flex items-center justify-start mb-4">
+        <PageHeader title="Leaderboard" />
+      </div>
       <div className="max-w-7xl mx-auto px-4">
         <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
@@ -75,77 +82,99 @@ const LeaderboardPage = () => {
                 className="p-4 text-left cursor-pointer"
                 onClick={() => handleSort("name")}
               >
-                Name{" "}
+                Name
                 {sortConfig.key === "name"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
               <th
                 className="p-4 text-center cursor-pointer"
                 onClick={() => handleSort("current_quota")}
               >
-                Quota{" "}
+                Quota
                 {sortConfig.key === "current_quota"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
               <th
                 className="p-4 text-center cursor-pointer"
                 onClick={() => handleSort("money_won")}
               >
-                Money Won{" "}
+                Money
                 {sortConfig.key === "money_won"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
-                  : ""}
-              </th>
-              <th
-                className="p-4 text-center cursor-pointer"
-                onClick={() => handleSort("participation_points")}
-              >
-                Participation Points{" "}
-                {sortConfig.key === "participation_points"
-                  ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
               <th
                 className="p-4 text-center cursor-pointer"
                 onClick={() => handleSort("skins")}
               >
-                Skins{" "}
+                Skins
                 {sortConfig.key === "skins"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
               <th
                 className="p-4 text-center cursor-pointer"
-                onClick={() => handleSort("placed_points")}
+                onClick={() => handleSort("ctps")}
               >
-                Placed Points{" "}
-                {sortConfig.key === "placed_points"
+                CTPs
+                {sortConfig.key === "ctps"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
+                  : ""}
+              </th>
+              <th
+                className="p-4 text-center cursor-pointer"
+                onClick={() => handleSort("wins")}
+              >
+                Wins
+                {sortConfig.key === "wins"
+                  ? sortConfig.direction === "asc"
+                    ? " ▲"
+                    : " ▼"
+                  : ""}
+              </th>
+              <th
+                className="p-4 text-center cursor-pointer"
+                onClick={() => handleSort("top_3")}
+              >
+                Top 3
+                {sortConfig.key === "top_3"
+                  ? sortConfig.direction === "asc"
+                    ? " ▲"
+                    : " ▼"
+                  : ""}
+              </th>
+              <th
+                className="p-4 text-center cursor-pointer"
+                onClick={() => handleSort("events_played")}
+              >
+                Events
+                {sortConfig.key === "events_played"
+                  ? sortConfig.direction === "asc"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
               <th
                 className="p-4 text-center cursor-pointer"
                 onClick={() => handleSort("total_points")}
               >
-                Total Points{" "}
+                Points
                 {sortConfig.key === "total_points"
                   ? sortConfig.direction === "asc"
-                    ? "▲"
-                    : "▼"
+                    ? " ▲"
+                    : " ▼"
                   : ""}
               </th>
             </tr>
@@ -156,31 +185,27 @@ const LeaderboardPage = () => {
                 key={player.id}
                 className={`${
                   index % 2 === 0 ? "bg-blue-50" : "bg-white"
-                } hover:bg-blue-100 border-b ${
-                  sortConfig.key === "total_points" &&
-                  sortConfig.direction === "desc" &&
-                  index === 7
-                    ? "border-b-4 border-black"
-                    : ""
+                } hover:bg-blue-100 ${
+                  isTop8(index) ? "border-l-4 border-yellow-400" : ""
                 }`}
               >
                 <td className="p-4 text-center font-semibold">{index + 1}</td>
                 <td className="p-4 text-center">
                   <img
-                    src={`http://localhost:4000${player.image_path}`}
+                    src={player.image_path || "/assets/players/placeholder.png"}
                     alt={player.name}
-                    className="w-8 h-8 rounded-full cursor-pointer"
-                    onClick={() => handleImageClick(player.id)}
+                    className="w-10 h-10 rounded-full cursor-pointer"
+                    onClick={() => handleImageClick(player.player_id)}
                   />
                 </td>
                 <td className="p-4 text-left">{player.name}</td>
                 <td className="p-4 text-center">{player.current_quota}</td>
                 <td className="p-4 text-center">${player.money_won}</td>
-                <td className="p-4 text-center">
-                  {player.participation_points}
-                </td>
                 <td className="p-4 text-center">{player.skins}</td>
-                <td className="p-4 text-center">{player.placed_points}</td>
+                <td className="p-4 text-center">{player.ctps}</td>
+                <td className="p-4 text-center">{player.wins}</td>
+                <td className="p-4 text-center">{player.top_3}</td>
+                <td className="p-4 text-center">{player.events_played}</td>
                 <td className="p-4 text-center font-bold">
                   {player.total_points}
                 </td>

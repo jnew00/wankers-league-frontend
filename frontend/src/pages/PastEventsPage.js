@@ -16,7 +16,7 @@ const PastEventsPage = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/past-events`
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/events`
         );
         setEvents(response.data);
       } catch (error) {
@@ -34,7 +34,7 @@ const PastEventsPage = () => {
     }
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/api/past-events/${eventId}`
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
       );
       const sortedDetails = response.data.sort((a, b) => {
         if (a.rank === null || a.rank === 0) return 1; // Place N/A at the bottom
@@ -91,19 +91,30 @@ const PastEventsPage = () => {
           <div
             key={event.id}
             className={`border border-gray-300 rounded-lg mb-4 shadow-md ${
-              event.major ? "bg-yellow-50" : ""
+              event.is_major ? "bg-yellow-50" : ""
             }`}
           >
             <div
-              className="cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50"
+              className="cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 flex justify-between items-center"
               onClick={() => fetchEventDetails(event.id)}
             >
-              {new Date(event.date).toLocaleDateString()} - {event.course_name}
-              {event.major && (
-                <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
-                  Major
+              <div className="flex items-center">
+                <span>
+                  {new Date(event.date).toLocaleDateString()} -{" "}
+                  {event.course_name}
                 </span>
-              )}
+                {event.is_major && (
+                  <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                    Major
+                  </span>
+                )}
+              </div>
+              {/* Right Section: Winner's name */}
+              <div className="text-gray-600 text-sm italic">
+                {event.winner_name
+                  ? `Winner: ${event.winner_name}`
+                  : "Winner: N/A"}
+              </div>
             </div>
 
             {selectedEvent === event.id && (
@@ -122,61 +133,14 @@ const PastEventsPage = () => {
                             : "▼"
                           : ""}
                       </th>
-                      <th
-                        className="p-4 text-left cursor-pointer"
-                        onClick={() => handleSort("player_name")}
-                      >
-                        Player{" "}
-                        {sortConfig.key === "player_name"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="p-4 text-center cursor-pointer"
-                        onClick={() => handleSort("skins")}
-                      >
-                        Skins{" "}
-                        {sortConfig.key === "skins"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="p-4 text-center cursor-pointer"
-                        onClick={() => handleSort("ctps")}
-                      >
-                        CTPs{" "}
-                        {sortConfig.key === "ctps"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="p-4 text-center cursor-pointer"
-                        onClick={() => handleSort("money_won")}
-                      >
-                        Money Won{" "}
-                        {sortConfig.key === "money_won"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
-                      <th
-                        className="p-4 text-center cursor-pointer"
-                        onClick={() => handleSort("total_points")}
-                      >
-                        Points Gained{" "}
-                        {sortConfig.key === "total_points"
-                          ? sortConfig.direction === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </th>
+                      <th className="p-4 text-left">Player</th>
+                      <th className="p-4 text-center">Quota</th>
+                      <th className="p-4 text-center">Score</th>
+                      <th className="p-4 text-center">+/-</th>
+                      <th className="p-4 text-center">CTPs</th>
+                      <th className="p-4 text-center">Skins</th>
+                      <th className="p-4 text-center">Money Won</th>
+                      <th className="p-4 text-center">Points Gained</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -191,9 +155,36 @@ const PastEventsPage = () => {
                           {player.rank || "N/A"}
                         </td>
                         <td className="p-4 text-left">{player.player_name}</td>
-                        <td className="p-4 text-center">{player.skins}</td>
+                        <td className="p-4 text-center">
+                          {player.quota || "N/A"}
+                        </td>
+                        <td className="p-4 text-center">
+                          {player.score || "N/A"}
+                        </td>
+                        <td className="p-4 text-center font-bold">
+                          {player.score !== null && player.quota !== null ? (
+                            <>
+                              {player.score - player.quota > 0 && (
+                                <span className="text-green-500">
+                                  +{player.score - player.quota}
+                                </span>
+                              )}
+                              {player.score - player.quota < 0 && (
+                                <span className="text-red-500">
+                                  {player.score - player.quota}
+                                </span>
+                              )}
+                              {player.score - player.quota === 0 && "0"}
+                            </>
+                          ) : (
+                            "N/A"
+                          )}
+                        </td>
                         <td className="p-4 text-center">{player.ctps}</td>
-                        <td className="p-4 text-center">${player.money_won}</td>
+                        <td className="p-4 text-center">{player.skins}</td>
+                        <td className="p-4 text-center">
+                          ${parseFloat(player.money_won).toFixed(2)}
+                        </td>
                         <td className="p-4 text-center">
                           {player.total_points}
                         </td>

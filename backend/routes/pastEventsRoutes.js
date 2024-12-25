@@ -5,9 +5,15 @@ const pool = require("../config/db");
 router.get("/", async (req, res) => {
   try {
     const events = await pool.query(`
-        SELECT id, date, name, major
-        FROM events
-        ORDER BY date DESC
+        SELECT 
+          e.id, 
+          e.date, 
+          e.is_major, 
+          p.name AS winner_name
+        FROM events e
+        LEFT JOIN event_players ep ON e.id = ep.event_id AND ep.rank = 1
+        LEFT JOIN players p ON ep.player_id = p.id
+        ORDER BY e.date DESC
       `);
     res.json(events.rows);
   } catch (err) {

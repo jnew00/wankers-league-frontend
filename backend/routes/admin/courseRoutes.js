@@ -45,7 +45,12 @@ router.get("/search", async (req, res) => {
   const { query } = req.query;
   try {
     const result = await pool.query(
-      "SELECT id, name, address, front_tee, back_tee, website FROM courses WHERE LOWER(name) LIKE LOWER($1) ORDER BY name ASC LIMIT 10",
+      `
+      SELECT id, name, address, front_tee, back_tee, website 
+      FROM courses 
+      WHERE LOWER(name) LIKE LOWER($1) 
+      ORDER BY name ASC LIMIT 10
+       `,
       [`%${query}%`]
     );
     res.status(200).json(result.rows);

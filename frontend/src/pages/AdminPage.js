@@ -12,6 +12,9 @@ import axios from "axios";
 
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
+  const [eventDate, setEventDate] = useState("");
+  const [isMajor, setIsMajor] = useState(false);
+  const [winner, setWinner] = useState("");
   const [players, setPlayers] = useState([]);
   const [allPlayers, setAllPlayers] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -55,39 +58,40 @@ const AdminPage = () => {
   }, []);
 
   const handleEventChange = async (eventId) => {
-    if (!eventId) {
-      setSelectedEvent(null);
-      setPlayers([]);
-      return;
-    }
-
+    const event = events.find((e) => e.id === eventId);
     try {
-      const eventRes = await axios.get(
+      const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
       );
 
-      const { id, is_major: isMajor, course, players } = eventRes.data;
-
       setSelectedEvent({
-        id,
-        isMajor,
-        course,
+        id: event.id,
+        date: event.date,
+        isMajor: event.is_major,
+        courseName: event.course_name,
+        winner: event.winner_name || "N/A",
       });
 
-      setPlayers(
-        players
-          .map((player) => ({
-            ...player,
-            isEditing: false,
-          }))
-          .sort(
-            (a, b) =>
-              (a.rank || Number.MAX_SAFE_INTEGER) -
-              (b.rank || Number.MAX_SAFE_INTEGER)
-          )
-      );
+      const players = response.data.map((player) => ({
+        player_id: player.player_id,
+        name: player.player_name || "N/A",
+        image: player.image_path || null,
+        quota: player.quota || 0,
+        score: player.score || 0,
+        rank: player.rank || null,
+        ctps: player.ctps || 0,
+        skins: player.skins || 0,
+        money_won: player.money_won || 0,
+        total_points: player.total_points || 0,
+        isEditing: false,
+      }));
+      setEventDate(response.data[0]?.date || "");
+      setIsMajor(response.data[0]?.is_major || false);
+      setPlayers(players);
+      const winner = players.find((player) => player.rank === 1) || null;
+      setWinner(winner);
     } catch (error) {
-      console.error("Error fetching players:", error.message);
+      console.error("Error fetching event data:", error.message);
     }
   };
 
@@ -110,18 +114,17 @@ const AdminPage = () => {
 
   const handleSavePlayer = async (player, index) => {
     try {
-      if (!selectedEvent || !selectedEvent.id) {
-        throw new Error("Invalid event ID.");
-      }
-
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${selectedEvent.id}/player/${player.player_id}`,
         {
+          playerId: player.player_id,
           ctps: player.ctps || 0,
           skins: player.skins || 0,
-          money_won: player.money_won || 0,
-          total_points: player.total_points || 0,
+          moneyWon: player.money_won || 0,
           rank: player.rank || null,
+          totalPoints: player.total_points || 0,
+          quota: player.quota || 0,
+          score: player.score || 0,
         }
       );
 
@@ -133,6 +136,9 @@ const AdminPage = () => {
         )
       );
     } catch (error) {
+      console.log("Event id: ", selectedEvent.id);
+      console.log("Player id: ", player.player_id);
+
       console.error("Error saving player data:", error.message);
       alert("Failed to save player data.");
     }
@@ -169,6 +175,7 @@ const AdminPage = () => {
         money_won: 0,
         total_points: 0,
         rank: null,
+        quota: 0,
         isEditing: true,
       },
     ]);
@@ -300,10 +307,12 @@ const AdminPage = () => {
           </div>
 
           <EventSelector
-            events={events.map((event) => ({
-              ...event,
-              displayName: `${event.date} - ${event.course_name}`, // Customize display
-            }))}
+            events={events}
+            // events={events.map((event) => ({
+            //   ...event,
+            //   displayName: `${event.date} - ${event.course_name}`,
+            // }))}
+
             selectedEvent={selectedEvent}
             handleEventChange={handleEventChange}
           />

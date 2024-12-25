@@ -11,6 +11,8 @@ const PlayerList = ({
   handleAddPlayer,
   handleCancelEdit,
 }) => {
+  console.log("Rendering Players in PlayerList:", players);
+
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-4">Player List</h2>
@@ -20,6 +22,9 @@ const PlayerList = ({
             <tr>
               <th className="p-4 text-left">Rank</th>
               <th className="p-4 text-left">Player</th>
+              <th className="p-4 text-center">Quota</th>
+              <th className="p-4 text-center">Score</th>
+              <th className="p-4 text-center">+/-</th>
               <th className="p-4 text-center">CTPs</th>
               <th className="p-4 text-center">Skins</th>
               <th className="p-4 text-center">Money Won</th>
@@ -30,7 +35,7 @@ const PlayerList = ({
           <tbody>
             {players.map((player, index) => (
               <tr
-                key={index}
+                key={player.player_id}
                 className={`${
                   index % 2 === 0 ? "bg-blue-50" : "bg-white"
                 } hover:bg-blue-100 border-b`}
@@ -66,18 +71,22 @@ const PlayerList = ({
                       onChange={(e) => {
                         const selectedPlayerId = Number(e.target.value);
                         const selectedPlayer = allPlayers.find(
-                          (p) => p.id === Number(e.target.value)
+                          (p) => p.id === selectedPlayerId
                         );
                         handlePlayerChange(
                           index,
                           "player_id",
                           selectedPlayerId
                         );
-
                         handlePlayerChange(
                           index,
                           "name",
-                          selectedPlayer?.name || "N/A"
+                          selectedPlayer?.name || ""
+                        );
+                        handlePlayerChange(
+                          index,
+                          "quota",
+                          selectedPlayer?.current_quota || 0
                         );
                       }}
                       className="border border-gray-300 rounded-lg p-2 w-full"
@@ -91,6 +100,44 @@ const PlayerList = ({
                     </select>
                   ) : (
                     player.name || "N/A"
+                  )}
+                </td>
+                <td className="p-4 text-center">{player.quota || "N/A"}</td>
+                <td className="p-4 text-center">
+                  {player.isEditing ? (
+                    <input
+                      type="number"
+                      value={player.score || ""}
+                      onChange={(e) =>
+                        handlePlayerChange(
+                          index,
+                          "score",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                    />
+                  ) : (
+                    player.score || 0
+                  )}
+                </td>
+                <td className="p-4 text-center font-bold">
+                  {player.score !== null && player.quota !== null ? (
+                    <>
+                      {player.score - player.quota > 0 && (
+                        <span className="text-green-500">
+                          +{player.score - player.quota}
+                        </span>
+                      )}
+                      {player.score - player.quota < 0 && (
+                        <span className="text-red-500">
+                          {player.score - player.quota}
+                        </span>
+                      )}
+                      {player.score - player.quota === 0 && "0"}
+                    </>
+                  ) : (
+                    "N/A"
                   )}
                 </td>
 
@@ -188,10 +235,9 @@ const PlayerList = ({
                 </td>
               </tr>
             ))}
-            {/* Add Player Button Row */}
             {selectedEvent && (
               <tr className="bg-gray-100 hover:bg-gray-200">
-                <td colSpan="7" className="p-4 text-center">
+                <td colSpan="10" className="p-4 text-center">
                   <button
                     onClick={handleAddPlayer}
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
@@ -208,4 +254,4 @@ const PlayerList = ({
   );
 };
 
-export default PlayerList;
+export default React.memo(PlayerList);

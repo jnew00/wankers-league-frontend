@@ -4,74 +4,82 @@ const pool = require("../config/db");
 
 router.get("/", async (req, res) => {
   try {
-    const players = await pool.query(
-      "SELECT id, name FROM players ORDER BY name ASC"
+    const result = await pool.query(
+      `
+      SELECT 
+        p.id, 
+        p.name, 
+        p.current_quota, 
+        p.image_path, 
+        p.email, 
+        p.phone_number
+      FROM players p
+      ORDER BY p.name ASC
+      `
     );
-    res.json(players.rows);
-  } catch (err) {
-    console.error("Error fetching players:", err.message);
-    res.status(500).send("Server Error");
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching players:", error.message);
+    res.status(500).send("Failed to fetch players.");
   }
 });
 
 router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
+    // Query to fetch player information
+    const playerQuery = `
+      SELECT 
+        p.id, 
+        p.name, 
+        p.email, 
+        p.phone_number, 
+        p.image_path, 
+        (SELECT COUNT(DISTINCT ep.event_id)
+         FROM event_players ep
+         WHERE ep.player_id = p.id) AS events_played,
+        (SELECT SUM(ep.money_won) FROM event_players ep WHERE ep.player_id = p.id) AS total_money_won,
+        (SELECT SUM(ep.ctps) FROM event_players ep WHERE ep.player_id = p.id) AS total_ctps,
+        (SELECT SUM(ep.skins) FROM event_players ep WHERE ep.player_id = p.id) AS total_skins
+      FROM players p
+      WHERE p.id = $1;
+    `;
 
-    // Fetch player details
-    const playerDetails = await pool.query(
-      `SELECT p.id, p.name, p.image_path, p.email, p.phone_number, p.current_quota
-         FROM players p
-         WHERE p.id = $1`,
-      [id]
-    );
+    const { rows } = await pool.query(playerQuery, [id]);
 
-    // Fetch current season stats
-    const currentSeasonStats = await pool.query(
-      `SELECT 
-          COUNT(*) AS events_played,
-          SUM(sp.money_won) AS total_money_won,
-          SUM(sp.ctps) AS total_ctps,
-          SUM(sp.skins) AS total_skins,
-          SUM(CASE WHEN sp.placed_points > 0 THEN 1 ELSE 0 END) AS total_places
-         FROM season_points sp
-         WHERE sp.player_id = $1 AND sp.season = '2024'`,
-      [id]
-    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Player not found" });
+    }
 
-    const rankResult = await pool.query(
-      `SELECT COUNT(*) + 1 AS rank
-         FROM players p
-         JOIN season_points sp ON p.id = sp.player_id
-         WHERE sp.total_points > (
-           SELECT total_points FROM season_points WHERE player_id = $1 AND season = '2024'
-         )`,
-      [id]
-    );
-    const rank = rankResult.rows[0]?.rank || "N/A";
+    const player = rows[0];
 
-    // Fetch historical stats (all seasons)
-    const historicalStats = await pool.query(
-      `SELECT 
-          COUNT(*) AS events_played,
-          SUM(sp.money_won) AS total_money_won,
-          SUM(sp.ctps) AS total_ctps,
-          SUM(sp.skins) AS total_skins,
-          SUM(CASE WHEN sp.placed_points > 0 THEN 1 ELSE 0 END) AS total_places
-         FROM season_points sp
-         WHERE sp.player_id = $1`,
-      [id]
-    );
+    // Response matching the frontend structure
+    const response = {
+      id: player.id,
+      name: player.name,
+      email: player.email,
+      phone_number: player.phone_number,
+      image_path: player.image_path,
+      currentSeasonStats: {
+        events_played: player.events_played || 0,
+        total_money_won: player.total_money_won || 0,
+        total_ctps: player.total_ctps || 0,
+        total_skins: player.total_skins || 0,
+      },
+      historicalStats: {
+        // Placeholder for historical stats (implement as needed)
+        events_played: 0,
+        total_money_won: 0,
+        total_ctps: 0,
+        total_skins: 0,
+      },
+    };
 
-    res.json({
-      ...playerDetails.rows[0],
-      currentSeasonStats: currentSeasonStats.rows[0],
-      historicalStats: historicalStats.rows[0],
-      rank,
-    });
-  } catch (err) {
-    console.error("Error fetching player stats:", err.message);
-    res.status(500).send("Server Error");
+    res.json(response);
+  } catch (error) {
+    console.error("Error fetching player details:", error.message);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

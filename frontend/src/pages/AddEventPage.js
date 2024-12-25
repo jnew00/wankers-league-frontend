@@ -1,54 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Select from "react-select";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
-import axios from "axios";
 
 const AddEventPage = () => {
-  const [courseId, setCourseId] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [date, setDate] = useState("");
-  const [courseSuggestions, setCourseSuggestions] = useState([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isMajor, setIsMajor] = useState(false);
 
-  const handleCourseSearch = async (query) => {
-    if (!query) {
-      setCourseSuggestions([]);
-      return;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses`
+        );
+        // Map courses to the format required by React-Select
+        const formattedCourses = response.data.map((course) => ({
+          value: course.id,
+          label: course.name,
+        }));
+        // Add the "Add New Course" option
+        setCourses([
+          ...formattedCourses,
+          { value: "add-new", label: "Add New Course", isSpecial: true },
+        ]);
+      } catch (error) {
+        console.error("Error fetching courses:", error.message);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const handleCourseChange = (selectedOption) => {
+    if (selectedOption.value === "add-new") {
+      navigate("/admin/add-course"); // Redirect to Add Course page
+    } else {
+      setSelectedCourse(selectedOption); // Set the selected course
     }
-
-    setIsLoadingSuggestions(true);
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses/search`,
-        { params: { query } }
-      );
-      setCourseSuggestions(response.data);
-    } catch (error) {
-      console.error("Error searching courses:", error.message);
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  };
-
-  const handleCourseSelect = (course) => {
-    setCourseId(course.id);
-    setCourseSuggestions([]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedCourse || !date) {
+      alert("Please select a course and date.");
+      return;
+    }
+
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/add-event`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/add-event`,
         {
-          courseId,
+          courseId: selectedCourse.value,
           date,
+          isMajor,
         }
       );
+
       alert("Event added successfully!");
+      navigate("/admin/manage-events");
     } catch (error) {
       console.error("Error adding event:", error.message);
       alert("Failed to add event.");
     }
+  };
+
+  const customStyles = {
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.data.isSpecial
+        ? state.isFocused
+          ? "#fde68a" // Highlighted yellow on hover
+          : "#fef3c7" // Light yellow background for "Add New Course"
+        : state.isFocused
+        ? "#e5e7eb" // Default hover color for other options
+        : "white",
+      color: state.data.isSpecial ? "#b45309" : "black", // Amber text for "Add New Course"
+      fontWeight: state.data.isSpecial ? "bold" : "normal",
+      cursor: "pointer",
+    }),
   };
 
   return (
@@ -59,27 +94,15 @@ const AddEventPage = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">
-              Search for Course
+              Course
             </label>
-            <input
-              type="text"
-              onChange={(e) => handleCourseSearch(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              required
+            <Select
+              options={courses}
+              value={selectedCourse}
+              onChange={handleCourseChange}
+              placeholder="Search or select a course"
+              styles={customStyles}
             />
-            {courseSuggestions.length > 0 && (
-              <div className="bg-white border border-gray-300 rounded-lg mt-1 shadow-lg">
-                {courseSuggestions.map((course) => (
-                  <div
-                    key={course.id}
-                    onClick={() => handleCourseSelect(course)}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {course.name}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">Date</label>
@@ -90,6 +113,17 @@ const AddEventPage = () => {
               className="w-full border border-gray-300 rounded-lg p-2"
               required
             />
+          </div>
+          <div className="mb-6">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                checked={isMajor}
+                onChange={(e) => setIsMajor(e.target.checked)}
+                className="form-checkbox text-blue-600"
+              />
+              <span className="ml-2 text-gray-700">Major Event</span>
+            </label>
           </div>
           <button
             type="submit"
