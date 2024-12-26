@@ -12,6 +12,9 @@ const Navbar = () => {
     { name: "Past Events", href: "/past-events" },
   ];
 
+  // Check if the current path is an admin page
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   return (
     <nav className="bg-white border-b border-gray-300 shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
@@ -36,10 +39,17 @@ const Navbar = () => {
           {/* Admin Dropdown */}
           <div className="relative">
             <button
-              className="relative py-3 text-sm font-medium text-gray-600 hover:text-gray-900"
+              className={`relative py-3 text-sm font-medium ${
+                isAdminPage
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
               onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
             >
               Admin
+              {isAdminPage && (
+                <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
+              )}
             </button>
             {isAdminDropdownOpen && (
               <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">

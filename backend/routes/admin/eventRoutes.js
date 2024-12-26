@@ -6,23 +6,22 @@ const pool = require("../../config/db");
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT 
+      `      SELECT 
         e.id, 
         e.date, 
         e.is_major, 
-        c.name AS course_name, 
-        p.name AS winner_name
-      FROM 
-          events e
-      JOIN 
-          courses c ON e.course_id = c.id
-      LEFT JOIN 
-          event_players ep ON e.id = ep.event_id AND ep.rank = 1
-      LEFT JOIN 
-          players p ON ep.player_id = p.id
-      ORDER BY 
-          e.date DESC;
+        c.name AS course_name,
+        (SELECT COUNT(*) FROM event_players ep WHERE ep.event_id = e.id) > 0 AS has_scores,
+        (SELECT p.name 
+         FROM event_players ep
+         JOIN players p ON ep.player_id = p.id 
+         WHERE ep.event_id = e.id AND ep.rank = 1 
+         LIMIT 1) AS winner_name
+      FROM events e
+      JOIN courses c ON e.course_id = c.id
+      ORDER BY e.date DESC
 `
+
       // `
       //  SELECT
       //   e.id, e.date, e.is_major,

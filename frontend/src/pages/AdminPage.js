@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
@@ -27,6 +28,11 @@ const AdminPage = () => {
   const drawerRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const eventId = queryParams.get("eventId"); // Get the eventId from the query string
+  console.log("eventId from query:", eventId); // Debugging log
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -107,6 +113,12 @@ const AdminPage = () => {
     },
     [events, setSelectedEvent, setPlayers] // Dependencies
   );
+
+  useEffect(() => {
+    if (eventId) {
+      handleEventChange(Number(eventId)); // Convert to number if necessary
+    }
+  }, [eventId, handleEventChange]);
 
   const handleCancelEdit = (index) => {
     setPlayers((prevPlayers) =>
@@ -332,7 +344,6 @@ const AdminPage = () => {
               Add Event
             </button>
           </div>
-
           <EventSelector
             events={events}
             // events={events.map((event) => ({
