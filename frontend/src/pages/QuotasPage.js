@@ -9,6 +9,12 @@ const QuotasPage = () => {
     key: "current_quota", // Default sort column
     direction: "desc", // Default sort direction
   });
+  const [latestUpdateTime, setLatestUpdateTime] = useState(null);
+  const formatUpdatedText = (latestUpdateTime) => {
+    return latestUpdateTime
+      ? `Updated on: ${new Date(latestUpdateTime).toLocaleString()}`
+      : "";
+  };
 
   useEffect(() => {
     const fetchQuotas = async () => {
@@ -17,7 +23,7 @@ const QuotasPage = () => {
           `${process.env.REACT_APP_API_BASE_URL}/api/quotas`
         );
 
-        const processedQuotas = response.data.map((player) => ({
+        const processedQuotas = response.data.quotas.map((player) => ({
           name: player.player_name || "N/A",
           current_quota: player.current_quota || 0,
           previous_quota: player.previous_quota || 0,
@@ -25,8 +31,8 @@ const QuotasPage = () => {
           season_average: parseFloat(player.season_average) || 0,
         }));
 
-        console.log("Fetched Quotas Data:", response.data);
         setQuotas(processedQuotas);
+        setLatestUpdateTime(response.data.latest_update);
       } catch (error) {
         console.error("Error fetching quotas:", error.message);
       }
@@ -65,7 +71,10 @@ const QuotasPage = () => {
   return (
     <div>
       <Navbar />
-      <PageHeader title="Quotas Overview" />
+      <PageHeader
+        title="Quotas Overview"
+        updatedText={formatUpdatedText(latestUpdateTime)}
+      />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">

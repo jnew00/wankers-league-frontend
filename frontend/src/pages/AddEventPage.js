@@ -89,7 +89,7 @@ const AddEventPage = () => {
   return (
     <div>
       <Navbar />
-      <PageHeader title="Add Event" />
+      <PageHeader title="Admin: Add Event" />
       <div className="max-w-2xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

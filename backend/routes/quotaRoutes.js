@@ -4,7 +4,7 @@ const pool = require("../config/db");
 
 router.get("/", async (req, res) => {
   try {
-    const quotas = await pool.query(`
+    const result = await pool.query(`
         SELECT 
         p.id AS player_id,
         p.name AS player_name,
@@ -23,7 +23,16 @@ router.get("/", async (req, res) => {
         ORDER BY p.name;
       `);
 
-    res.json(quotas.rows);
+    const latestUpdateResult = await pool.query(`
+        SELECT MAX(created_at) AS latest_update FROM event_players;
+      `);
+
+    const latestUpdate = latestUpdateResult.rows[0]?.latest_update;
+
+    res.status(200).json({
+      quotas: result.rows,
+      latest_update: latestUpdate,
+    });
   } catch (error) {
     console.error("Error fetching quotas:", error.message);
     res.status(500).send("Failed to fetch quotas.");

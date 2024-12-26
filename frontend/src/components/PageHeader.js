@@ -1,13 +1,13 @@
 import React from "react";
 import logo from "../assets/logo.png"; // Ensure this path matches your project structure
 
-const PageHeader = ({ title }) => {
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+const PageHeader = ({ title, updatedText }) => {
+  // const updatedTime = new Date().toLocaleDateString("en-US", {
+  //   weekday: "long",
+  //   month: "long",
+  //   day: "numeric",
+  //   year: "numeric",
+  // });
 
   return (
     <div className="flex items-center justify-start px-4  max-w-7xl">
@@ -19,7 +19,9 @@ const PageHeader = ({ title }) => {
         />
         <div className="text-left">
           <h1 className="text-4xl font-semibold text-gray-800">{title}</h1>
-          <p className="text-lg text-gray-500">{`Updated on ${currentDate}`}</p>
+          {updatedText && (
+            <p className="text-lg text-gray-500">{updatedText}</p>
+          )}
         </div>
       </div>
     </div>

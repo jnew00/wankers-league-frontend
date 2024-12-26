@@ -7,9 +7,9 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Leaderboard", href: "/" },
-    { name: "Upcoming Events", href: "/upcoming-events" },
-    { name: "Current Quotas", href: "/quotas" },
-    { name: "Past Events", href: "/past-events" },
+    { name: "Quota Stats", href: "/quotas" },
+    { name: "Events", href: "/events" },
+    { name: "Rules", href: "/rules" },
   ];
 
   // Check if the current path is an admin page
@@ -52,27 +52,28 @@ const Navbar = () => {
               )}
             </button>
             {isAdminDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full w-48  mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                 <Link
                   to="/admin/add-event"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
                   onClick={() => setIsAdminDropdownOpen(false)}
                 >
-                  Add Event
+                  Add Events
                 </Link>
-                <Link
-                  to="/admin/add-course"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                  onClick={() => setIsAdminDropdownOpen(false)}
-                >
-                  Add Course
-                </Link>
+
                 <Link
                   to="/admin/manage-events"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
                   onClick={() => setIsAdminDropdownOpen(false)}
                 >
                   Manage Events
+                </Link>
+                <Link
+                  to="/admin/add-course"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                  onClick={() => setIsAdminDropdownOpen(false)}
+                >
+                  Manage Courses
                 </Link>
               </div>
             )}

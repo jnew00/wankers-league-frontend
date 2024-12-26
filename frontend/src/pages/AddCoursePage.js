@@ -403,7 +403,7 @@ const AddCoursePage = () => {
   return (
     <div>
       <Navbar />
-      <PageHeader title="Manage Courses" />
+      <PageHeader title="Admin: Manage Courses" />
       <div className="max-w-4xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
         {!showForm ? (
           <>

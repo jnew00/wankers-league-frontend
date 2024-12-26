@@ -13,12 +13,19 @@ const LeaderboardPage = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showHistorical, setShowHistorical] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const [latestUpdateTime, setLatestUpdateTime] = useState(null);
+  const formatUpdatedText = (latestUpdateTime) => {
+    return latestUpdateTime
+      ? `Updated on: ${new Date(latestUpdateTime).toLocaleString()}`
+      : "";
+  };
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/leaderboard`);
-        setPlayers(response.data);
+        setPlayers(response.data.leaderboard);
+        setLatestUpdateTime(response.data.latest_update);
       } catch (error) {
         console.error("Error fetching leaderboard:", error.message);
       }
@@ -41,22 +48,6 @@ const LeaderboardPage = () => {
     setPlayers(sortedPlayers);
   };
 
-  const handleImageClick = async (playerId) => {
-    console.log("Player ID clicked:", playerId);
-    if (!playerId) {
-      console.error("Player ID is undefined.");
-      return;
-    }
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/players/${playerId}`
-      );
-      setSelectedPlayer(response.data);
-    } catch (error) {
-      console.error("Error fetching player details:", error.message);
-    }
-  };
-
   const closeModal = () => {
     setSelectedPlayer(null);
   };
@@ -70,14 +61,17 @@ const LeaderboardPage = () => {
     <div>
       <Navbar />
       <div className="flex items-center justify-start mb-4">
-        <PageHeader title="Leaderboard" />
+        <PageHeader
+          title="Leaderboard"
+          updatedText={formatUpdatedText(latestUpdateTime)}
+        />
       </div>
       <div className="max-w-7xl mx-auto px-4">
         <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
               <th className="p-4 text-center">Rank</th>
-              <th className="p-4 text-center">Picture</th>
+              <th className="p-4 text-center">Mugshot</th>
               <th
                 className="p-4 text-left cursor-pointer"
                 onClick={() => handleSort("name")}
@@ -195,7 +189,7 @@ const LeaderboardPage = () => {
                     src={player.image_path || "/assets/players/placeholder.png"}
                     alt={player.name}
                     className="w-10 h-10 rounded-full cursor-pointer"
-                    onClick={() => handleImageClick(player.player_id)}
+                    onClick={() => setSelectedPlayer(player)}
                   />
                 </td>
                 <td className="p-4 text-left">{player.name}</td>
@@ -219,15 +213,15 @@ const LeaderboardPage = () => {
           <div className="relative p-6">
             {/* Rank */}
             <div className="absolute top-2 right-4 text-lg font-bold text-blue-600">
-              Rank: #{selectedPlayer.rank || "N/A"}
+              Season Rank: #{selectedPlayer.rank || "N/A"}
             </div>
 
             {/* Player Information */}
             <div className="text-center mb-6">
               <img
-                src={`http://localhost:4000${selectedPlayer.image_path}`}
+                src={selectedPlayer.image_path}
                 alt="Profile"
-                className="w-24 h-24 rounded-full mx-auto mb-4"
+                className="w-36 h-36 rounded-full mx-auto mb-4"
               />
               <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
               <p className="text-gray-500 text-sm">
@@ -244,32 +238,21 @@ const LeaderboardPage = () => {
                 Current Season Stats
               </h3>
               <p>
-                <strong>
-                  <a
-                    href="/past-events"
-                    className="text-blue-500 underline hover:text-blue-700"
-                  >
-                    Events Played
-                  </a>
-                  :
-                </strong>{" "}
-                {selectedPlayer.currentSeasonStats.events_played || 0}
+                <strong>Events Played :</strong>{" "}
+                {selectedPlayer.events_played || 0}
               </p>
               <p>
                 <strong>Total Money Won:</strong> $
-                {selectedPlayer.currentSeasonStats.total_money_won || 0}
+                {selectedPlayer.money_won || 0}
               </p>
               <p>
-                <strong>Total CTPs:</strong>{" "}
-                {selectedPlayer.currentSeasonStats.total_ctps || 0}
+                <strong>Total CTPs:</strong> {selectedPlayer.ctps || 0}
               </p>
               <p>
-                <strong>Total Skins:</strong>{" "}
-                {selectedPlayer.currentSeasonStats.total_skins || 0}
+                <strong>Total Skins:</strong> {selectedPlayer.skins || 0}
               </p>
               <p>
-                <strong>Total Places:</strong>{" "}
-                {selectedPlayer.currentSeasonStats.total_places || 0}
+                <strong>Top 3 Finishes:</strong> {selectedPlayer.top_3 || 0}
               </p>
             </div>
 
@@ -287,23 +270,20 @@ const LeaderboardPage = () => {
                 <div className="mt-4">
                   <p>
                     <strong>Events Played:</strong>{" "}
-                    {selectedPlayer.historicalStats.events_played || 0}
+                    {selectedPlayer.events_played || 0}
                   </p>
                   <p>
                     <strong>Total Money Won:</strong> $
-                    {selectedPlayer.historicalStats.total_money_won || 0}
+                    {selectedPlayer.money_won || 0}
                   </p>
                   <p>
-                    <strong>Total CTPs:</strong>{" "}
-                    {selectedPlayer.historicalStats.total_ctps || 0}
+                    <strong>Total CTPs:</strong> {selectedPlayer.ctps || 0}
                   </p>
                   <p>
-                    <strong>Total Skins:</strong>{" "}
-                    {selectedPlayer.historicalStats.total_skins || 0}
+                    <strong>Total Skins:</strong> {selectedPlayer.skins || 0}
                   </p>
                   <p>
-                    <strong>Total Places:</strong>{" "}
-                    {selectedPlayer.historicalStats.total_places || 0}
+                    <strong>Top 3 Finishes:</strong> {selectedPlayer.top_3 || 0}
                   </p>
                 </div>
               )}

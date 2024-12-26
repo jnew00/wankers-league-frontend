@@ -346,11 +346,6 @@ const AdminPage = () => {
           </div>
           <EventSelector
             events={events}
-            // events={events.map((event) => ({
-            //   ...event,
-            //   displayName: `${event.date} - ${event.course_name}`,
-            // }))}
-
             selectedEvent={selectedEvent}
             handleEventChange={handleEventChange}
           />
