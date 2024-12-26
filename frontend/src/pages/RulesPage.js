@@ -166,8 +166,8 @@ const RulesPage = () => {
                     your ball.
                   </li>
                   <li>
-                    Unless you have an approved medical condition, but partake
-                    in birdie shots.
+                    Unless you have an approved medical condition, must partake
+                    in birdie fireball shots.
                   </li>
                 </ol>
               </li>
