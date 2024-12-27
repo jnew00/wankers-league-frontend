@@ -44,7 +44,5 @@ jobs:
           username: ${{ secrets.UNRAID_USER }}
           password: ${{ secrets.UNRAID_PASSWORD }}
           script: |
-            docker pull ${{ secrets.DOCKER_REPO }}/frontend:latest
-            docker stop wanker-league-frontend || true
-            docker rm wanker-league-frontend || true
-            docker run -d --name wanker-league-frontend -p 3000:80 ${{ secrets.DOCKER_REPO }}/frontend:latest
+            docker pull ${{ secrets.DOCKER_REPO }}/wanker-frontend:latest
+            docker restart wanker-frontend
