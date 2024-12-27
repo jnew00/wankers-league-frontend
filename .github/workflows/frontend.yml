@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: SSH into Unraid and Deploy
-        uses: appleboy/ssh-action@v0.1.11
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.UNRAID_HOST }}
           username: ${{ secrets.UNRAID_USER }}
