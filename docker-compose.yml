@@ -1,0 +1,28 @@
+services:
+  frontend:
+    image: jnew00/wanker-frontend:latest
+    container_name: wanker-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_BASE_URL=http://wanker-backend:4000
+
+    restart: unless-stopped
+
+  backend:
+    image: jnew00/wanker-backend:latest
+    container_name: wanker-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_USER=wanker
+      - DATABASE_PASSWORD=Ufgators1993
+      - DATABASE_HOST=postgresql16
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=wanker_league
+    restart: unless-stopped
+
+  postgres-existing:
+    external: true

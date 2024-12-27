@@ -1,4 +1,4 @@
-CREATE TABLE courses (
+CREATE TABLE wanker.courses (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     address TEXT,

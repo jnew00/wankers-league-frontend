@@ -1,5 +1,4 @@
 import React from "react";
-import logo from "../assets/logo.png"; // Ensure this path matches your project structure
 
 const PageHeader = ({ title, updatedText }) => {
   // const updatedTime = new Date().toLocaleDateString("en-US", {
@@ -13,7 +12,7 @@ const PageHeader = ({ title, updatedText }) => {
     <div className="flex items-center justify-start px-4  max-w-7xl">
       <div className="flex items-center justify-start space-x-4">
         <img
-          src={logo}
+          src="/assets/logo.png"
           alt="Leaderboard Logo"
           style={{ width: "150px", height: "150px", marginRight: "0px" }}
         />

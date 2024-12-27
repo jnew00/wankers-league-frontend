@@ -84,7 +84,7 @@ const AddCoursePage = () => {
         alert("Course added successfully!");
       }
 
-      navigate("/admin/add-course");
+      window.location.reload();
     } catch (error) {
       console.error("Error saving course:", error.message);
       alert("Failed to save course.");
