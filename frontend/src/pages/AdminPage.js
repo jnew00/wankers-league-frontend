@@ -38,11 +38,11 @@ const AdminPage = () => {
     const fetchInitialData = async () => {
       try {
         const [eventsRes, pointsConfigRes, playersRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/admin/events`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/admin/events`),
           axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/api/admin/points/config`
+            `${process.env.REACT_APP_API_BASE_URL}/admin/points/config`
           ),
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/players`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/players`),
         ]);
 
         setEvents(
@@ -79,7 +79,7 @@ const AdminPage = () => {
       }
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
         );
 
         setSelectedEvent({
@@ -140,7 +140,7 @@ const AdminPage = () => {
   const handleSavePlayer = async (player, index) => {
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${selectedEvent.id}/player/${player.player_id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${player.player_id}`,
         {
           playerId: player.player_id,
           ctps: player.ctps || 0,
@@ -172,7 +172,7 @@ const AdminPage = () => {
   const handleDeletePlayer = async (index, playerId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${selectedEvent.id}/player/${playerId}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${playerId}`
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
     } catch (error) {
@@ -237,7 +237,7 @@ const AdminPage = () => {
   const savePointsConfig = async () => {
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/points/config`,
+        `${process.env.REACT_APP_API_BASE_URL}/admin/points/config`,
         pointsConfig
       );
       setIsEditingPoints(false);

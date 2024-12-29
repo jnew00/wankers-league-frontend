@@ -31,7 +31,7 @@ const AddCoursePage = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses`
+          `${process.env.REACT_APP_API_BASE_URL}/admin/courses`
         );
         setCourses(response.data);
       } catch (error) {
@@ -72,13 +72,13 @@ const AddCoursePage = () => {
 
       if (editCourse) {
         await axios.put(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses/${editCourse.id}`,
+          `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${editCourse.id}`,
           payload
         );
         alert("Course updated successfully!");
       } else {
         await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses/add-course`,
+          `${process.env.REACT_APP_API_BASE_URL}/admin/courses/add-course`,
           payload
         );
         alert("Course added successfully!");
@@ -114,7 +114,7 @@ const AddCoursePage = () => {
   const handleDeleteCourse = async (id) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses/${id}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${id}`
       );
       setCourses((prev) => prev.filter((course) => course.id !== id));
       alert("Course deleted successfully!");

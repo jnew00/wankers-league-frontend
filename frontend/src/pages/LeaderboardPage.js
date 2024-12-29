@@ -23,7 +23,7 @@ const LeaderboardPage = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/leaderboard`);
+        const response = await axios.get(`${API_BASE_URL}/leaderboard`);
         setPlayers(response.data.leaderboard);
         setLatestUpdateTime(response.data.latest_update);
       } catch (error) {

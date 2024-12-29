@@ -19,7 +19,7 @@ const EventsPage = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/events`
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events`
         );
 
         const upcoming = response.data.filter((event) => !event.has_scores);
@@ -42,7 +42,7 @@ const EventsPage = () => {
     }
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/${eventId}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
       );
       const sortedDetails = response.data.sort((a, b) => {
         if (a.rank === null || a.rank === 0) return 1;

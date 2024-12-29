@@ -20,7 +20,7 @@ const QuotasPage = () => {
     const fetchQuotas = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/quotas`
+          `${process.env.REACT_APP_API_BASE_URL}/quotas`
         );
 
         const processedQuotas = response.data.quotas.map((player) => ({

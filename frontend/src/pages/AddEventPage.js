@@ -17,7 +17,7 @@ const AddEventPage = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/courses`
+          `${process.env.REACT_APP_API_BASE_URL}/admin/courses`
         );
         // Map courses to the format required by React-Select
         const formattedCourses = response.data.map((course) => ({
@@ -54,7 +54,7 @@ const AddEventPage = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/events/add-event`,
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/add-event`,
         {
           courseId: selectedCourse.value,
           date,
