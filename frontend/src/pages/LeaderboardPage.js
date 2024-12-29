@@ -219,16 +219,16 @@ const LeaderboardPage = () => {
             {/* Player Information */}
             <div className="text-center mb-6">
               <img
-                src={selectedPlayer.image_path}
+                src={selectedPlayer.image_path || "/assets/players/placeholder.png"}
                 alt="Profile"
                 className="w-36 h-36 rounded-full mx-auto mb-4"
               />
               <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
               <p className="text-gray-500 text-sm">
-                {selectedPlayer.email || "N/A"}
+                {selectedPlayer.email}
               </p>
               <p className="text-gray-500 text-sm">
-                {selectedPlayer.phone_number || "N/A"}
+                {selectedPlayer.phone_number}
               </p>
             </div>
 
