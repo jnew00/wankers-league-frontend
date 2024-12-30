@@ -5,6 +5,7 @@ import QuotasPage from "./pages/QuotasPage";
 import EventsPage from "./pages/EventsPage";
 import AdminPage from "./pages/AdminPage";
 import AddEventPage from "./pages/AddEventPage";
+import AddPlayerPage from "./pages/AddPlayerPage";
 import AddCourse from "./pages/AddCoursePage";
 import Rules from "./pages/RulesPage";
 
@@ -17,6 +18,7 @@ function App() {
       <Route path="/admin/manage-events" element={<AdminPage />} />
       <Route path="/admin/add-event" element={<AddEventPage />} />
       <Route path="/admin/add-course" element={<AddCourse />} />
+      <Route path="/admin/manage-players" element={<AddPlayerPage />} />
       <Route path="/rules" element={<Rules />} />
     </Routes>
   );

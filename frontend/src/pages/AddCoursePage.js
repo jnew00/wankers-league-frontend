@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
@@ -24,8 +23,8 @@ const AddCoursePage = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -54,8 +53,8 @@ const AddCoursePage = () => {
   };
 
   const handleAddOrUpdateCourse = async () => {
-    if (!courseName || !scorecard) {
-      alert("Please provide the course name and scorecard details.");
+    if (!courseName) {
+      alert("Please provide the course name!");
       return;
     }
 
@@ -75,19 +74,20 @@ const AddCoursePage = () => {
           `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${editCourse.id}`,
           payload
         );
-        alert("Course updated successfully!");
       } else {
         await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/admin/courses/add-course`,
           payload
         );
-        alert("Course added successfully!");
       }
 
       window.location.reload();
     } catch (error) {
       console.error("Error saving course:", error.message);
-      alert("Failed to save course.");
+      setFeedbackMessage({
+        type: "error",
+        text: "Failed to save course. Please try again or contact Jason!",
+      });
     }
   };
 
@@ -117,10 +117,16 @@ const AddCoursePage = () => {
         `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${id}`
       );
       setCourses((prev) => prev.filter((course) => course.id !== id));
-      alert("Course deleted successfully!");
+      setFeedbackMessage({
+        type: "success",
+        text: `Course deleted successfully!`,
+      });
     } catch (error) {
       console.error("Error deleting course:", error.message);
-      alert("Failed to delete course.");
+      setFeedbackMessage({
+        type: "error",
+        text: "Failed to delete course. Please try again.",
+      });
     }
   };
 
@@ -405,6 +411,17 @@ const AddCoursePage = () => {
       <Navbar />
       <PageHeader title="Admin: Manage Courses" />
       <div className="max-w-4xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
+      {feedbackMessage && (
+            <div
+              className={`p-4 mb-4 rounded-lg ${
+                feedbackMessage.type === "success"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {feedbackMessage.text}
+            </div>
+          )}
         {!showForm ? (
           <>
             <h2 className="text-lg font-semibold mb-4">Course List</h2>

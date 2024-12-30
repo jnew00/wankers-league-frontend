@@ -20,6 +20,15 @@ const LeaderboardPage = () => {
       : "";
   };
 
+  const getPlayerImageUrl = (player) => {
+    const BASE_URL = API_BASE_URL.replace(/\/api$/, ""); // Remove /api from the end
+    return player.image_path
+      ? `${BASE_URL}${player.image_path}`
+      : `${BASE_URL}/uploads/players/placeholder.png`;
+  };
+  
+  
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
@@ -191,7 +200,7 @@ const LeaderboardPage = () => {
                 <td className="p-4 text-center font-semibold">{index + 1}</td>
                 <td className="p-4 text-center">
                   <img
-                    src={player.image_path || "/assets/players/placeholder.png"}
+                    src={getPlayerImageUrl(player, API_BASE_URL)}
                     alt={player.name}
                     className="w-10 h-10 rounded-full cursor-pointer"
                     onClick={() => setSelectedPlayer(player)}
@@ -224,7 +233,7 @@ const LeaderboardPage = () => {
             {/* Player Information */}
             <div className="text-center mb-6">
               <img
-                src={selectedPlayer.image_path || "/assets/players/placeholder.png"}
+                src={getPlayerImageUrl(selectedPlayer, API_BASE_URL)}
                 alt="Profile"
                 className="w-36 h-36 rounded-full mx-auto mb-4"
               />

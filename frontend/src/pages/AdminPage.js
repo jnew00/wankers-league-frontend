@@ -31,6 +31,7 @@ const AdminPage = () => {
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const queryParams = new URLSearchParams(location.search);
   const eventId = queryParams.get("eventId"); // Get the eventId from the query string
@@ -157,19 +158,25 @@ const AdminPage = () => {
         }
       );
 
-      alert(`Player ${player.name}'s data saved successfully!`);
+   
       // Exit edit mode
       setPlayers((prevPlayers) =>
         prevPlayers.map((p, i) =>
           i === index ? { ...p, isEditing: false } : p
         )
       );
-    } catch (error) {
-      console.log("Event id: ", selectedEvent.id);
-      console.log("Player id: ", player.player_id);
 
+      setFeedbackMessage({
+        type: "success",
+        text: `Player "${player.name}" updated successfully!`,
+      });
+
+    } catch (error) {
+      setFeedbackMessage({
+        type: "error",
+        text: "Failed to save player data. Please try again or contact Jason!",
+      });
       console.error("Error saving player data:", error.message);
-      alert("Failed to save player data.");
     }
   };
 
@@ -179,9 +186,16 @@ const AdminPage = () => {
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${playerId}`
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
+
+      setFeedbackMessage({
+        type: "success",
+        text: `Player deleted successfully!`,
+      });
     } catch (error) {
-      console.error("Error deleting player:", error.message);
-      alert("Failed to delete player.");
+      setFeedbackMessage({
+        type: "error",
+        text: "Failed to delete player data. Please try again or contact Jason!",
+      });
     }
   };
 
@@ -331,16 +345,17 @@ const AdminPage = () => {
             )}
           </div>
           <div className="flex justify-between items-center mb-4">
-            {/* {selectedEvent && (
-              <div className="mt-4">
-                <button
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
-                  onClick={handleAddPlayer}
-                >
-                  Add Player
-                </button>
-              </div>
-            )} */}
+          {feedbackMessage && (
+            <div
+              className={`p-4 mb-4 rounded-lg ${
+                feedbackMessage.type === "success"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {feedbackMessage.text}
+            </div>
+          )}
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
               onClick={handleAddEvent}
