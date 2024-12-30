@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@layer utilities {
+  /* Reset all marker colors first */
+  ::marker {
+    color: inherit;
+  }
+
+  /* Target specific list types with high specificity */
+  .list-decimal.marker\:text-red-600 > li::marker {
+    color: #dc2626 !important;
+  }
+
+  .list-lower-alpha.marker\:text-blue-600 > li::marker {
+    color: #2563eb !important;
+  }
+
+  .list-disc.marker\:text-black > li::marker {
+    color: #000000 !important;
+  }
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",

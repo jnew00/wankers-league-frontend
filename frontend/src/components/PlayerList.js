@@ -1,4 +1,8 @@
 import React, { memo } from "react";
+import calculateQuota from "../utils/calculateQuota";
+
+
+
 
 const PlayerList = ({
   players = [],
@@ -13,6 +17,7 @@ const PlayerList = ({
 }) => {
   console.log("Rendering PlayerList with players:", players); // Inside PlayerList
 
+  
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-4">Player List</h2>
@@ -25,6 +30,7 @@ const PlayerList = ({
               <th className="p-4 text-center">Quota</th>
               <th className="p-4 text-center">Score</th>
               <th className="p-4 text-center">+/-</th>
+              <th className="p-4 text-center">New Quota</th>
               <th className="p-4 text-center">CTPs</th>
               <th className="p-4 text-center">Skins</th>
               <th className="p-4 text-center">Money Won</th>
@@ -140,11 +146,75 @@ const PlayerList = ({
                     "N/A"
                   )}
                 </td>
-                <td className="p-4 text-center">{player.ctps || 0}</td>
-                <td className="p-4 text-center">{player.skins || 0}</td>
-                <td className="p-4 text-center">
-                  {`$${Number(player.money_won || 0).toFixed(2)}`}
+                <td className="p-4 text-center font-bold">
+                  {calculateQuota(player.quota, player.score) || 0}
                 </td>
+                <td className="p-4 text-center">
+    
+
+                {player.isEditing ? (
+                    <input
+                      type="number"
+                      value={player.ctps  || 0}
+                      onChange={(e) =>
+                        handlePlayerChange(
+                          index,
+                          "ctps",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                    />
+                  ) : (
+                    player.ctps || 0
+                  )}
+
+
+                </td>
+                <td className="p-4 text-center">
+
+                
+                {player.isEditing ? (
+                    <input
+                      type="number"
+                      value={player.skins  || 0}
+                      onChange={(e) =>
+                        handlePlayerChange(
+                          index,
+                          "skins",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                    />
+                  ) : (
+                    player.skins || 0
+                  )}
+
+                </td>
+                <td className="p-4 text-center">
+             
+
+                  {player.isEditing ? (
+                    <input
+                      type="number"
+                      value={Number(player.money_won  || 0).toFixed(2)}
+                      onChange={(e) =>
+                        handlePlayerChange(
+                          index,
+                          "money_won",
+                          Number(e.target.value)
+                        )
+                      }
+                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                    />
+                  ) : (
+                   `$${Number(player.money_won || 0).toFixed(2)}`
+                  )}
+
+
+                </td>
+
                 <td className="p-4 text-center font-bold">
                   {player.total_points || 0}
                 </td>
@@ -194,6 +264,8 @@ const PlayerList = ({
                   >
                     Add Player
                   </button>
+                </td>
+                <td>
                 </td>
               </tr>
             )}

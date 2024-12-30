@@ -14,6 +14,8 @@ import EventSelector from "../components/EventSelector";
 import PlayerList from "../components/PlayerList";
 import { labelMapping } from "../components/PointsAllocation";
 import { calculateTotalPoints, MAJOR_MULTIPLIER } from "../utils/pointsUtils";
+import calculateQuota from "../utils/calculateQuota";
+
 
 import axios from "axios";
 
@@ -139,17 +141,20 @@ const AdminPage = () => {
 
   const handleSavePlayer = async (player, index) => {
     try {
+
+      const calculatedQuota = calculateQuota(player.quota, player.score);
+
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${player.player_id}`,
         {
-          playerId: player.player_id,
           ctps: player.ctps || 0,
           skins: player.skins || 0,
           moneyWon: player.money_won || 0,
           rank: player.rank || null,
           totalPoints: player.total_points || 0,
-          quota: player.quota || 0,
           score: player.score || 0,
+          previousQuota: player.quota,
+          calculatedQuota
         }
       );
 
@@ -364,6 +369,7 @@ const AdminPage = () => {
             selectedEvent={selectedEvent}
             handleAddPlayer={handleAddPlayer}
             handleCancelEdit={handleCancelEdit}
+
           />
         </div>
 
