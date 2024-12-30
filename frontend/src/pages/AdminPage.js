@@ -34,7 +34,6 @@ const AdminPage = () => {
 
   const queryParams = new URLSearchParams(location.search);
   const eventId = queryParams.get("eventId"); // Get the eventId from the query string
-  console.log("eventId from query:", eventId); // Debugging log
 
   useEffect(() => {
     const fetchInitialData = async () => {

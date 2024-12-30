@@ -39,14 +39,19 @@ const LeaderboardPage = () => {
       direction = "desc";
     }
     setSortConfig({ key, direction });
-
+  
     const sortedPlayers = [...players].sort((a, b) => {
-      if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
-      if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
+      const aValue = typeof a[key] === "number" ? a[key] : parseFloat(a[key]) || 0;
+      const bValue = typeof b[key] === "number" ? b[key] : parseFloat(b[key]) || 0;
+  
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
     });
+  
     setPlayers(sortedPlayers);
   };
+  
 
   const closeModal = () => {
     setSelectedPlayer(null);
