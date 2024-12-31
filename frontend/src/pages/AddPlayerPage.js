@@ -146,9 +146,8 @@ const AdminManagePlayerPage = () => {
   return (
     <div>
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4">
         <PageHeader title="Admin: Manage Players" />
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="max-w-2xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
           <h2 className="text-lg font-bold mb-4">
             {selectedPlayer ? "Edit Player" : "Add New Player"}
           </h2>
@@ -287,7 +286,7 @@ const AdminManagePlayerPage = () => {
           </form>
         </div>
       </div>
-    </div>
+ 
   );
 };
 

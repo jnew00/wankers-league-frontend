@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
+import CourseModal from "../components/CourseModal";
+
 
 const AddCoursePage = () => {
   const [courses, setCourses] = useState([]);
@@ -464,61 +466,10 @@ const AddCoursePage = () => {
           renderForm()
         )}
       </div>
-
-      {showModal && selectedCourse && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center"
-            >
-              &times;
-            </button>
-            <img
-              src={selectedCourse.image_path}
-              alt={selectedCourse.name}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-            />
-            <h2 className="text-2xl font-semibold mb-2">
-              {selectedCourse.name}
-            </h2>
-            <p className="mb-2">
-              <strong>Address:</strong>{" "}
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  selectedCourse.address
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                {selectedCourse.address}
-              </a>
-            </p>
-            <p className="mb-2">
-              <strong>Website:</strong>{" "}
-              <a
-                href={selectedCourse.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                {selectedCourse.website}
-              </a>
-            </p>
-            <h3 className="text-lg font-semibold mt-4 mb-2">Scorecard</h3>
-            {renderScorecardTable(selectedCourse.scorecard, "horizontal")}
-          </div>
-        </div>
+    {showModal && selectedCourse && (
+        <CourseModal course={selectedCourse} onClose={closeModal} />
       )}
     </div>
   );
 };
-
 export default AddCoursePage;

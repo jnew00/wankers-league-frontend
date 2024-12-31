@@ -80,7 +80,7 @@ const AdminPage = () => {
         return;
       }
       try {
-        const response = await axios.get(
+        await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
         );
 
@@ -92,7 +92,11 @@ const AdminPage = () => {
           winner: event.winner_name || "N/A",
         });
 
-        const players = response.data
+        const playerResponse = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
+        );
+
+        const players = playerResponse.data
           .filter((player) => player.player_id)
           .map((player) => ({
             player_id: player.player_id,
