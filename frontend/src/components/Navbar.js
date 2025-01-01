@@ -71,25 +71,25 @@ const Navbar = () => {
               <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                 <Link
                   to="/admin/add-event"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
                   Add Events
                 </Link>
                 <Link
                   to="/admin/manage-players"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
                   Manage Players
                 </Link>
                 <Link
                   to="/admin/manage-events"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
                   Manage Events
                 </Link>
                 <Link
                   to="/admin/add-course"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
                   Manage Courses
                 </Link>
