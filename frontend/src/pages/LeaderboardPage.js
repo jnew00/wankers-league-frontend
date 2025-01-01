@@ -29,10 +29,14 @@ const LeaderboardPage = () => {
   };
 
   const getPlayerImageUrl = (player) => {
+    console.log(getPlayerImageUrl(player));
+
+    const BASE_URL = API_BASE_URL.replace(/\/api$/, ""); // Strip /api
     return player.image_path
-      ? `${API_BASE_URL.replace(/\/api$/, "")}${player.image_path}`
-      : `/uploads/players/placeholder.png`; // Ensure this matches your default image path
+      ? `${BASE_URL}${player.image_path}`
+      : `${BASE_URL}/uploads/players/placeholder.png`;
   };
+  
   
   const handleTogglePaidPlayers = () => {
     setOnlyPaid(!onlyPaid);
