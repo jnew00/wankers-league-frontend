@@ -87,7 +87,7 @@ const AddEventPage = () => {
   const fetchEventDetails = async (eventId) => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}/details`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
       );
       const event = response.data.details;
 
@@ -98,6 +98,9 @@ const AddEventPage = () => {
       setDate(formatDateForInput(event.date));
       setTeeTime(formatTimeForInput(event.tee_time));
       setIsMajor(event.is_major);
+      setCost(event.cost);
+      setFedupEligible(event.fedup_eligible);
+      setNumTeetimes(event.num_teetimes);
     } catch (error) {
       console.error("Error fetching event details:", error.message);
     }
