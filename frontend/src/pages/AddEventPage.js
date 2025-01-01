@@ -134,7 +134,7 @@ const AddEventPage = () => {
       } else {
         // Add new event
         await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}/admin/events/add-event`,
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events/events`,
           {
             courseId: selectedCourse.value,
             date,

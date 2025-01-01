@@ -7,7 +7,7 @@ import CourseModal from "../components/CourseModal";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
-tippy('.tooltip', {
+tippy('.Xtooltip', {
   content: 'Remove',
 });
 
@@ -38,17 +38,13 @@ const EventsPage = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/admin/events`);
-        const now = new Date();
 
-        const upcoming = response.data.filter(
-          (event) => new Date(event.date) > now
-        );
-        const past = response.data.filter(
-          (event) => new Date(event.date) <= now
-        );
-
+        const upcoming = response.data.filter((event) => !event.closed);
+        const past = response.data.filter((event) => event.closed);
+        
         setUpcomingEvents(upcoming);
         setPastEvents(past);
+        
       } catch (error) {
         console.error("Error fetching events:", error.message);
       }
@@ -69,14 +65,14 @@ const EventsPage = () => {
 
   const fetchEventDetails = async (eventId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}/details`);
+      const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
       const event = response.data;
       setEventDetails({...event.details, total_yardage: event.total_yardage,});
 
-      const playersResponse = await axios.get(
-        `${API_BASE_URL}/admin/events/${eventId}/players`
-      );
-      setEventPlayers(playersResponse.data);
+      // const playersResponse = await axios.get(
+      //   `${API_BASE_URL}/admin/events/${eventId}/players`
+      // );
+      setEventPlayers(event.players);
     } catch (error) {
       console.error("Error fetching event details:", error.message);
     }
@@ -84,7 +80,7 @@ const EventsPage = () => {
 
   const handleDeletePlayer = async (playerId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/player/${playerId}`);
+      await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`);
       alert("Player removed successfully!");
       fetchEventDetails(selectedEvent); // Refresh the list
     } catch (error) {
@@ -140,6 +136,7 @@ const EventsPage = () => {
     fetchEventDetails(eventId);
   };
 
+  // eslint-disable-next-line 
   const handleEditEvent = (eventId) => {
     navigate(`/admin/manage-events?eventId=${eventId}`);
   };
@@ -169,16 +166,17 @@ const EventsPage = () => {
                   onClick={() => toggleEventDetails(event.id)}
                 >
                   <div className="flex items-center">
-                    <span>
+                    <span className="pr-2">
                     {new Date(event.date).toLocaleDateString(undefined, {
                         weekday: "long",
                         year: "numeric",
                         month: "numeric",
                         day: "numeric",
-                      })} -{" "}
-                      {formatTime(event.tee_time)} -{" "}
-                      {event.course_name}
+                      })} 
                     </span>
+                    <span className="text-red-600 pr-1">{formatTime(event.tee_time)}</span> - {" "}
+                      {event.course_name}
+                   
                     {event.is_major && (
                       <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
                         Major
@@ -189,7 +187,11 @@ const EventsPage = () => {
 
                 {selectedEvent === event.id && (
   <div className="mt-4 p-6 bg-white rounded-lg shadow-lg">
-    <h3 className="text-xl font-bold mb-4 text-blue-600">1st Tee Time: <span className="text-red-600">{formatTime(eventDetails.tee_time)}</span></h3>
+    <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.num_teetimes} booked: 
+      <span className="text-red-600 pl-1">{formatTime(eventDetails.tee_time)}</span><br />
+      <span className="italic text-gray-600 ">${Number(eventDetails.cost).toFixed(2)}</span>
+
+    </h3>
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <p className="text-gray-700">
@@ -248,7 +250,7 @@ const EventsPage = () => {
             <td className="border p-1 text-right">
             <button
                 onClick={() => handleDeletePlayer(player.player_id)}
-                className="tooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
+                className="Xtooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
                 >
                 X
               </button>
