@@ -36,7 +36,7 @@ const Navbar = () => {
             <Link
               key={link.name}
               to={link.href}
-              className={`relative py-3 text-sm font-medium ${
+              className={`relative py-3 text-lg font-medium ${
                 location.pathname === link.href
                   ? "text-blue-600"
                   : "text-gray-600 hover:text-gray-900"
@@ -56,7 +56,7 @@ const Navbar = () => {
             onMouseLeave={handleMouseLeave}
           >
             <button
-              className={`relative py-3 text-sm font-medium ${
+              className={`relative py-3 text-lg font-medium ${
                 isAdminPage
                   ? "text-blue-600"
                   : "text-gray-600 hover:text-gray-900"
