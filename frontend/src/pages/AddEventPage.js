@@ -140,6 +140,10 @@ const AddEventPage = () => {
             date,
             teeTime,
             isMajor,
+            cost,
+            fedupEligible,
+            numTeetimes,
+
           }
         );
         alert("Event added successfully!");

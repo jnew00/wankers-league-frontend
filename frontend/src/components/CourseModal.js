@@ -65,7 +65,7 @@ const CourseModal = ({ course, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full relative"
+        className="bg-white p-6 rounded-lg shadow-lg max-w-5xl w-full relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button

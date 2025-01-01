@@ -244,7 +244,6 @@ const LeaderboardPage = () => {
                   <img  
                   src={(function() {
                     const url = getPlayerImageUrl(player, API_BASE_URL);
-                    console.log("Player Image URL:", url);
                     return url;
                   })()}
                   
