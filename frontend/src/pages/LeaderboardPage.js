@@ -3,6 +3,13 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
+import { FaMoneyBillAlt } from "react-icons/fa";
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+
+tippy('.paidToolTip', {
+  content: 'Paid for the Season',
+});
 
 const LeaderboardPage = () => {
   const [players, setPlayers] = useState([]);
@@ -12,6 +19,7 @@ const LeaderboardPage = () => {
   });
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showHistorical, setShowHistorical] = useState(false);
+  const [onlyPaid, setOnlyPaid] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const [latestUpdateTime, setLatestUpdateTime] = useState(null);
   const formatUpdatedText = (latestUpdateTime) => {
@@ -27,7 +35,13 @@ const LeaderboardPage = () => {
       : `${BASE_URL}/uploads/players/placeholder.png`;
   };
   
-  
+  const handleTogglePaidPlayers = () => {
+    setOnlyPaid(!onlyPaid);
+  };
+
+  const filteredPlayers = onlyPaid
+  ? players.filter((player) => player.season_paid)
+  : players;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -81,6 +95,28 @@ const LeaderboardPage = () => {
         />
       </div>
       <div className="max-w-7xl mx-auto px-4">
+      <label className="flex items-center cursor-pointer space-x-2">
+          <span className={`pl-2 pb-1 font-medium ${onlyPaid ? "text-blue-600" : "text-gray-700"}`}>
+            {onlyPaid ? "Only Paid" : "All Players"}
+          </span>
+          <div
+            className={`relative w-12 h-6 ${
+              onlyPaid ? "bg-blue-500" : "bg-gray-300"
+            } rounded-full transition-colors duration-300`}
+          >
+            <input
+              type="checkbox"
+              checked={onlyPaid}
+              onChange={handleTogglePaidPlayers}
+              className="sr-only"
+            />
+            <div
+              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-300 ${
+                onlyPaid ? "translate-x-6" : "translate-x-0"
+              }`}
+            ></div>
+          </div>
+       </label>
         <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
@@ -188,9 +224,9 @@ const LeaderboardPage = () => {
             </tr>
           </thead>
           <tbody>
-            {players.map((player, index) => (
+            {filteredPlayers.map((player, index) => (
               <tr
-                key={player.id}
+              key={player.id || `player-${index}`}
                 className={`${
                   index % 2 === 0 ? "bg-blue-50" : "bg-white"
                 } hover:bg-blue-100 ${
@@ -206,16 +242,23 @@ const LeaderboardPage = () => {
                     onClick={() => setSelectedPlayer(player)}
                   />
                 </td>
-                <td className="p-4 text-left">{player.name}</td>
+                <td className="p-4 text-left"><span>{player.name}</span>
+                  {player.season_paid && (
+                      <FaMoneyBillAlt
+                        className="text-green-500 paidToolTip"
+                        title="Paid for Season"
+                      />
+                     )}
+                </td>
                 <td className="p-4 text-center">{player.current_quota}</td>
-                <td className="p-4 text-center">${player.money_won}</td>
+                <td className="p-4 text-center">${Number(player.money_won || 0).toFixed(2)}</td>
                 <td className="p-4 text-center">{player.skins}</td>
                 <td className="p-4 text-center">{player.ctps}</td>
                 <td className="p-4 text-center">{player.wins}</td>
                 <td className="p-4 text-center">{player.top_3}</td>
                 <td className="p-4 text-center">{player.events_played}</td>
                 <td className="p-4 text-center font-bold">
-                  {player.total_points}
+                  {Number(player.total_points || 0).toFixed(0)}
                 </td>
               </tr>
             ))}

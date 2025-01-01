@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
-  const location = useLocation(); // Get the current route path
+  const location = useLocation();
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
+  const timeoutRef = useRef(null);
 
   const navLinks = [
     { name: "Leaderboard", href: "/" },
@@ -12,13 +13,25 @@ const Navbar = () => {
     { name: "Rules", href: "/rules" },
   ];
 
-  // Check if the current path is an admin page
   const isAdminPage = location.pathname.startsWith("/admin");
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsAdminDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsAdminDropdownOpen(false);
+    }, 300);
+  };
 
   return (
     <nav className="bg-white border-b border-gray-300 shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex space-x-8 items-center">
+        <div className="flex justify-center space-x-8 items-center">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -37,14 +50,17 @@ const Navbar = () => {
           ))}
 
           {/* Admin Dropdown */}
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <button
               className={`relative py-3 text-sm font-medium ${
                 isAdminPage
                   ? "text-blue-600"
                   : "text-gray-600 hover:text-gray-900"
               }`}
-              onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
             >
               Admin
               {isAdminPage && (
@@ -52,32 +68,28 @@ const Navbar = () => {
               )}
             </button>
             {isAdminDropdownOpen && (
-              <div className="absolute top-full w-48  mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                 <Link
                   to="/admin/add-event"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                  onClick={() => setIsAdminDropdownOpen(false)}
                 >
                   Add Events
                 </Link>
                 <Link
                   to="/admin/manage-players"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                  onClick={() => setIsAdminDropdownOpen(false)}
                 >
                   Manage Players
                 </Link>
                 <Link
                   to="/admin/manage-events"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                  onClick={() => setIsAdminDropdownOpen(false)}
                 >
                   Manage Events
                 </Link>
                 <Link
                   to="/admin/add-course"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                  onClick={() => setIsAdminDropdownOpen(false)}
                 >
                   Manage Courses
                 </Link>
