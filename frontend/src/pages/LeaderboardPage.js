@@ -29,7 +29,6 @@ const LeaderboardPage = () => {
   };
 
   const getPlayerImageUrl = (player) => {
-    console.log(getPlayerImageUrl(player));
 
     const BASE_URL = API_BASE_URL.replace(/\/api$/, ""); // Strip /api
     return player.image_path
@@ -37,7 +36,7 @@ const LeaderboardPage = () => {
       : `${BASE_URL}/uploads/players/placeholder.png`;
   };
   
-  
+
   const handleTogglePaidPlayers = () => {
     setOnlyPaid(!onlyPaid);
   };
@@ -52,6 +51,7 @@ const LeaderboardPage = () => {
         const response = await axios.get(`${API_BASE_URL}/leaderboard`);
         setPlayers(response.data.leaderboard);
         setLatestUpdateTime(response.data.latest_update);
+
       } catch (error) {
         console.error("Error fetching leaderboard:", error.message);
       }
@@ -238,8 +238,13 @@ const LeaderboardPage = () => {
               >
                 <td className="p-4 text-center font-semibold">{index + 1}</td>
                 <td className="p-4 text-center">
-                  <img
-                    src={getPlayerImageUrl(player, API_BASE_URL)}
+                  <img  
+                  src={(function() {
+                    const url = getPlayerImageUrl(player, API_BASE_URL);
+                    console.log("Player Image URL:", url);
+                    return url;
+                  })()}
+                  
                     alt={player.name}
                     className="w-10 h-10 rounded-full cursor-pointer"
                     onClick={() => setSelectedPlayer(player)}
