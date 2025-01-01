@@ -35,90 +35,94 @@ const AdminPage = () => {
 
   const queryParams = new URLSearchParams(location.search);
   const eventId = queryParams.get("eventId"); // Get the eventId from the query string
+  
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [eventsRes, pointsConfigRes, playersRes] = await Promise.all([
+        const [eventsRes, pointsConfigRes, allPlayersRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/admin/events`),
           axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/admin/points/config`
           ),
           axios.get(`${process.env.REACT_APP_API_BASE_URL}/players`),
         ]);
-
+  
         setEvents(
           eventsRes.data.map((event) => ({
             ...event,
             displayName: `${event.date} - ${event.course_name}`,
           }))
         );
-
+  
         setPointsConfig(
           pointsConfigRes.data.reduce((acc, item) => {
             acc[item.key] = item.value;
             return acc;
           }, {})
         );
-
-        setAllPlayers(playersRes.data);
+  
+        setAllPlayers(allPlayersRes.data);
       } catch (error) {
         console.error("Error fetching initial data:", error.message);
       }
     };
-
+  
     fetchInitialData();
   }, []);
-
+  
   const memoizedAllPlayers = useMemo(() => allPlayers, [allPlayers]);
+  const memoizedPlayers = useMemo(() => players, [players]);
+
 
   const handleEventChange = useCallback(
     async (eventId) => {
-      const event = events.find((e) => e.id === eventId);
-      if (!event) {
+      const selected = events.find((e) => e.id === eventId);
+      if (!selected) {
         console.error("Event not found");
         return;
       }
+  
       try {
-        await axios.get(
+        const eventResponse = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
         );
-
+  
+        const { players = [], details } = eventResponse.data;
+  
+        if (Array.isArray(players)) {
+          setPlayers(
+            players.map((player) => ({
+              player_id: player.player_id,
+              name: player.name || "N/A",
+              image: player.image_path || null,
+              quota: player.quota || 0,
+              score: player.score || 0,
+              rank: player.rank || null,
+              ctps: player.ctps || 0,
+              skins: player.skins || 0,
+              money_won: player.money_won || 0,
+              total_points: player.total_points || 0,
+              isEditing: false,
+            }))
+          );
+        } else {
+          console.error("Unexpected format for players:", players);
+        }
+  
         setSelectedEvent({
-          id: event.id,
-          date: event.date,
-          isMajor: event.is_major,
-          courseName: event.course_name,
-          winner: event.winner_name || "N/A",
+          id: details.id,
+          date: details.date,
+          courseName: details.course_name,
+          isMajor: details.is_major,
         });
-
-        const playerResponse = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
-        );
-
-        const players = playerResponse.data
-          .filter((player) => player.player_id)
-          .map((player) => ({
-            player_id: player.player_id,
-            name: player.player_name || "N/A",
-            image: player.image_path || null,
-            quota: player.quota || 0,
-            score: player.score || 0,
-            rank: player.rank || null,
-            ctps: player.ctps || 0,
-            skins: player.skins || 0,
-            money_won: player.money_won || 0,
-            total_points: player.total_points || 0,
-            isEditing: false,
-          }));
-
-        setPlayers(players);
       } catch (error) {
         console.error("Error fetching event data:", error.message);
       }
     },
-    [events, setSelectedEvent, setPlayers] // Dependencies
+    [events]
   );
+  
 
   useEffect(() => {
     if (eventId) {
@@ -187,7 +191,7 @@ const AdminPage = () => {
   const handleDeletePlayer = async (index, playerId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${playerId}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/players/${playerId}`
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
 
@@ -303,7 +307,7 @@ const AdminPage = () => {
   return (
     <div className="relative">
       <Navbar />
-      <PageHeader title="Admin: Manage Event" />
+      <PageHeader title="Admin: Record Results" />
       <div className="max-w-7xl mx-auto px-4 py-8 flex relative">
         <div className="flex-1 bg-gray-50 shadow-md rounded-lg p-6 border border-gray-200">
           <div
@@ -377,8 +381,9 @@ const AdminPage = () => {
               Major Event
             </div>
           )}
+          {selectedEvent && (
           <PlayerList
-            players={players}
+            players={memoizedPlayers}
             toggleEditMode={toggleEditMode}
             handlePlayerChange={handlePlayerChange}
             handleDeletePlayer={handleDeletePlayer}
@@ -389,6 +394,7 @@ const AdminPage = () => {
             handleCancelEdit={handleCancelEdit}
 
           />
+        )}
         </div>
 
         <div

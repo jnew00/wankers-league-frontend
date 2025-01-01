@@ -70,10 +70,10 @@ const Navbar = () => {
             {isAdminDropdownOpen && (
               <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                 <Link
-                  to="/admin/add-event"
+                  to="/admin/manage-event"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
-                  Add Events
+                  Manage Events
                 </Link>
                 <Link
                   to="/admin/manage-players"
@@ -82,17 +82,18 @@ const Navbar = () => {
                   Manage Players
                 </Link>
                 <Link
-                  to="/admin/manage-events"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
-                >
-                  Manage Events
-                </Link>
-                <Link
-                  to="/admin/add-course"
+                  to="/admin/manage-course"
                   className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                 >
                   Manage Courses
                 </Link>
+                <Link
+                  to="/admin/record-results"
+                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                >
+                  Record Results
+                </Link>
+
               </div>
             )}
           </div>

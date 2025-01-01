@@ -15,9 +15,9 @@ function App() {
       <Route path="/" element={<LeaderboardPage />} />
       <Route path="/quotas" element={<QuotasPage />} />
       <Route path="/events" element={<EventsPage />} />
-      <Route path="/admin/manage-events" element={<AdminPage />} />
-      <Route path="/admin/add-event" element={<AddEventPage />} />
-      <Route path="/admin/add-course" element={<AddCourse />} />
+      <Route path="/admin/record-results" element={<AdminPage />} />
+      <Route path="/admin/manage-event" element={<AddEventPage />} />
+      <Route path="/admin/manage-course" element={<AddCourse />} />
       <Route path="/admin/manage-players" element={<AddPlayerPage />} />
       <Route path="/rules" element={<Rules />} />
     </Routes>
