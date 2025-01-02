@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import CourseModal from "../components/CourseModal";
+import PairingsModal from "../components/PairingsModal";
+import EventDetailsImage from "../components/EventDetailsImage";
+import ImageModal from "../components/ImageModal";
+import { formatTime } from "../utils/formatTime";
+
+
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
@@ -23,16 +29,20 @@ const EventsPage = () => {
   const navigate = useNavigate();
   const [selectedCourseDetails, setSelectedCourseDetails] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPairingsModal, setShowPairingsModal] = useState(false);
+  const [pairings, setPairings] = useState([]);
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false); // Image modal visibility
+  const eventDetailsRef = useRef(null);
+  
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "N/A";
-  
-    const [hours, minutes] = timeString.split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12; // Convert 0 -> 12 for midnight
-    return `${formattedHours}:${String(minutes).padStart(2, "0")} ${period}`;
-  };
-  
+  useEffect(() => {
+    console.log("Updated pairings:", pairings);
+  }, [pairings]);
+
+  useEffect(() => {
+    console.log("Updated eventPlayers:", eventPlayers);
+  }, [eventPlayers]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -50,6 +60,7 @@ const EventsPage = () => {
       }
     };
     
+
     const fetchAllPlayers = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/players`);
@@ -63,16 +74,122 @@ const EventsPage = () => {
     fetchAllPlayers();
   }, [API_BASE_URL]);
 
+  const availablePlayers = allPlayers.filter(
+    (player) => !eventPlayers.some((eventPlayer) => eventPlayer.player_id === player.id)
+  );
+  
+  const handleGenerateImage = async () => {
+    if (!eventDetailsRef.current) {
+      console.error("Ref is not set. Ensure EventDetailsImage is rendered.");
+      return;
+    }
+    try {
+      const imageData = await eventDetailsRef.current.generateImage();
+      console.log("Generated Image Data URL:", imageData);
+      setGeneratedImage(imageData);
+      setShowImageModal(true);
+    } catch (error) {
+      console.error("Error generating image:", error);
+    }
+  };
+  
+
+  const closeImageModal = () => {
+    setGeneratedImage(null);
+    setShowImageModal(false); // Close the image modal
+  };
+
+  const savePairings = async (updatedPairings) => {
+    try {
+      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: updatedPairings });
+      setPairings(updatedPairings);
+    } catch (error) {
+      console.error("Error saving pairings:", error.message);
+      alert("Failed to save pairings.");
+    }
+  };
+
+  const addPlayerToPairings = async (newPlayer) => {
+    const updatedPairings = [...pairings];
+  
+    // Find the first group with fewer than 4 players
+    const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
+  
+    if (targetGroupIndex !== -1) {
+      // Add the player to the first group with space
+      updatedPairings[targetGroupIndex].push(newPlayer);
+    } else {
+      // Create a new group if all groups are full
+      updatedPairings.push([newPlayer]);
+    }
+    console.log("Updated pairings after adding player:", updatedPairings);
+
+    setPairings(updatedPairings);
+  
+    // Update the database
+    try {
+      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, {
+        pairings: updatedPairings,
+      });
+      console.log("Pairings updated in the database successfully.");
+    } catch (error) {
+      console.error("Error updating pairings in the database:", error.message);
+    }
+  };
+  
+
+  const openPairingsModal = () => {
+    if (!eventPlayers || eventPlayers.length === 0) {
+      alert("No players signed up for this event.");
+      return;
+    }
+  
+    console.log("Generating pairings with eventPlayers:", eventPlayers);
+  
+    const shuffledPlayers = [...eventPlayers].sort(() => Math.random() - 0.5);
+    const newPairings = [];
+    let i = 0;
+  
+    while (i < shuffledPlayers.length) {
+      const remaining = shuffledPlayers.length - i;
+  
+      if (remaining === 4 || remaining === 3) {
+        newPairings.push(shuffledPlayers.slice(i, i + remaining));
+        break;
+      }
+  
+      newPairings.push(shuffledPlayers.slice(i, i + 3));
+      i += 3;
+    }
+  
+    console.log("Generated pairings:", newPairings);
+    setPairings(newPairings);
+    setShowPairingsModal(true);
+  };
+  
+  
+  
+  const closePairingsModal = () => {
+    setShowPairingsModal(false);
+  };
+
   const fetchEventDetails = async (eventId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
       const event = response.data;
-      setEventDetails({...event.details, total_yardage: event.total_yardage,});
+      setEventDetails({
+        ...event.details, total_yardage: event.total_yardage, group_pairings: response.data.group_pairings
+      });
+      
 
-      // const playersResponse = await axios.get(
-      //   `${API_BASE_URL}/admin/events/${eventId}/players`
-      // );
       setEventPlayers(event.players);
+      console.log("Updated eventPlayers:", event.players);
+
+      const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
+      setPairings(pairingsResponse.data || []); // Load pairings if they exist
+  
+     
+
     } catch (error) {
       console.error("Error fetching event details:", error.message);
     }
@@ -81,8 +198,20 @@ const EventsPage = () => {
   const handleDeletePlayer = async (playerId) => {
     try {
       await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`);
-      alert("Player removed successfully!");
-      fetchEventDetails(selectedEvent); // Refresh the list
+       // Remove player from eventPlayers
+    const updatedPlayers = eventPlayers.filter((player) => player.player_id !== playerId);
+    setEventPlayers(updatedPlayers);
+
+      // Remove player from pairings
+      const updatedPairings = pairings
+      .map((group) => group.filter((player) => player.player_id !== playerId))
+      .filter((group) => group.length > 0); // Remove empty groups
+
+    setPairings(updatedPairings);
+
+     // Save updated pairings to the database
+     await savePairings(updatedPairings);
+
     } catch (error) {
       console.error("Error deleting player:", error.message);
       alert("Failed to remove player.");
@@ -111,13 +240,30 @@ const EventsPage = () => {
     }
 
     try {
-      await axios.post(`${API_BASE_URL}/admin/events/${selectedEvent}/players`, {
+      const response =  await axios.post(`${API_BASE_URL}/admin/events/${selectedEvent}/players`, {
         playerId: selectedPlayer,
       });
 
-      alert("Player added successfully!");
-      setSelectedPlayer("");
-      fetchEventDetails(selectedEvent);
+     const newPlayer = response.data;
+     console.log("New player added:", newPlayer);
+
+     const normalizedPlayer = {
+      ...newPlayer,
+      player_id: newPlayer.id, // Map `id` to `player_id` for consistency
+    };
+
+    console.log("Normalized player:", normalizedPlayer);
+
+
+      // Check if newPlayer is valid
+      if (!normalizedPlayer.name || !normalizedPlayer.player_id) {
+        console.error("New player data is incomplete:", normalizedPlayer);
+        return;
+      }
+
+     await addPlayerToPairings(normalizedPlayer);
+     await fetchEventDetails(selectedEvent);
+
     } catch (error) {
       console.error("Error adding player:", error.message);
       alert("Failed to add player. Please try again.");
@@ -146,6 +292,7 @@ const EventsPage = () => {
       <Navbar />
       <PageHeader title="Events" />
       <div className="max-w-7xl mx-auto px-4">
+  
         {/* Upcoming Events Section */}
         <div className="upcoming-section py-6 px-4 rounded-lg shadow-md bg-blue-50 mb-16">
           <h2 className="text-2xl font-bold border-b-4 border-blue-600 inline-block mb-4">
@@ -201,11 +348,52 @@ const EventsPage = () => {
 
                 {selectedEvent === event.id && (
   <div className="mt-4 p-6 bg-white rounded-lg shadow-lg">
+
+
+<div className="flex items-center justify-between">
+
+<div>
     <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.num_teetimes} booked: 
       <span className="text-red-600 pl-1">{formatTime(eventDetails.tee_time)}</span><br />
       <span className="italic text-gray-600 ">${Number(eventDetails.cost).toFixed(2)}</span>
 
     </h3>
+</div>
+<button className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-lg"
+  onClick={async () => {
+    const response = await axios.get(`${API_BASE_URL}/pairings/${event.id}`);
+    const existingPairings = response.data;
+
+    if (existingPairings.length > 0) {
+      setPairings(existingPairings); // Load existing pairings
+    } else {
+      openPairingsModal(); // Generate new pairings
+    }
+
+    setShowPairingsModal(true);
+  }}
+  
+>
+  {pairings.length > 0 ? "Update Pairings" : "Generate Pairings"}
+</button>
+</div>
+{/* Generate Email Button */}
+<div className="flex items-center justify-end">
+
+  <button
+    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+    onClick={() => {
+      console.log("Button clicked");
+      handleGenerateImage();
+    }}
+  >
+    Generate Email
+  </button>
+</div>
+
+
+
+  
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <p className="text-gray-700">
@@ -244,6 +432,9 @@ const EventsPage = () => {
       </div>
     </div>
 
+    <div className="flex flex-row gap-8 mt-6">
+    <div className="flex-1">
+
     <h3 className="text-lg font-bold text-gray-700 mb-2">Wankers Signed Up</h3>
     <table className="table-auto border-collapse border border-gray-300">
       <thead className="bg-gray-100">
@@ -273,16 +464,55 @@ const EventsPage = () => {
         ))}
       </tbody>
     </table>
+    </div>
+  
+  {/* Pairings Table */}
+  <div className="flex-1">
+    {pairings.length > 0 && (
+      <>
+        <h3 className="text-lg font-bold mb-2">Pairings</h3>
+        <table className="table-auto border-collapse w-full bg-white shadow rounded-lg">
+          <thead className="bg-gray-100">
+            <tr>
+              {pairings.map((_, index) => (
+                <th key={index} className="border p-1 text-center">
+                  Group {index + 1}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: Math.max(...pairings.map((g) => g.length)) }).map(
+              (_, rowIndex) => (
+                <tr key={rowIndex} className="border-t">
+                  {pairings.map((group, colIndex) => (
+                    <td
+                      key={`${rowIndex}-${colIndex}`}
+                      className="border p-1 text-center"
+                    >
+                      {group[rowIndex] ? group[rowIndex].name : ""}
+                    </td>
+                  ))}
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </>
+    )}
+  </div>
+</div>
+{/* End Pairings Table */}
 
     <h3 className="text-lg font-bold text-gray-700 mt-6">Add Player</h3>
     <div className="flex items-center space-x-4">
       <select
         value={selectedPlayer}
         onChange={(e) => setSelectedPlayer(e.target.value)}
-        className="border border-gray-300 rounded-lg p-2 flex-grow"
+        className="border border-gray-300 rounded-lg p-2"
       >
         <option value="">-- Select a Player --</option>
-        {allPlayers.map((player) => (
+        {availablePlayers.map((player) => (
           <option key={player.id} value={player.id}>
             {player.name}
           </option>
@@ -290,7 +520,7 @@ const EventsPage = () => {
       </select>
       <button
         onClick={handleAddPlayer}
-        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+        className="bg-green-500 hover:bg-green-600 text-white px-2 py-2 rounded-lg"
       >
         Add Player
       </button>
@@ -408,11 +638,51 @@ const EventsPage = () => {
             ))
           )}
         </div>
+        <div>
+        {showPairingsModal && (
+  <PairingsModal
+    pairings={pairings}
+    setPairings={setPairings}
+    onClose={closePairingsModal}
+    onSave={(updatedPairings) => {
+      savePairings(updatedPairings); // Save to backend
+    }}
+  />
+)}
+     
+
+    </div>
+    
       </div>{showModal && selectedCourseDetails && (
   <CourseModal course={selectedCourseDetails} onClose={closeModal} />
 )}
+{/* {selectedEvent && eventDetails && (
+  <div className="mt-6">
+        {console.log("EventDetailsImage event object:", eventDetails)}
+
+    <EventDetailsImage event={eventDetails} />
+  </div> */}
+{/* )} */}
+
+  {/* Modal to Display Generated Email Image */}
+
+        {/* Always Render Hidden Version for Image Generation */}
+        <div className="opacity-0 absolute pointer-events-none">
+        <EventDetailsImage
+          ref={eventDetailsRef}
+          event={eventDetails}
+          pairings={pairings}
+          eventPlayers={eventPlayers}
+        />
+      </div>
+  {showImageModal && (
+  <ImageModal imageSrc={generatedImage} onClose={closeImageModal}></ImageModal>
+)}
 
     </div>
+
+
+
   );
 };
 
