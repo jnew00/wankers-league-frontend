@@ -4,7 +4,7 @@ import ReactDOM from "react-dom";
 const Modal = ({ children, onClose }) => {
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
         <button
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
           onClick={onClose}
@@ -27,7 +27,7 @@ const Modal = ({ children, onClose }) => {
         {children}
       </div>
     </div>,
-    document.getElementById("modal-root") // Ensure your app has a modal-root div
+    document.getElementById("modal-root")
   );
 };
 

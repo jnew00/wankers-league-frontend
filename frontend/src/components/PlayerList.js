@@ -257,10 +257,10 @@ const PlayerList = ({
             ))}
             {selectedEvent && (
               <tr className="bg-gray-100 hover:bg-gray-200">
-                <td colSpan="10" className="p-4 text-center">
+                <td colSpan="11" className="p-2 text-right">
                   <button
                     onClick={handleAddPlayer}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
                   >
                     Add Player
                   </button>

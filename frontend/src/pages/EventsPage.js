@@ -162,8 +162,8 @@ const EventsPage = () => {
                 }`}
               >
                 <div
-                  className="cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 flex justify-between items-center"
-                  onClick={() => toggleEventDetails(event.id)}
+                className="relative cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 hover:bg-blue-50 hover:shadow-md transition-colors duration-200 flex justify-between items-center border border-gray-300 hover:border-blue-500"
+                onClick={() => toggleEventDetails(event.id)}
                 >
                   <div className="flex items-center">
                     <span className="pr-2">
@@ -183,6 +183,20 @@ const EventsPage = () => {
                       </span>
                     )}
                   </div>
+                  <div className="flex items-center space-x-2 text-blue-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.293 9.293a1 1 0 011.414 0L10 12.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
                 </div>
 
                 {selectedEvent === event.id && (
@@ -305,9 +319,10 @@ const EventsPage = () => {
                 }`}
               >
                 <div
-                  className="cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 flex justify-between items-center"
-                  onClick={() => toggleEventDetails(event.id)}
+                className="relative cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 hover:bg-blue-50 hover:shadow-md transition-colors duration-200 flex justify-between items-center border border-gray-300 hover:border-blue-500"
+                onClick={() => toggleEventDetails(event.id)}
                 >
+                  
                   <div className="flex items-center">
                     <span>
                       {new Date(event.date).toLocaleDateString()} -{" "}
@@ -319,11 +334,26 @@ const EventsPage = () => {
                       </span>
                     )}
                   </div>
-                  <div className="text-gray-600 text-sm italic">
-                    {event.winner_name
-                      ? `Winner: ${event.winner_name}`
-                      : "Winner: N/A"}
+                  <div className="flex items-center">
+                    {event.winner_name && ( 
+                      <span className="text-gray-500 italic mr-2">
+                      Winner: {event.winner_name}
+                      </span>
+                )}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-gray-500"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 9.293a1 1 0 011.414 0L10 12.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                   </div>
+  
                 </div>
 
                 {selectedEvent === event.id && (

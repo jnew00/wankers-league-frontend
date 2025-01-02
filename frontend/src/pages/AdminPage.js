@@ -6,8 +6,8 @@ import React, {
   useMemo,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import PointsAllocation from "../components/PointsAllocation";
 import EventSelector from "../components/EventSelector";
@@ -15,9 +15,9 @@ import PlayerList from "../components/PlayerList";
 import { labelMapping } from "../components/PointsAllocation";
 import { calculateTotalPoints, MAJOR_MULTIPLIER } from "../utils/pointsUtils";
 import calculateQuota from "../utils/calculateQuota";
-
-
+import Modal from "../components/Modal"; 
 import axios from "axios";
+
 
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
@@ -29,19 +29,28 @@ const AdminPage = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
   const [feedbackMessage, setFeedbackMessage] = useState(null);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+
 
   const queryParams = new URLSearchParams(location.search);
   const eventId = queryParams.get("eventId"); // Get the eventId from the query string
   
+  const handleOpenSubmitModal = () => {
+    setIsSubmitModalOpen(true);
+  };
+
+  const handleCloseSubmitModal = () => {
+    setIsSubmitModalOpen(false);
+  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const [eventsRes, pointsConfigRes, allPlayersRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_BASE_URL}/admin/events`),
+          axios.get(`${process.env.REACT_APP_API_BASE_URL}/admin/events?type=upcoming`),
           axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/admin/points/config`
           ),
@@ -74,6 +83,32 @@ const AdminPage = () => {
   const memoizedAllPlayers = useMemo(() => allPlayers, [allPlayers]);
   const memoizedPlayers = useMemo(() => players, [players]);
 
+  const handleCloseEvent = async () => {
+    if (!selectedEvent) {
+      alert("No event selected.");
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/close`,
+        { closed: true }
+      );
+
+      setSelectedEvent((prev) => ({
+        ...prev,
+        isClosed: true,
+      }));
+
+      alert("Event successfully closed!");
+      navigate("/events");
+    } catch (error) {
+      console.error("Error closing event:", error.message);
+      alert("Failed to close event. Please try again.");
+    } finally {
+      setIsSubmitModalOpen(false);
+    }
+  };
 
   const handleEventChange = useCallback(
     async (eventId) => {
@@ -167,7 +202,6 @@ const AdminPage = () => {
       );
 
    
-      // Exit edit mode
       setPlayers((prevPlayers) =>
         prevPlayers.map((p, i) =>
           i === index ? { ...p, isEditing: false } : p
@@ -233,10 +267,6 @@ const AdminPage = () => {
         isEditing: true,
       },
     ]);
-  };
-
-  const handleAddEvent = () => {
-    navigate("/admin/add-event");
   };
 
   const handlePlayerChange = useCallback(
@@ -353,23 +383,18 @@ const AdminPage = () => {
             )}
           </div>
           <div className="flex justify-between items-center mb-4">
-          {feedbackMessage && (
-            <div
-              className={`p-4 mb-4 rounded-lg ${
-                feedbackMessage.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {feedbackMessage.text}
-            </div>
-          )}
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-              onClick={handleAddEvent}
-            >
-              Add Event
-            </button>
+            {feedbackMessage && (
+              <div
+                className={`p-4 mb-4 rounded-lg ${
+                  feedbackMessage.type === "success"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {feedbackMessage.text}
+              </div>
+            )}
+
           </div>
           <EventSelector
             events={events}
@@ -382,21 +407,26 @@ const AdminPage = () => {
             </div>
           )}
           {selectedEvent && (
-          <PlayerList
-            players={memoizedPlayers}
-            toggleEditMode={toggleEditMode}
-            handlePlayerChange={handlePlayerChange}
-            handleDeletePlayer={handleDeletePlayer}
-            handleSavePlayer={handleSavePlayer}
-            allPlayers={memoizedAllPlayers}
-            selectedEvent={selectedEvent}
-            handleAddPlayer={handleAddPlayer}
-            handleCancelEdit={handleCancelEdit}
-
-          />
-        )}
+            <PlayerList
+              players={memoizedPlayers}
+              toggleEditMode={toggleEditMode}
+              handlePlayerChange={handlePlayerChange}
+              handleDeletePlayer={handleDeletePlayer}
+              handleSavePlayer={handleSavePlayer}
+              allPlayers={memoizedAllPlayers}
+              selectedEvent={selectedEvent}
+              handleAddPlayer={handleAddPlayer}
+              handleCancelEdit={handleCancelEdit}
+            />
+          )}
+            <button
+              className="bg-green-500 hover:bg-green-600 text-white text-right px-4 py-2 rounded-lg"
+              onClick={handleOpenSubmitModal}
+            >
+              Submit
+            </button>
         </div>
-
+ 
         <div
           ref={drawerRef}
           className={`fixed top-0 right-0 h-full bg-gray-50 shadow-md border-l border-gray-200 transition-transform transform ${
@@ -419,8 +449,61 @@ const AdminPage = () => {
           />
         </div>
       </div>
+  
+      {isSubmitModalOpen && (
+        <Modal onClose={handleCloseSubmitModal}>
+          <div>
+            <h2 className="text-lg font-bold mb-4">Review Results</h2>
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                 <th className="text-left py-2 px-4">Place</th>
+                  <th className="text-left py-2 px-4">Name</th>
+                  <th className="text-center py-2 px-4">Score</th>
+                  <th className="text-center py-2 px-4">CTPs</th>
+                  <th className="text-center py-2 px-4">Skins</th>
+                  <th className="text-center py-2 px-4">Money Won</th>
+                  <th className="text-center py-2 px-4">Total Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {memoizedPlayers.map((player) => (
+                  <tr key={player.player_id}>
+                    <td className="text-center py-2 px-4">{player.rank}</td>
+                    <td className="text-center py-2 px-4">{player.name}</td>
+                    <td className="text-center py-2 px-4">{player.score}</td>
+                    <td className="text-center py-2 px-4">{player.ctps}</td>
+                    <td className="text-center py-2 px-4">{player.skins}</td>
+                    <td className="text-center py-2 px-4">
+                      ${Number(player.money_won).toFixed(2)}
+                    </td>
+                    <td className="text-center py-2 px-4">
+                      {player.total_points}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-end mt-4 space-x-4">
+              <button
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                onClick={handleCloseSubmitModal}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                onClick={handleCloseEvent}
+              >
+                Close Event
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
+  
 };
 
 export default AdminPage;
