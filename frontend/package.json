@@ -9,6 +9,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@testing-library/react": "^16.1.0",
     "axios": "^1.7.9",
+    "clipboard": "^2.0.11",
     "cra-template": "1.2.0",
     "html-to-image": "^1.11.11",
     "react": "^18.3.1",

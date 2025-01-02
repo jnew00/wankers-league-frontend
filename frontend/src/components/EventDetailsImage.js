@@ -75,7 +75,7 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) =>
         {formatTime(event.tee_time)}
       </p>
       <p className="text-gray-700">
-        <span className="font-semibold">Address:</span> {event.address || "N/A"}
+        <span className="font-semibold">Address:</span> {event.course_address || "N/A"}
       </p>
       <p className="text-gray-700">
         <span className="font-semibold">Tees:</span>{" "}

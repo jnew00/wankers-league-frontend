@@ -37,11 +37,9 @@ const EventsPage = () => {
   
 
   useEffect(() => {
-    console.log("Updated pairings:", pairings);
   }, [pairings]);
 
   useEffect(() => {
-    console.log("Updated eventPlayers:", eventPlayers);
   }, [eventPlayers]);
 
   useEffect(() => {
@@ -85,7 +83,6 @@ const EventsPage = () => {
     }
     try {
       const imageData = await eventDetailsRef.current.generateImage();
-      console.log("Generated Image Data URL:", imageData);
       setGeneratedImage(imageData);
       setShowImageModal(true);
     } catch (error) {
@@ -122,16 +119,15 @@ const EventsPage = () => {
       // Create a new group if all groups are full
       updatedPairings.push([newPlayer]);
     }
-    console.log("Updated pairings after adding player:", updatedPairings);
 
     setPairings(updatedPairings);
   
-    // Update the database
+
     try {
       await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, {
         pairings: updatedPairings,
       });
-      console.log("Pairings updated in the database successfully.");
+
     } catch (error) {
       console.error("Error updating pairings in the database:", error.message);
     }
@@ -143,8 +139,6 @@ const EventsPage = () => {
       alert("No players signed up for this event.");
       return;
     }
-  
-    console.log("Generating pairings with eventPlayers:", eventPlayers);
   
     const shuffledPlayers = [...eventPlayers].sort(() => Math.random() - 0.5);
     const newPairings = [];
@@ -162,7 +156,6 @@ const EventsPage = () => {
       i += 3;
     }
   
-    console.log("Generated pairings:", newPairings);
     setPairings(newPairings);
     setShowPairingsModal(true);
   };
@@ -183,7 +176,6 @@ const EventsPage = () => {
       
 
       setEventPlayers(event.players);
-      console.log("Updated eventPlayers:", event.players);
 
       const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
       setPairings(pairingsResponse.data || []); // Load pairings if they exist
@@ -245,14 +237,11 @@ const EventsPage = () => {
       });
 
      const newPlayer = response.data;
-     console.log("New player added:", newPlayer);
 
      const normalizedPlayer = {
       ...newPlayer,
       player_id: newPlayer.id, // Map `id` to `player_id` for consistency
     };
-
-    console.log("Normalized player:", normalizedPlayer);
 
 
       // Check if newPlayer is valid
@@ -383,7 +372,6 @@ const EventsPage = () => {
   <button
     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
     onClick={() => {
-      console.log("Button clicked");
       handleGenerateImage();
     }}
   >
@@ -656,13 +644,6 @@ const EventsPage = () => {
       </div>{showModal && selectedCourseDetails && (
   <CourseModal course={selectedCourseDetails} onClose={closeModal} />
 )}
-{/* {selectedEvent && eventDetails && (
-  <div className="mt-6">
-        {console.log("EventDetailsImage event object:", eventDetails)}
-
-    <EventDetailsImage event={eventDetails} />
-  </div> */}
-{/* )} */}
 
   {/* Modal to Display Generated Email Image */}
 

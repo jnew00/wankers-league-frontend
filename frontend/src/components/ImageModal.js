@@ -1,10 +1,17 @@
 import React from "react";
 
 const ImageModal = ({ imageSrc, onClose }) => {
-  const copyToClipboard = () => {
-    if (imageSrc) {
-      navigator.clipboard.writeText(imageSrc);
-      alert("Image data copied to clipboard! You can now paste it into an email.");
+
+  const handleCopyImage = async () => {
+    try {
+      const response = await fetch(imageSrc);
+      const blob = await response.blob();
+      const data = [new ClipboardItem({ [blob.type]: blob })];
+      await navigator.clipboard.write(data);
+      alert("Image copied to clipboard! You can paste it into an editor or email.");
+    } catch (error) {
+      console.error("Failed to copy image to clipboard:", error);
+      alert("Failed to copy image. Please try again.");
     }
   };
 
@@ -24,7 +31,7 @@ const ImageModal = ({ imageSrc, onClose }) => {
           <img src={imageSrc} alt="Generated Email" className="max-w-full rounded-lg" />
           <div className="flex gap-4 mt-4">
             <button
-              onClick={copyToClipboard}
+              onClick={handleCopyImage}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
             >
               Copy to Clipboard
