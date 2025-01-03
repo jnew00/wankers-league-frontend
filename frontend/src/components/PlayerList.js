@@ -198,7 +198,7 @@ const PlayerList = ({
                   {player.isEditing ? (
                     <input
                       type="number"
-                      value={Number(player.money_won  || 0).toFixed(2)}
+                      value={Number(player.money_won || 0)}
                       onChange={(e) =>
                         handlePlayerChange(
                           index,

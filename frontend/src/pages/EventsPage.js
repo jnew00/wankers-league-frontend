@@ -378,9 +378,6 @@ const EventsPage = () => {
     Generate Email
   </button>
 </div>
-
-
-
   
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
@@ -596,7 +593,7 @@ const EventsPage = () => {
                             <td className="p-4 text-center">
                               {player.rank || "N/A"}
                             </td>
-                            <td className="p-4 text-left">{player.player_name}</td>
+                            <td className="p-4 text-left">{player.name}</td>
                             <td className="p-4 text-center">{player.quota}</td>
                             <td className="p-4 text-center">{player.score}</td>
                             <td className="p-4 text-center">
