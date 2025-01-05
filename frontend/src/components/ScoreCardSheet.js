@@ -78,7 +78,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const payoutRows = getPayoutRows(currentPlayerCount);
 
   return (
-    <div className="p-6 bg-white mx-auto" style={{ fontSize: "16px" }}>
+    <div className="p-6 bg-white mx-auto text-[20px]">
       {/* Header Section */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center">
@@ -146,7 +146,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     );
                   })}
                   <td className="border border-gray-300 p-1 text-center"></td>
-                  <td className="border border-gray-300 p-1 font-bold text-center">{player.quota}</td>
+                  <td className="border border-gray-300 p-1 text-[14px] font-bold text-center">{player.quota}</td>
                   <td className="border border-gray-300 p-1 text-center"></td>
                   <td className="border border-gray-300 p-1 text-center"></td>
                 </tr>
@@ -172,7 +172,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
       <div className="mt-10 flex space-x-6">
         {/* CTP Section */}
         <div>
-          <label className="block font-bold mb-3">CTPs Pay $_____________</label>
+          <label className="block font-bold mb-3">CTPs Pay $_____</label>
           <table className="table-fixed w-[220px] border-collapse border border-gray-300">
             <thead>
               <tr className="h-[30px]">
@@ -193,7 +193,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
 
         {/* Skins Section */}
         <div>
-          <label className="block font-bold mb-3">Skins Pay $__________</label>
+          <label className="block font-bold mb-3">Skins Pay $_____</label>
           <div className="flex space-x-3">
             <table className="table-fixed w-[200px] border-collapse border border-gray-300">
               <thead>
@@ -233,7 +233,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
           </div>
   
           {/* Payout Table */}
-          <div>
+          <div className="absolute right-10">
             <h3 className="font-bold mb-3 text-center">Payout Table</h3>
             <table className="table-fixed  w-[400px] border-collapse border border-gray-300 text-xs">
               <thead>
