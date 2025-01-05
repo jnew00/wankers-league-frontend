@@ -2,8 +2,12 @@ import React from "react";
 
 const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
-  const par3Holes = [2, 6, 11, 15];
-  const emptyPlayerSlots = 3;
+
+  const par3Holes = scorecard
+  .filter((hole) => Number(hole.par) === 3)
+  .map((hole) => hole.hole);
+
+  const emptyPlayerSlots = 2;
   const skinsRowsPerTable = 8; // Number of rows per table
 
   const payoutData = [
@@ -78,7 +82,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const payoutRows = getPayoutRows(currentPlayerCount);
 
   return (
-    <div className="p-6 bg-white mx-auto text-[20px]">
+    <div className="p-6 bg-white mx-auto">
       {/* Header Section */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center">
@@ -146,7 +150,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     );
                   })}
                   <td className="border border-gray-300 p-1 text-center"></td>
-                  <td className="border border-gray-300 p-1 text-[14px] font-bold text-center">{player.quota}</td>
+                  <td className="border border-gray-300 p-1 font-bold text-center">{player.quota}</td>
                   <td className="border border-gray-300 p-1 text-center"></td>
                   <td className="border border-gray-300 p-1 text-center"></td>
                 </tr>
@@ -169,7 +173,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
         </table>
       </div>
 
-      <div className="mt-10 flex space-x-6">
+      <div className="mt-6 flex space-x-6 text-xs">
         {/* CTP Section */}
         <div>
           <label className="block font-bold mb-3">CTPs Pay $_____</label>
@@ -181,8 +185,8 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
               </tr>
             </thead>
             <tbody>
-              {par3Holes.map((hole) => (
-                <tr key={hole} className="h-[30px]">
+              {par3Holes.map((hole, idx) => (
+                <tr key={`ctp-${idx}`} className="h-[30px]">
                   <td className="border border-gray-300 pb-1 text-center">{hole}</td>
                   <td className="border border-gray-300 pb-1"></td>
                 </tr>
@@ -192,7 +196,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
         </div>
 
         {/* Skins Section */}
-        <div>
+        <div className="text-xs">
           <label className="block font-bold mb-3">Skins Pay $_____</label>
           <div className="flex space-x-3">
             <table className="table-fixed w-[200px] border-collapse border border-gray-300">
