@@ -7,6 +7,10 @@ import CourseModal from "../components/CourseModal";
 import PairingsModal from "../components/PairingsModal";
 import EventDetailsImage from "../components/EventDetailsImage";
 import ImageModal from "../components/ImageModal";
+import ScorecardSheet from "../components/ScoreCardSheet";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 import { formatTime } from "../utils/formatTime";
 
 
@@ -34,6 +38,8 @@ const EventsPage = () => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false); // Image modal visibility
   const eventDetailsRef = useRef(null);
+  const [scorecard, setScorecard] = useState([]);
+
   
 
   useEffect(() => {
@@ -52,6 +58,7 @@ const EventsPage = () => {
         
         setUpcomingEvents(upcoming);
         setPastEvents(past);
+         
         
       } catch (error) {
         console.error("Error fetching events:", error.message);
@@ -90,6 +97,29 @@ const EventsPage = () => {
     }
   };
   
+
+  const generatePDF = async () => {
+    const element = document.getElementById("scorecard-sheet");
+  
+    // Ensure element is visible during rendering
+    element.style.display = "block";
+  
+    try {
+      const canvas = await html2canvas(element, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${eventDetails.course_name}_Scorecard.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      // Hide element again after rendering
+      element.style.display = "none";
+    }
+  };
+
 
   const closeImageModal = () => {
     setGeneratedImage(null);
@@ -171,11 +201,13 @@ const EventsPage = () => {
       const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
       const event = response.data;
       setEventDetails({
-        ...event.details, total_yardage: event.total_yardage, group_pairings: response.data.group_pairings
+        ...event.details, scorecard:event.scorecard, total_yardage: event.total_yardage, group_pairings: response.data.group_pairings
       });
       
 
       setEventPlayers(event.players);
+      setScorecard(event.scorecard);
+      console.log(event.scorecard);
 
       const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
       setPairings(pairingsResponse.data || []); // Load pairings if they exist
@@ -378,6 +410,14 @@ const EventsPage = () => {
     Generate Email
   </button>
 </div>
+
+{/* Button to Generate PDF */}
+<button
+  onClick={generatePDF}
+  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+>
+  Generate Scorecard PDF
+</button>
   
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
@@ -656,6 +696,12 @@ const EventsPage = () => {
   {showImageModal && (
   <ImageModal imageSrc={generatedImage} onClose={closeImageModal}></ImageModal>
 )}
+
+{selectedEvent && (
+        <div id="scorecard-sheet" className="hidden">
+          <ScorecardSheet eventDetails={eventDetails} players={eventPlayers} scorecard={scorecard}/>
+        </div>
+      )}
 
     </div>
 

@@ -9,6 +9,7 @@ import AddPlayerPage from "./pages/AddPlayerPage";
 import AddCourse from "./pages/AddCoursePage";
 import Rules from "./pages/RulesPage";
 
+
 function App() {
   return (
     <Routes>
