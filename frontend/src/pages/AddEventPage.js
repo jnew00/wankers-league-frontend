@@ -151,7 +151,7 @@ const AddEventPage = () => {
         );
         alert("Event added successfully!");
       }
-      navigate("/admin/manage-events");
+      navigate("/events");
     } catch (error) {
       console.error("Error saving event:", error.message);
       alert("Failed to save event.");
