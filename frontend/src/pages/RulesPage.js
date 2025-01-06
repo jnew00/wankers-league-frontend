@@ -254,7 +254,7 @@ const RulesPage = () => {
               <li>
                 <strong className="text-lg">General Rules:</strong>
                 <ul className="list-disc list-outside ml-8 space-y-2 marker:text-black">
-                  <li>$25 buy-in for the season.</li>
+                  <li>$50 buy-in for the season.</li>
                   <li>Season Starts January 11th.</li>
                   <li>
                     Only weekly Sunday competitions count towards FedUp points.
@@ -310,11 +310,16 @@ const RulesPage = () => {
                   <ul className="list-disc list-outside ml-8 space-y-2 marker:text-black">
                     <li>
                       Week 1 – Dec 6th: Top 8 point leaders + ties qualify.
-                      Points reset to 0.
+                      Points reset to 100, 90, 80,...30. 
+                      This gives point advantages to top regular season finishers. 
                     </li>
                     <li>
                       Week 2 – Dec 13th: Top 4 + ties from Week 1 advance.
                       Points carry over, but 1st place doubles to 200 points.
+                    </li>
+                    <li>
+                      Championship tie breaker (other places split pots) - highest ranked player from regular season of those tied wins. 
+                      If still tied, then a 20ft putt off on the practice green.  
                     </li>
                   </ul>
                   <li>Loser's Bracket</li>
@@ -327,7 +332,7 @@ const RulesPage = () => {
 
               <li>
                 <strong className="text-lg">Final Payouts:</strong> Championship
-                Pot (funded by $25 entry fees):
+                Pot (funded by entry fees):
                 <ul className="list-disc list-outside ml-8 space-y-2 marker:text-black">
                   <li>1st Place: 50%</li>
                   <li>2nd Place: 20%</li>
