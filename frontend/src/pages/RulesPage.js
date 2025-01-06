@@ -255,7 +255,7 @@ const RulesPage = () => {
                 <strong className="text-lg">General Rules:</strong>
                 <ul className="list-disc list-outside ml-8 space-y-2 marker:text-black">
                   <li>$50 buy-in for the season.</li>
-                  <li>Season Starts January 11th.</li>
+                  <li>Season Starts January 12th.</li>
                   <li>
                     Only weekly Sunday competitions count towards FedUp points.
                   </li>
