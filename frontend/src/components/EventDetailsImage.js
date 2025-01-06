@@ -20,6 +20,9 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) =>
 
   const getPlayerWithQuota = (playerId) => {
     const player = eventPlayers.find((p) => p.player_id === playerId);
+    const [firstName, lastName = ""] = player.name.split(" ");
+    const abbreviatedName = `${firstName} ${lastName.charAt(0)}.`; // Format "First L."
+
     if (!player) return "";
 
     let indicator = null;
@@ -28,29 +31,29 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) =>
           {player.name}
         </span>);
     let formattedQuota = (
-        <span className="font-bold text-right">
+        <span className="font-bold ml-5 text-right">
             {player.quota}
         </span>);
 
     if (player.quota >= 31) {
         formattedQuota = (
-            <span className="text-red-500 ml-1 font-bold text-right" title="One Tee Back">
+            <span className="text-red-500 ml-2 font-bold text-right" title="One Tee Back">
               {player.quota}
             </span>
           )
         indicator = (
-        <span className="text-red-500 font-bold text-right" title="Two Tees Back">
+        <span className="text-red-500 ml-2  font-bold text-right" title="Two Tees Back">
           ⬅️⬅️
         </span>
       );
     } else if (player.quota >= 26) {
         formattedQuota = (
-        <span className="text-red-500 ml-1 font-bold text-right" title="One Tee Back">
+        <span className="text-red-500 font-bold text-right" title="One Tee Back">
           {player.quota}
         </span>
       )
       indicator = (
-        <span className="text-orange-500 ml-1 font-bold text-right" title="Tee Back">
+        <span className="text-orange-500 font-bold text-right" title="Tee Back">
           ⬅️
         </span>
       );

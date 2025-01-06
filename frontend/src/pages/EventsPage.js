@@ -138,9 +138,19 @@ const EventsPage = () => {
 
   const addPlayerToPairings = async (newPlayer) => {
     const updatedPairings = [...pairings];
+
+      // Find groups with exactly 3 players, starting from the last group
+  // Find the last group with fewer than 4 players
+    let targetGroupIndex = -1;
+    for (let i = updatedPairings.length - 1; i >= 0; i--) {
+      if (updatedPairings[i].length < 4) {
+        targetGroupIndex = i;
+        break;
+      }
+    }
   
     // Find the first group with fewer than 4 players
-    const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
+    // const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
   
     if (targetGroupIndex !== -1) {
       // Add the player to the first group with space
@@ -174,19 +184,45 @@ const EventsPage = () => {
     const newPairings = [];
     let i = 0;
   
+    // while (i < shuffledPlayers.length) {
+    //   const remaining = shuffledPlayers.length - i;
+  
+    //   if (remaining === 4 || remaining === 3) {
+    //     newPairings.push(shuffledPlayers.slice(i, i + remaining));
+    //     break;
+    //   }
+  
+    //   newPairings.push(shuffledPlayers.slice(i, i + 3));
+    //   i += 3;
+    // }
+
     while (i < shuffledPlayers.length) {
       const remaining = shuffledPlayers.length - i;
   
-      if (remaining === 4 || remaining === 3) {
-        newPairings.push(shuffledPlayers.slice(i, i + remaining));
+      if (remaining >= 4 && (remaining % 4 === 0 || remaining % 4 >= 3)) {
+        // Create a group of 4 if it fits
+        newPairings.push(shuffledPlayers.slice(i, i + 4));
+        i += 4;
+      } else if (remaining >= 3) {
+        // Create a group of 3 if 4 doesn't fit
+        newPairings.push(shuffledPlayers.slice(i, i + 3));
+        i += 3;
+      } else {
+        // Handle remaining players (<3 players left)
+        console.log("Adding remaining players:", shuffledPlayers.slice(i));
+        newPairings.push(shuffledPlayers.slice(i));
         break;
       }
-  
-      newPairings.push(shuffledPlayers.slice(i, i + 3));
-      i += 3;
     }
+
+
+  // Reorder pairings: Groups of 3 first, then groups of 4
+  const reorderedPairings = [
+    ...newPairings.filter((group) => group.length === 3),
+    ...newPairings.filter((group) => group.length === 4),
+  ];
   
-    setPairings(newPairings);
+    setPairings(reorderedPairings);
     setShowPairingsModal(true);
   };
   
@@ -262,34 +298,78 @@ const EventsPage = () => {
       alert("Please select a player to add.");
       return;
     }
-
+  
     try {
-      const response =  await axios.post(`${API_BASE_URL}/admin/events/${selectedEvent}/players`, {
+      // Add the player to the event in the database
+      const response = await axios.post(`${API_BASE_URL}/admin/events/${selectedEvent}/players`, {
         playerId: selectedPlayer,
       });
-
-     const newPlayer = response.data;
-
-     const normalizedPlayer = {
-      ...newPlayer,
-      player_id: newPlayer.id, // Map `id` to `player_id` for consistency
-    };
-
-
-      // Check if newPlayer is valid
+  
+      const newPlayer = response.data;
+  
+      const normalizedPlayer = {
+        ...newPlayer,
+        player_id: newPlayer.id, // Map `id` to `player_id` for consistency
+      };
+  
       if (!normalizedPlayer.name || !normalizedPlayer.player_id) {
         console.error("New player data is incomplete:", normalizedPlayer);
         return;
       }
+  
+      console.log("Player added to event:", normalizedPlayer);
+  
+      // Update the eventPlayers list
+      setEventPlayers((prevPlayers) => [...prevPlayers, normalizedPlayer]);
+  
+      // Check if pairings already exist
+      // if (pairings.length > 0) {
+      //   console.log("Adding player to existing pairings...");
+      //   const updatedPairings = [...pairings];
+  
+      //   // Find the first group with fewer than 4 players
+      //   const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
+  
+      //   if (targetGroupIndex !== -1) {
+      //     updatedPairings[targetGroupIndex].push(normalizedPlayer);
+      //   } else {
+      //     // Create a new group if all groups are full
+      //     updatedPairings.push([normalizedPlayer]);
+      //   }
+  
+      //   // Update pairings in state and backend
+      //   setPairings(updatedPairings);
+      //   await savePairings(updatedPairings);
+      // }
 
-     await addPlayerToPairings(normalizedPlayer);
-     await fetchEventDetails(selectedEvent);
-
+      if (pairings.length > 0) {
+        console.log("Adding player to existing pairings...");
+        await addPlayerToPairings(normalizedPlayer);
+      }
+  
+      setSelectedPlayer("");
+      alert("Player added successfully!");
     } catch (error) {
       console.error("Error adding player:", error.message);
       alert("Failed to add player. Please try again.");
     }
   };
+
+  const clearPairings = async () => {
+    try {
+      // Reset pairings in the backend
+      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: [] });
+  
+      // Clear pairings in the frontend
+      setPairings([]);
+      alert("Pairings cleared successfully!");
+    } catch (error) {
+      console.error("Error clearing pairings:", error.message);
+      alert("Failed to clear pairings.");
+    }
+  };
+  
+  
 
   const toggleEventDetails = (eventId) => {
     if (selectedEvent === eventId) {
@@ -379,46 +459,56 @@ const EventsPage = () => {
       <span className="italic text-gray-600 ">${Number(eventDetails.cost).toFixed(2)}</span>
 
     </h3>
+</div>{/* Right Content: Admin Box */}
+  <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg space-y-4 w-64">
+    <h4 className="text-lg font-bold text-center">Admin Actions</h4>
+    
+    {/* Generate Pairings Button */}
+    <button
+      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+      onClick={async () => {
+        const response = await axios.get(`${API_BASE_URL}/pairings/${event.id}`);
+        const existingPairings = response.data;
+
+        if (existingPairings.length > 0) {
+          setPairings(existingPairings); // Load existing pairings
+        } else {
+          openPairingsModal(); // Generate new pairings
+        }
+
+        setShowPairingsModal(true);
+      }}
+    >
+      {pairings.length > 0 ? "Update Pairings" : "Generate Pairings"}
+    </button>
+
+    {/* Clear Pairings Button */}
+    <button
+      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+      onClick={clearPairings}
+    >
+      Clear Pairings
+    </button>
+
+    {/* Generate Email Button */}
+    <button
+      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+      onClick={handleGenerateImage}
+    >
+      Generate Email
+    </button>
+
+    {/* Generate Scorecard PDF Button */}
+    <button
+      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg"
+      onClick={generatePDF}
+    >
+      Generate Scorecard PDF
+    </button>
+  </div>
 </div>
-<button className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-lg"
-  onClick={async () => {
-    const response = await axios.get(`${API_BASE_URL}/pairings/${event.id}`);
-    const existingPairings = response.data;
 
-    if (existingPairings.length > 0) {
-      setPairings(existingPairings); // Load existing pairings
-    } else {
-      openPairingsModal(); // Generate new pairings
-    }
 
-    setShowPairingsModal(true);
-  }}
-  
->
-  {pairings.length > 0 ? "Update Pairings" : "Generate Pairings"}
-</button>
-</div>
-{/* Generate Email Button */}
-<div className="flex items-center justify-end">
-
-  <button
-    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
-    onClick={() => {
-      handleGenerateImage();
-    }}
-  >
-    Generate Email
-  </button>
-</div>
-
-{/* Button to Generate PDF */}
-<button
-  onClick={generatePDF}
-  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
->
-  Generate Scorecard PDF
-</button>
-  
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <p className="text-gray-700">
