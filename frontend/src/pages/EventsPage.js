@@ -445,8 +445,7 @@ const EventsPage = () => {
 
 
 <div className="flex items-center justify-between">
-<div className="flex justify-between items-center mb-4">
-            {feedbackMessage && (
+{feedbackMessage && (
               <div
                 className={`p-4 mb-4 rounded-lg ${
                   feedbackMessage.type === "success"
@@ -459,6 +458,8 @@ const EventsPage = () => {
             )}
 
           </div>
+<div className="flex justify-between items-center mb-4">
+
 <div>
     <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.num_teetimes} booked: 
       <span className="text-red-600 pl-1">{formatTime(eventDetails.tee_time)}</span><br />
