@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import axios from "axios";
+import Footer from "../components/Footer";
 
 const QuotasPage = () => {
   const [quotas, setQuotas] = useState([]);
@@ -145,6 +146,7 @@ const QuotasPage = () => {
           </tbody>
         </table>
       </div>
+      <Footer />
     </div>
   );
 };

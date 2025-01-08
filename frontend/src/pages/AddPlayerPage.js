@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
+import Footer from "../components/Footer";
 
 const AdminManagePlayerPage = () => {
   const [players, setPlayers] = useState([]);
@@ -147,7 +148,8 @@ const AdminManagePlayerPage = () => {
     <div>
       <Navbar />
         <PageHeader title="Admin: Manage Players" />
-        <div className="max-w-2xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
+        <div className="max-w-3xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg border border-gray-300">
+
           <h2 className="text-lg font-bold mb-4">
             {selectedPlayer ? "Edit Player" : "Add New Player"}
           </h2>
@@ -285,6 +287,7 @@ const AdminManagePlayerPage = () => {
             </div>
           </form>
         </div>
+        <Footer />
       </div>
  
   );

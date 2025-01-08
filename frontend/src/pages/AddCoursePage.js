@@ -3,6 +3,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import CourseModal from "../components/CourseModal";
+import Footer from "../components/Footer";
 
 
 const AddCoursePage = () => {
@@ -412,7 +413,7 @@ const AddCoursePage = () => {
     <div>
       <Navbar />
       <PageHeader title="Admin: Manage Courses" />
-      <div className="max-w-4xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
+      <div className="max-w-3xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg border border-gray-300">
       {feedbackMessage && (
             <div
               className={`p-4 mb-4 rounded-lg ${
@@ -469,6 +470,7 @@ const AddCoursePage = () => {
     {showModal && selectedCourse && (
         <CourseModal course={selectedCourse} onClose={closeModal} />
       )}
+        <Footer />
     </div>
   );
 };

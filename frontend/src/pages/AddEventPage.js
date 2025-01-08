@@ -4,6 +4,7 @@ import axios from "axios";
 import Select from "react-select";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
+import Footer from "../components/Footer";
 
 const AddEventPage = () => {
   const [events, setEvents] = useState([]);
@@ -16,7 +17,7 @@ const AddEventPage = () => {
   const [cost, setCost] = useState(0);
   const [fedupEligible, setFedupEligible] = useState(true);
   const [numTeetimes, setNumTeetimes] = useState(5);
-
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const navigate = useNavigate();
 
@@ -149,12 +150,14 @@ const AddEventPage = () => {
 
           }
         );
-        alert("Event added successfully!");
       }
       navigate("/events");
     } catch (error) {
       console.error("Error saving event:", error.message);
-      alert("Failed to save event.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to add player. Please try again.`,
+      });
     }
   };
 
@@ -178,7 +181,23 @@ const AddEventPage = () => {
     <div>
       <Navbar />
       <PageHeader title="Admin: Manage Events" />
-      <div className="max-w-2xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
+      <div className="max-w-3xl mx-auto px-4 py-8 bg-white shadow-md rounded-lg border border-gray-300">
+
+
+      <div className="flex justify-between items-center mb-4">
+            {feedbackMessage && (
+              <div
+                className={`p-4 mb-4 rounded-lg ${
+                  feedbackMessage.type === "success"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {feedbackMessage.text}
+              </div>
+            )}
+
+          </div>
       <h2 className="text-lg font-bold mb-4">
             {selectedEvent ? "Edit Event" : "Add New Event"}
           </h2>
@@ -276,6 +295,7 @@ const AddEventPage = () => {
           </button>
         </form>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -1,14 +1,19 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
+import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter
+import { UserProvider } from "./context/UserContext";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const rootElement = document.getElementById("root");
+const root = ReactDOM.createRoot(rootElement);
+
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
+    <BrowserRouter> {/* Wrap the entire app in BrowserRouter */}
+      <UserProvider> {/* Wrap the app in UserProvider for global state */}
+        <App />
+      </UserProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

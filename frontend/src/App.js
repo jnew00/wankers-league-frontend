@@ -8,6 +8,7 @@ import AddEventPage from "./pages/AddEventPage";
 import AddPlayerPage from "./pages/AddPlayerPage";
 import AddCourse from "./pages/AddCoursePage";
 import Rules from "./pages/RulesPage";
+import Login from "./pages/Login";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
       <Route path="/admin/manage-course" element={<AddCourse />} />
       <Route path="/admin/manage-players" element={<AddPlayerPage />} />
       <Route path="/rules" element={<Rules />} />
+      <Route path="/login" element={<Login />} />
     </Routes>
   );
 }

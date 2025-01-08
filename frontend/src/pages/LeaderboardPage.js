@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
+import Footer from "../components/Footer";
 import Modal from "../components/Modal";
 import { FaMoneyBillAlt } from "react-icons/fa";
 import tippy from 'tippy.js';
@@ -358,7 +359,9 @@ const LeaderboardPage = () => {
           </div>
         </Modal>
       )}
+      <Footer />
     </div>
+    
   );
 };
 

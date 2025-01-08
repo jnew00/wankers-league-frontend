@@ -19,11 +19,13 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) =>
   }));
 
   const getPlayerWithQuota = (playerId) => {
+    
     const player = eventPlayers.find((p) => p.player_id === playerId);
-    const [firstName, lastName = ""] = player.name.split(" ");
-    const abbreviatedName = `${firstName} ${lastName.charAt(0)}.`; // Format "First L."
 
     if (!player) return "";
+
+    // const [firstName, lastName = ""] = player.name.split(" ");
+    // const abbreviatedName = `${firstName} ${lastName.charAt(0)}.`; // Format "First L."
 
     let indicator = null;
     let formattedPlayerName = (

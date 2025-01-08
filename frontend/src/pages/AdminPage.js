@@ -17,6 +17,7 @@ import { calculateTotalPoints, MAJOR_MULTIPLIER } from "../utils/pointsUtils";
 import calculateQuota from "../utils/calculateQuota";
 import Modal from "../components/Modal"; 
 import axios from "axios";
+import Footer from "../components/Footer";
 
 
 const AdminPage = () => {
@@ -100,11 +101,14 @@ const AdminPage = () => {
         isClosed: true,
       }));
 
-      alert("Event successfully closed!");
+      
       navigate("/events");
     } catch (error) {
       console.error("Error closing event:", error.message);
-      alert("Failed to close event. Please try again.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to close event. Please try again or contact Jason!`,
+      });
     } finally {
       setIsSubmitModalOpen(false);
     }
@@ -501,6 +505,7 @@ const AdminPage = () => {
           </div>
         </Modal>
       )}
+        <Footer />
     </div>
   );
   

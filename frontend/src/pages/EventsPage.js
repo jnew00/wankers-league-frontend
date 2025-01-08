@@ -10,7 +10,8 @@ import ImageModal from "../components/ImageModal";
 import ScorecardSheet from "../components/ScoreCardSheet";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+import { useUser } from "../context/UserContext";
+import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 
 
@@ -22,6 +23,7 @@ tippy('.Xtooltip', {
 });
 
 const EventsPage = () => {
+  const { role } = useUser();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -39,6 +41,7 @@ const EventsPage = () => {
   const [showImageModal, setShowImageModal] = useState(false); // Image modal visibility
   const eventDetailsRef = useRef(null);
   const [scorecard, setScorecard] = useState([]);
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   
 
@@ -47,6 +50,7 @@ const EventsPage = () => {
 
   useEffect(() => {
   }, [eventPlayers]);
+
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -79,8 +83,8 @@ const EventsPage = () => {
     fetchAllPlayers();
   }, [API_BASE_URL]);
 
-  const availablePlayers = allPlayers.filter(
-    (player) => !eventPlayers.some((eventPlayer) => eventPlayer.player_id === player.id)
+  const availablePlayers = (allPlayers || []).filter(
+    (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
   );
   
   const handleGenerateImage = async () => {
@@ -132,15 +136,17 @@ const EventsPage = () => {
       setPairings(updatedPairings);
     } catch (error) {
       console.error("Error saving pairings:", error.message);
-      alert("Failed to save pairings.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to save pairings.`,
+      });
     }
   };
 
   const addPlayerToPairings = async (newPlayer) => {
     const updatedPairings = [...pairings];
 
-      // Find groups with exactly 3 players, starting from the last group
-  // Find the last group with fewer than 4 players
+
     let targetGroupIndex = -1;
     for (let i = updatedPairings.length - 1; i >= 0; i--) {
       if (updatedPairings[i].length < 4) {
@@ -149,8 +155,6 @@ const EventsPage = () => {
       }
     }
   
-    // Find the first group with fewer than 4 players
-    // const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
   
     if (targetGroupIndex !== -1) {
       // Add the player to the first group with space
@@ -184,17 +188,6 @@ const EventsPage = () => {
     const newPairings = [];
     let i = 0;
   
-    // while (i < shuffledPlayers.length) {
-    //   const remaining = shuffledPlayers.length - i;
-  
-    //   if (remaining === 4 || remaining === 3) {
-    //     newPairings.push(shuffledPlayers.slice(i, i + remaining));
-    //     break;
-    //   }
-  
-    //   newPairings.push(shuffledPlayers.slice(i, i + 3));
-    //   i += 3;
-    // }
 
     while (i < shuffledPlayers.length) {
       const remaining = shuffledPlayers.length - i;
@@ -255,7 +248,7 @@ const EventsPage = () => {
     }
   };
 
-  const handleDeletePlayer = async (playerId) => {
+  const handleDeletePlayer = async (playerId, playerName) => {
     try {
       await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`);
        // Remove player from eventPlayers
@@ -272,9 +265,17 @@ const EventsPage = () => {
      // Save updated pairings to the database
      await savePairings(updatedPairings);
 
+     setFeedbackMessage({
+      type: "success",
+      text: `Player ${playerName} removed from event.`,
+    });
+
     } catch (error) {
       console.error("Error deleting player:", error.message);
-      alert("Failed to remove player.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to remove player.`,
+      });
     }
   };
 
@@ -317,30 +318,8 @@ const EventsPage = () => {
         return;
       }
   
-      console.log("Player added to event:", normalizedPlayer);
-  
       // Update the eventPlayers list
       setEventPlayers((prevPlayers) => [...prevPlayers, normalizedPlayer]);
-  
-      // Check if pairings already exist
-      // if (pairings.length > 0) {
-      //   console.log("Adding player to existing pairings...");
-      //   const updatedPairings = [...pairings];
-  
-      //   // Find the first group with fewer than 4 players
-      //   const targetGroupIndex = updatedPairings.findIndex((group) => group.length < 4);
-  
-      //   if (targetGroupIndex !== -1) {
-      //     updatedPairings[targetGroupIndex].push(normalizedPlayer);
-      //   } else {
-      //     // Create a new group if all groups are full
-      //     updatedPairings.push([normalizedPlayer]);
-      //   }
-  
-      //   // Update pairings in state and backend
-      //   setPairings(updatedPairings);
-      //   await savePairings(updatedPairings);
-      // }
 
       if (pairings.length > 0) {
         console.log("Adding player to existing pairings...");
@@ -348,10 +327,18 @@ const EventsPage = () => {
       }
   
       setSelectedPlayer("");
-      alert("Player added successfully!");
+
+      setFeedbackMessage({
+        type: "success",
+        text: `Player "${normalizedPlayer.name}" added successfully!`,
+      });
     } catch (error) {
       console.error("Error adding player:", error.message);
-      alert("Failed to add player. Please try again.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to add player. Please try again.`,
+      });
+     
     }
   };
 
@@ -362,10 +349,16 @@ const EventsPage = () => {
   
       // Clear pairings in the frontend
       setPairings([]);
-      alert("Pairings cleared successfully!");
+      setFeedbackMessage({
+        type: "success",
+        text: `Pairings cleared successfully!`,
+      });
     } catch (error) {
       console.error("Error clearing pairings:", error.message);
-      alert("Failed to clear pairings.");
+      setFeedbackMessage({
+        type: "error",
+        text: `Failed to clear pairings`,
+      });
     }
   };
   
@@ -452,14 +445,33 @@ const EventsPage = () => {
 
 
 <div className="flex items-center justify-between">
+<div className="flex justify-between items-center mb-4">
+            {feedbackMessage && (
+              <div
+                className={`p-4 mb-4 rounded-lg ${
+                  feedbackMessage.type === "success"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {feedbackMessage.text}
+              </div>
+            )}
 
+          </div>
 <div>
     <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.num_teetimes} booked: 
       <span className="text-red-600 pl-1">{formatTime(eventDetails.tee_time)}</span><br />
       <span className="italic text-gray-600 ">${Number(eventDetails.cost).toFixed(2)}</span>
 
     </h3>
-</div>{/* Right Content: Admin Box */}
+
+
+   
+</div>
+
+{/* Right Content: Admin Box */}
+{role === "admin" && (
   <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg space-y-4 w-64">
     <h4 className="text-lg font-bold text-center">Admin Actions</h4>
     
@@ -506,9 +518,9 @@ const EventsPage = () => {
       Generate Scorecard PDF
     </button>
   </div>
+
+    )}
 </div>
-
-
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
         <p className="text-gray-700">
@@ -569,7 +581,7 @@ const EventsPage = () => {
             <td className="border p-1">{player.quota}</td>
             <td className="border p-1 text-right">
             <button
-                onClick={() => handleDeletePlayer(player.player_id)}
+                onClick={() => handleDeletePlayer(player.player_id, player.name)}
                 className="Xtooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
                 >
                 X
@@ -748,10 +760,13 @@ const EventsPage = () => {
                       </tbody>
                     </table>
                   </div>
+                       
                 )}
               </div>
+                
             ))
           )}
+      
         </div>
         <div>
         {showPairingsModal && (
@@ -778,9 +793,9 @@ const EventsPage = () => {
         <div className="opacity-0 absolute pointer-events-none">
         <EventDetailsImage
           ref={eventDetailsRef}
-          event={eventDetails}
-          pairings={pairings}
-          eventPlayers={eventPlayers}
+          event={eventDetails  || {}}
+          pairings={pairings || []}
+          eventPlayers={eventPlayers  || []}
         />
       </div>
   {showImageModal && (
@@ -789,10 +804,14 @@ const EventsPage = () => {
 
 {selectedEvent && (
         <div id="scorecard-sheet" className="hidden">
-          <ScorecardSheet eventDetails={eventDetails} players={eventPlayers} scorecard={scorecard}/>
+          <ScorecardSheet 
+          eventDetails={eventDetails || {}} 
+          players={eventPlayers || []}
+          scorecard={Array.isArray(scorecard) ? scorecard : []} 
+          />
         </div>
       )}
-
+<Footer />
     </div>
 
 

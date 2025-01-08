@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import '../index.css';
+import Footer from "../components/Footer";
 
 const RulesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -372,6 +373,7 @@ const RulesPage = () => {
           </div>
         </div>
       )}
+        <Footer />
     </div>
   );
 };
