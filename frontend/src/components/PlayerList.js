@@ -216,7 +216,7 @@ const PlayerList = ({
                 </td>
 
                 <td className="p-4 text-center font-bold">
-                  {player.total_points || 0}
+                  {Number(player.total_points || 0).toFixed(0)}
                 </td>
                 <td className="p-4 text-center">
                   {player.isEditing ? (
@@ -248,7 +248,7 @@ const PlayerList = ({
                         }
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs"
                       >
-                        Delete
+                        Remove
                       </button>
                     </>
                   )}

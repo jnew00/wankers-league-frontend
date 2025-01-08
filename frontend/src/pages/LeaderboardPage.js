@@ -14,6 +14,7 @@ tippy('.paidToolTip', {
 
 const LeaderboardPage = () => {
   const [players, setPlayers] = useState([]);
+  const [enlargedImage, setEnlargedImage] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: "total_points",
     direction: "desc",
@@ -289,7 +290,10 @@ const LeaderboardPage = () => {
               <img
                 src={getPlayerImageUrl(selectedPlayer, API_BASE_URL)}
                 alt="Profile"
-                className="w-36 h-36 rounded-full mx-auto mb-4"
+              
+                className="w-36 h-36 rounded-full mx-auto mb-4 cursor-pointer transition-transform transform hover:scale-105 hover:ring-2 hover:ring-blue-500"
+
+                onClick={() => setEnlargedImage(getPlayerImageUrl(selectedPlayer, API_BASE_URL))}
               />
               <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
               <p className="text-gray-500 text-sm">
@@ -358,7 +362,22 @@ const LeaderboardPage = () => {
             </div>
           </div>
         </Modal>
+
+
+
       )}
+                {enlargedImage && (
+            <Modal onClose={() => setEnlargedImage(null)}>
+              <div className="flex justify-center items-center p-6">
+                <img
+                  src={enlargedImage}
+                  alt="Enlarged"
+                  className="max-w-full max-h-[90vh] rounded-lg shadow-lg hover:text-gray-700"
+
+                />
+              </div>
+            </Modal>
+          )}
       <Footer />
     </div>
     

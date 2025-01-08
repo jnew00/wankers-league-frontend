@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 
 const Modal = ({ children, onClose }) => {
+  // Add event listener for the `Esc` key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      onClick={onClose} // Close modal when clicking outside
+    >
+      <div
+        className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative"
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+      >
         <button
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
           onClick={onClose}

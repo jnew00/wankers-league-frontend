@@ -235,7 +235,7 @@ const AdminPage = () => {
 
       setFeedbackMessage({
         type: "success",
-        text: `Player deleted successfully!`,
+        text: `Player removed from event successfully!`,
       });
     } catch (error) {
       setFeedbackMessage({
@@ -427,7 +427,7 @@ const AdminPage = () => {
               className="bg-green-500 hover:bg-green-600 text-white text-right px-4 py-2 rounded-lg"
               onClick={handleOpenSubmitModal}
             >
-              Submit
+              Close Event
             </button>
         </div>
  
@@ -455,19 +455,22 @@ const AdminPage = () => {
       </div>
   
       {isSubmitModalOpen && (
-        <Modal onClose={handleCloseSubmitModal}>
-          <div>
+        <Modal onClose={handleCloseSubmitModal} className="max-w-7xl mx-auto">
+              <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto">
+              <div className="relative max-w-6xl w-full bg-white p-6 rounded-lg shadow-lg">
+
+
             <h2 className="text-lg font-bold mb-4">Review Results</h2>
-            <table className="min-w-full bg-white">
+            <table className="w-full min-w-full bg-white table-auto">
               <thead>
                 <tr>
-                 <th className="text-left py-2 px-4">Place</th>
-                  <th className="text-left py-2 px-4">Name</th>
-                  <th className="text-center py-2 px-4">Score</th>
-                  <th className="text-center py-2 px-4">CTPs</th>
-                  <th className="text-center py-2 px-4">Skins</th>
-                  <th className="text-center py-2 px-4">Money Won</th>
-                  <th className="text-center py-2 px-4">Total Points</th>
+                 <th className="text-left py-2 px-4 whitespace-nowrap">Place</th>
+                  <th className="text-left py-2 px-4 whitespace-nowrap">Name</th>
+                  <th className="text-center py-2 px-4 whitespace-nowrap">Score</th>
+                  <th className="text-center py-2 px-4 whitespace-nowrap">CTPs</th>
+                  <th className="text-center py-2 px-4 whitespace-nowrap">Skins</th>
+                  <th className="text-center py-2 px-4 whitespace-nowrap">Money Won</th>
+                  <th className="text-center py-2 px-4 whitespace-nowrap">Total Points</th>
                 </tr>
               </thead>
               <tbody>
@@ -482,7 +485,7 @@ const AdminPage = () => {
                       ${Number(player.money_won).toFixed(2)}
                     </td>
                     <td className="text-center py-2 px-4">
-                      {player.total_points}
+                      {Number(player.total_points).toFixed(0)}
                     </td>
                   </tr>
                 ))}
@@ -502,6 +505,7 @@ const AdminPage = () => {
                 Close Event
               </button>
             </div>
+          </div>
           </div>
         </Modal>
       )}
