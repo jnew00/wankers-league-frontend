@@ -1,6 +1,10 @@
 export const MAJOR_MULTIPLIER = 1.5;
 
-export const calculateTotalPoints = (player, pointsConfig, isMajor) => {
+export const calculateTotalPoints = (player, pointsConfig, isMajor, isFedupEligible) => {
+
+  if (!isFedupEligible) {
+    return 0;
+  }
   // Calculate raw CTP and Skin points
   const ctpPoints = player.ctps * pointsConfig.ctp;
   const skinPoints = player.skins * pointsConfig.skin;

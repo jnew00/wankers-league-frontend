@@ -5,6 +5,8 @@ import Select from "react-select";
 import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import Footer from "../components/Footer";
+import Swal from 'sweetalert2';
+
 
 const AddEventPage = () => {
   const [events, setEvents] = useState([]);
@@ -34,7 +36,7 @@ const AddEventPage = () => {
         setCourses(formattedCourses);
 
         const eventsResponse = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/admin/events`
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events?type=upcoming`
         );
         const formattedEvents = eventsResponse.data.map((event) => ({
           value: event.id,
@@ -114,7 +116,11 @@ const AddEventPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedCourse || !date) {
-      alert("Please select a course and date.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Missing Fields',
+        text: 'Please select a course and date.',
+      });
       return;
     }
 
@@ -134,7 +140,8 @@ const AddEventPage = () => {
             numTeetimes,
           }
         );
-        alert("Event updated successfully!");
+
+
       } else {
         // Add new event
         await axios.post(
@@ -151,7 +158,15 @@ const AddEventPage = () => {
           }
         );
       }
-      navigate("/events");
+      Swal.fire({
+        icon: 'success',
+        title: 'Event Added!',
+        text: 'The new event has been successfully added.',
+        confirmButtonText: 'Great!',
+      }).then(() => {
+        navigate('/events'); // Navigate after confirmation
+      });
+      
     } catch (error) {
       console.error("Error saving event:", error.message);
       setFeedbackMessage({

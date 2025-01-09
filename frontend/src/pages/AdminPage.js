@@ -285,13 +285,14 @@ const AdminPage = () => {
         player.total_points = calculateTotalPoints(
           player,
           pointsConfig,
-          selectedEvent?.isMajor
+          selectedEvent?.isMajor,
+          selectedEvent?.isFedupEligible
         );
 
         return updatedPlayers;
       });
     },
-    [pointsConfig, selectedEvent?.isMajor] // Only recalculate if these dependencies change
+    [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible] // Only recalculate if these dependencies change
   );
 
   const savePointsConfig = async () => {

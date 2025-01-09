@@ -15,8 +15,7 @@ const PlayerList = ({
   handleAddPlayer,
   handleCancelEdit,
 }) => {
-  console.log("Rendering PlayerList with players:", players); // Inside PlayerList
-
+  const isFedupEligible = selectedEvent?.fedup_eligible;
   
   return (
     <div className="mt-6">
@@ -155,7 +154,8 @@ const PlayerList = ({
                 {player.isEditing ? (
                     <input
                       type="number"
-                      value={player.ctps  || 0}
+                      value={player.ctps || 0}
+                      disabled={!isFedupEligible}
                       onChange={(e) =>
                         handlePlayerChange(
                           index,
@@ -163,7 +163,9 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                     />
                   ) : (
                     player.ctps || 0
@@ -178,6 +180,7 @@ const PlayerList = ({
                     <input
                       type="number"
                       value={player.skins  || 0}
+                      disabled={!isFedupEligible}
                       onChange={(e) =>
                         handlePlayerChange(
                           index,
@@ -185,7 +188,9 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                     />
                   ) : (
                     player.skins || 0
@@ -199,6 +204,7 @@ const PlayerList = ({
                     <input
                       type="number"
                       value={Number(player.money_won || 0)}
+                      disabled={!isFedupEligible}
                       onChange={(e) =>
                         handlePlayerChange(
                           index,
@@ -206,7 +212,9 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                     />
                   ) : (
                    `$${Number(player.money_won || 0).toFixed(2)}`
@@ -216,7 +224,7 @@ const PlayerList = ({
                 </td>
 
                 <td className="p-4 text-center font-bold">
-                  {Number(player.total_points || 0).toFixed(0)}
+                  {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
                 </td>
                 <td className="p-4 text-center">
                   {player.isEditing ? (
