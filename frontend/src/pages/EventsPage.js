@@ -242,7 +242,6 @@ const EventsPage = () => {
 
       setEventPlayers(event.players);
       setScorecard(event.scorecard);
-      console.log(event.scorecard);
 
       const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
       setPairings(pairingsResponse.data || []); // Load pairings if they exist
