@@ -128,10 +128,10 @@ const LeaderboardPage = () => {
         <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
-              <th className="p-4 text-center">Rank</th>
-              <th className="p-4 text-center">Mugshot</th>
+              <th className="p-2 text-center">Rank</th>
+              <th className="p-2 text-center">Mugshot</th>
               <th
-                className="p-4 text-left cursor-pointer"
+                className="p-2 text-left cursor-pointer"
                 onClick={() => handleSort("name")}
               >
                 Name
@@ -142,7 +142,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("current_quota")}
               >
                 Quota
@@ -153,7 +153,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("money_won")}
               >
                 Money
@@ -164,7 +164,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("skins")}
               >
                 Skins
@@ -175,7 +175,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("ctps")}
               >
                 CTPs
@@ -186,7 +186,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("wins")}
               >
                 Wins
@@ -197,7 +197,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("top_3")}
               >
                 Top 3
@@ -208,7 +208,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("events_played")}
               >
                 Events
@@ -219,7 +219,7 @@ const LeaderboardPage = () => {
                   : ""}
               </th>
               <th
-                className="p-4 text-center cursor-pointer"
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("total_points")}
               >
                 Points
@@ -262,14 +262,14 @@ const LeaderboardPage = () => {
                       />
                      )}
                 </td>
-                <td className="p-4 text-center">{player.current_quota}</td>
-                <td className="p-4 text-center">${Number(player.money_won || 0).toFixed(2)}</td>
-                <td className="p-4 text-center">{player.skins}</td>
-                <td className="p-4 text-center">{player.ctps}</td>
-                <td className="p-4 text-center">{player.wins}</td>
-                <td className="p-4 text-center">{player.top_3}</td>
-                <td className="p-4 text-center">{player.events_played}</td>
-                <td className="p-4 text-center font-bold">
+                <td className="p-2 text-center">{player.current_quota}</td>
+                <td className="p-2 text-center">${Number(player.money_won || 0).toFixed(2)}</td>
+                <td className="p-2 text-center">{player.skins}</td>
+                <td className="p-2 text-center">{player.ctps}</td>
+                <td className="p-2 text-center">{player.wins}</td>
+                <td className="p-2 text-center">{player.top_3}</td>
+                <td className="p-2 text-center">{player.events_played}</td>
+                <td className="p-2 text-center font-bold">
                   {Number(player.total_points || 0).toFixed(0)}
                 </td>
               </tr>

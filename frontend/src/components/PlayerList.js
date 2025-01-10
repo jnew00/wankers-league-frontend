@@ -1,5 +1,7 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import calculateQuota from "../utils/calculateQuota";
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 
 
@@ -16,27 +18,43 @@ const PlayerList = ({
   handleCancelEdit,
 }) => {
   const isFedupEligible = selectedEvent?.fedup_eligible;
-  
+
+  useEffect(() => {
+    tippy('[data-tippy-content]');
+  }, []);
+
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold mb-4">Player List</h2>
+      
+      <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+  
+        {!selectedEvent?.fedup_eligible && (
+          <span
+          className="px-2 py-1 text-xs font-bold text-red-800 bg-red-200 rounded-lg cursor-pointer"
+          data-tippy-content="This event is non-FedUp eligible. Points will not be counted."
+        >
+          Non-FedUp Eligible
+        </span>
+        )}
+      </h2>
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
-          <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+        <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
-              <th className="p-4 text-left">Rank</th>
-              <th className="p-4 text-left">Player</th>
-              <th className="p-4 text-center">Quota</th>
-              <th className="p-4 text-center">Score</th>
-              <th className="p-4 text-center">+/-</th>
-              <th className="p-4 text-center">New Quota</th>
-              <th className="p-4 text-center">CTPs</th>
-              <th className="p-4 text-center">Skins</th>
-              <th className="p-4 text-center">Money Won</th>
-              <th className="p-4 text-center">Total Points</th>
-              <th className="p-4 text-center">Actions</th>
+              <th className="p-4 text-left w-16">Rank</th>
+              <th className="p-4 text-left w-40">Player</th>
+              <th className="p-4 text-center w-24">Quota</th>
+              <th className="p-4 text-center w-24">Score</th>
+              <th className="p-4 text-center w-24">+/-</th>
+              <th className="p-4 text-center w-24">New Quota</th>
+              <th className="p-4 text-center w-24">CTPs</th>
+              <th className="p-4 text-center w-24">Skins</th>
+              <th className="p-4 text-center w-24">Money Won</th>
+              <th className="p-4 text-center w-32">Total Points</th>
+              <th className="p-4 text-center w-40">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {players.map((player, index) => (
               <tr
@@ -45,7 +63,7 @@ const PlayerList = ({
                   index % 2 === 0 ? "bg-blue-50" : "bg-white"
                 } hover:bg-blue-100 border-b`}
               >
-                <td className="p-4 text-left">
+                <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <select
                       value={player.rank || ""}
@@ -56,8 +74,8 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-2 w-full"
-                    >
+                      className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
+                      >
                       <option value="">--</option>
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((rank) => (
                         <option key={rank} value={rank}>
@@ -66,11 +84,11 @@ const PlayerList = ({
                       ))}
                     </select>
                   ) : (
-                    player.rank || "N/A"
+                    <div className="h-8 flex items-center">{player.rank || "N/A"}</div>
                   )}
                 </td>
-                <td className="p-4 text-left">
-                  {player.isEditing && !player.player_id ? (
+                <td className="p-4 text-left w-40 h-8">
+                {player.isEditing && !player.player_id ? (
                     <select
                       value={player.player_id || ""}
                       onChange={(e) => {
@@ -94,21 +112,26 @@ const PlayerList = ({
                           selectedPlayer?.current_quota || 0
                         );
                       }}
-                      className="border border-gray-300 rounded-lg p-2 w-full"
-                    >
-                      <option value="">-- Select Player --</option>
-                      {allPlayers.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
+                      className="border border-gray-300 rounded-lg p-1 h-8 w-full text-sm"
+                      >
+                    <option value="">-- Select Player --</option>
+                      {allPlayers
+                        .filter(
+                          (p) => !players.some((player) => player.player_id === p.id)
+                        )
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
                     </select>
                   ) : (
-                    player.name || "N/A"
+                    <div className="h-8 flex items-center">{player.name || "N/A"}</div>
                   )}
                 </td>
                 <td className="p-4 text-center">{player.quota || "N/A"}</td>
-                <td className="p-4 text-center">
+
+                <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <input
                       type="number"
@@ -120,10 +143,10 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-2 w-16 text-center"
+                      className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center"
                     />
                   ) : (
-                    player.score || 0
+                    <div className="h-8 flex items-center">{player.score || 0}</div>
                   )}
                 </td>
                 <td className="p-4 text-center font-bold">
@@ -148,9 +171,8 @@ const PlayerList = ({
                 <td className="p-4 text-center font-bold">
                   {calculateQuota(player.quota, player.score) || 0}
                 </td>
-                <td className="p-4 text-center">
-    
 
+                <td className="p-4 text-left w-16 h-8">
                 {player.isEditing ? (
                     <input
                       type="number"
@@ -163,19 +185,16 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
                   ) : (
-                    player.ctps || 0
+                    <div className="h-8 flex items-center">{player.ctps || 0}</div>
                   )}
-
-
                 </td>
-                <td className="p-4 text-center">
 
-                
+               <td className="p-4 text-left w-16 h-8">
                 {player.isEditing ? (
                     <input
                       type="number"
@@ -188,18 +207,16 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
                   ) : (
-                    player.skins || 0
+                    <div className="h-8 flex items-center">{player.skins || 0}</div>
                   )}
-
                 </td>
-                <td className="p-4 text-center">
-             
 
+                <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <input
                       type="number"
@@ -212,12 +229,12 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-2 w-16 text-center ${
+                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
                   ) : (
-                   `$${Number(player.money_won || 0).toFixed(2)}`
+                    <div className="h-8 flex items-center">{`$${Number(player.money_won || 0).toFixed(2)}`}</div>
                   )}
 
 
@@ -226,12 +243,14 @@ const PlayerList = ({
                 <td className="p-4 text-center font-bold">
                   {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
                 </td>
-                <td className="p-4 text-center">
-                  {player.isEditing ? (
-                    <>
+
+                <td className="p-4 text-center w-40 h-8 whitespace-nowrap">
+                {player.isEditing ? (
+                    <div className="flex items-center justify-center space-x-2">
+
                       <button
                         onClick={() => handleSavePlayer(player, index)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs"
                       >
                         Save
                       </button>
@@ -241,13 +260,13 @@ const PlayerList = ({
                       >
                         Cancel
                       </button>
-                    </>
+                      </div>
                   ) : (
-                    <>
+                    <div className="flex items-center justify-center space-x-2">
                       <button
                         onClick={() => toggleEditMode(index)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs mr-2"
-                      >
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs"
+                        >
                         Edit
                       </button>
                       <button
@@ -255,10 +274,10 @@ const PlayerList = ({
                           handleDeletePlayer(index, player.player_id)
                         }
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs"
-                      >
+                        >
                         Remove
                       </button>
-                    </>
+                    </div>
                   )}
                 </td>
               </tr>

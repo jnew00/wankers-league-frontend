@@ -18,6 +18,7 @@ import calculateQuota from "../utils/calculateQuota";
 import Modal from "../components/Modal"; 
 import axios from "axios";
 import Footer from "../components/Footer";
+import Swal from 'sweetalert2';
 
 
 const AdminPage = () => {
@@ -93,7 +94,8 @@ const AdminPage = () => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/close`,
-        { closed: true }
+        { closed: true },
+        { withCredentials: true }
       );
 
       setSelectedEvent((prev) => ({
@@ -101,8 +103,15 @@ const AdminPage = () => {
         isClosed: true,
       }));
 
-      
-      navigate("/events");
+      Swal.fire({
+        icon: 'success',
+        title: 'Event Closed!',
+        text: 'The event has recorded successfully.',
+        confirmButtonText: 'Great!',
+      }).then(() => {
+        navigate('/events'); 
+      });
+
     } catch (error) {
       console.error("Error closing event:", error.message);
       setFeedbackMessage({
@@ -202,6 +211,9 @@ const AdminPage = () => {
           score: player.score || 0,
           previousQuota: player.quota,
           calculatedQuota
+        },
+        {
+          withCredentials: true, // Correct placement
         }
       );
 
@@ -229,7 +241,10 @@ const AdminPage = () => {
   const handleDeletePlayer = async (index, playerId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/players/${playerId}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/players/${playerId}`,
+        {
+          withCredentials: true, // Correct placement
+        }
       );
       setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
 
@@ -299,7 +314,10 @@ const AdminPage = () => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/admin/points/config`,
-        pointsConfig
+        pointsConfig,
+        {
+          withCredentials: true, // Correct placement
+        }
       );
       setIsEditingPoints(false);
       alert("Points configuration saved successfully!");

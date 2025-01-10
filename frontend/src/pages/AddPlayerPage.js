@@ -76,7 +76,10 @@ const AdminManagePlayerPage = () => {
           `${API_BASE_URL}/admin/admin-players/${selectedPlayer.id}`,
           formPayload,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { "Content-Type": "multipart/form-data", 
+
+            },
+            withCredentials: true,
           }
         );
         setFeedbackMessage({
@@ -86,8 +89,12 @@ const AdminManagePlayerPage = () => {
       } else {
         // Add new player
         await axios.post(`${API_BASE_URL}/admin/admin-players`, formPayload, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+          headers: { 
+            "Content-Type": "multipart/form-data",
+          },
+            withCredentials: true,
+          }
+        );
         setFeedbackMessage({
           type: "success",
           text: `Player "${formData.name}" added successfully!`,
@@ -118,7 +125,11 @@ const AdminManagePlayerPage = () => {
     if (!selectedPlayer) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/admin/admin-players/${selectedPlayer.id}`);
+      await axios.delete(`${API_BASE_URL}/admin/admin-players/${selectedPlayer.id}`,
+        {
+          withCredentials: true, 
+        }
+      );
       setFeedbackMessage({
         type: "success",
         text: `Player "${selectedPlayer.name}" deleted successfully!`,

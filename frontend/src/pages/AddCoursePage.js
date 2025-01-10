@@ -75,12 +75,18 @@ const AddCoursePage = () => {
       if (editCourse) {
         await axios.put(
           `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${editCourse.id}`,
-          payload
+          payload,
+            {
+              withCredentials: true, // Correct placement
+            }
         );
       } else {
         await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/admin/courses/add-course`,
-          payload
+          payload,
+          {
+            withCredentials: true, // Correct placement
+          }
         );
       }
 
@@ -117,7 +123,10 @@ const AddCoursePage = () => {
   const handleDeleteCourse = async (id) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${id}`
+        `${process.env.REACT_APP_API_BASE_URL}/admin/courses/${id}`,
+        {
+          withCredentials: true, // Correct placement
+        }
       );
       setCourses((prev) => prev.filter((course) => course.id !== id));
       setFeedbackMessage({

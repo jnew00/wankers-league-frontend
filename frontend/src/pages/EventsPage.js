@@ -132,7 +132,10 @@ const EventsPage = () => {
 
   const savePairings = async (updatedPairings) => {
     try {
-      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: updatedPairings });
+      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: updatedPairings }, 
+      {
+        withCredentials: true, 
+      });
       setPairings(updatedPairings);
     } catch (error) {
       console.error("Error saving pairings:", error.message);
@@ -170,6 +173,9 @@ const EventsPage = () => {
     try {
       await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, {
         pairings: updatedPairings,
+      },
+      {
+        withCredentials: true,
       });
 
     } catch (error) {
@@ -250,7 +256,9 @@ const EventsPage = () => {
 
   const handleDeletePlayer = async (playerId, playerName) => {
     try {
-      await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`);
+      await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`,{
+        withCredentials: true,
+      });
        // Remove player from eventPlayers
     const updatedPlayers = eventPlayers.filter((player) => player.player_id !== playerId);
     setEventPlayers(updatedPlayers);
@@ -304,6 +312,9 @@ const EventsPage = () => {
       // Add the player to the event in the database
       const response = await axios.post(`${API_BASE_URL}/admin/events/${selectedEvent}/players`, {
         playerId: selectedPlayer,
+      },
+      {
+        withCredentials: true, 
       });
   
       const newPlayer = response.data;
@@ -345,7 +356,11 @@ const EventsPage = () => {
   const clearPairings = async () => {
     try {
       // Reset pairings in the backend
-      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: [] });
+      await axios.post(`${API_BASE_URL}/pairings/${selectedEvent}`, { pairings: [] },
+        {
+          withCredentials: true, 
+        }
+      );
   
       // Clear pairings in the frontend
       setPairings([]);
@@ -419,10 +434,15 @@ const EventsPage = () => {
                       {event.course_name}
                    
                     {event.is_major && (
-                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded-full">
                         Major
                       </span>
                     )}
+                      {!event?.fedup_eligible && (
+                        <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                          Non-FedUp Eligible
+                        </span>
+                         )}
                   </div>
                   <div className="flex items-center space-x-2 text-blue-500">
                       <svg

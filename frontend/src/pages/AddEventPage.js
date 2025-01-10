@@ -127,7 +127,6 @@ const AddEventPage = () => {
     try {
       if (selectedEvent) {
         // Update existing event
-        console.log("selectedEvent.value", selectedEvent.value);
         await axios.put(
           `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.value}`,
           {
@@ -138,14 +137,24 @@ const AddEventPage = () => {
             cost,
             fedupEligible,
             numTeetimes,
+          },
+          {
+            withCredentials: true, // Correct placement
           }
         );
-
+        Swal.fire({
+          icon: 'success',
+          title: 'Event Updated!',
+          text: 'The event has been successfully updated.',
+          confirmButtonText: 'Great!',
+        }).then(() => {
+          navigate('/events'); 
+        });
 
       } else {
         // Add new event
         await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}/admin/events/events`,
+          `${process.env.REACT_APP_API_BASE_URL}/admin/events/events`, 
           {
             courseId: selectedCourse.value,
             date,
@@ -154,19 +163,22 @@ const AddEventPage = () => {
             cost,
             fedupEligible,
             numTeetimes,
-
+          },
+          {
+            withCredentials: true, // Correct placement
           }
         );
+        Swal.fire({
+          icon: 'success',
+          title: 'Event Added!',
+          text: 'The new event has been successfully added.',
+          confirmButtonText: 'Great!',
+        }).then(() => {
+          navigate('/events'); // Navigate after confirmation
+        });
       }
-      Swal.fire({
-        icon: 'success',
-        title: 'Event Added!',
-        text: 'The new event has been successfully added.',
-        confirmButtonText: 'Great!',
-      }).then(() => {
-        navigate('/events'); // Navigate after confirmation
-      });
-      
+
+
     } catch (error) {
       console.error("Error saving event:", error.message);
       setFeedbackMessage({
