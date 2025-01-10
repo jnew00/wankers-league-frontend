@@ -17,7 +17,7 @@ const PlayerList = ({
   handleAddPlayer,
   handleCancelEdit,
 }) => {
-  const isFedupEligible = selectedEvent?.fedup_eligible;
+  const isFedupEligible = selectedEvent?.isFedupEligible;
 
   useEffect(() => {
     tippy('[data-tippy-content]');
@@ -28,7 +28,7 @@ const PlayerList = ({
       
       <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
   
-        {!selectedEvent?.fedup_eligible && (
+        {!isFedupEligible && (
           <span
           className="px-2 py-1 text-xs font-bold text-red-800 bg-red-200 rounded-lg cursor-pointer"
           data-tippy-content="This event is non-FedUp eligible. Points will not be counted."
@@ -134,8 +134,10 @@ const PlayerList = ({
                 <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <input
+                      min={0}
+                      max={10}
                       type="number"
-                      value={player.score || ""}
+                      value={player.score || 0}
                       onChange={(e) =>
                         handlePlayerChange(
                           index,
@@ -143,8 +145,8 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center"
-                    />
+                      className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none"
+                      />
                   ) : (
                     <div className="h-8 flex items-center">{player.score || 0}</div>
                   )}
@@ -176,6 +178,8 @@ const PlayerList = ({
                 {player.isEditing ? (
                     <input
                       type="number"
+                      min={0}
+                      max={10}
                       value={player.ctps || 0}
                       disabled={!isFedupEligible}
                       onChange={(e) =>
@@ -185,7 +189,7 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
+                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
@@ -197,6 +201,8 @@ const PlayerList = ({
                <td className="p-4 text-left w-16 h-8">
                 {player.isEditing ? (
                     <input
+                      min={0}
+                      max={10}
                       type="number"
                       value={player.skins  || 0}
                       disabled={!isFedupEligible}
@@ -207,7 +213,7 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
+                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
@@ -219,6 +225,8 @@ const PlayerList = ({
                 <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <input
+                      min={0}
+                      max={1000}
                       type="number"
                       value={Number(player.money_won || 0)}
                       disabled={!isFedupEligible}
@@ -229,7 +237,7 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm text-center ${
+                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />

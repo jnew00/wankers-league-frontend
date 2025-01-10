@@ -163,6 +163,7 @@ const AdminPage = () => {
           date: details.date,
           courseName: details.course_name,
           isMajor: details.is_major,
+          isFedupEligible: details.fedup_eligible
         });
       } catch (error) {
         console.error("Error fetching event data:", error.message);
