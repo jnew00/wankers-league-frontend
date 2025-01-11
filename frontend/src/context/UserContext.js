@@ -1,36 +1,37 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 
-// Create the context
 const UserContext = createContext();
 
-// Provider component
 export const UserProvider = ({ children }) => {
   const [role, setRole] = useState("guest"); // Default role
 
-  // Validate session on app load
   useEffect(() => {
     const validateSession = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/validate`, {
-          withCredentials: true, // Ensure cookies are sent
+          withCredentials: true, 
         });
-        setRole(response.data.role); // Update role if session is valid
+        setRole(response.data.role); 
+        localStorage.setItem("role", response.data.role); 
       } catch (error) {
         console.error("Session validation failed:", error.message);
-        setRole("guest"); // Fallback to guest if validation fails
+        setRole("guest"); 
+        localStorage.removeItem("role");
       }
     };
 
-    validateSession(); // Call the validation function
-  }, []); // Run only once on component mount
+    validateSession(); 
+  }, []); 
 
   const login = (newRole) => {
-    setRole(newRole); // Update role after login
+    setRole(newRole);
+    localStorage.setItem("role", newRole);
   };
 
   const logout = () => {
-    setRole("guest"); // Reset role to guest on logout
+    setRole("guest"); 
+    localStorage.removeItem("role");
   };
 
   return (

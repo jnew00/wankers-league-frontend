@@ -208,7 +208,6 @@ const EventsPage = () => {
         i += 3;
       } else {
         // Handle remaining players (<3 players left)
-        console.log("Adding remaining players:", shuffledPlayers.slice(i));
         newPairings.push(shuffledPlayers.slice(i));
         break;
       }
@@ -329,13 +328,9 @@ const EventsPage = () => {
         return;
       }
   
-      // Update the eventPlayers list
       setEventPlayers((prevPlayers) => [...prevPlayers, normalizedPlayer]);
-      console.log("Updated eventPlayers:", [...eventPlayers, normalizedPlayer]);
-
 
       if (pairings.length > 0) {
-        console.log("Adding player to existing pairings...");
         await addPlayerToPairings(normalizedPlayer);
       }
   

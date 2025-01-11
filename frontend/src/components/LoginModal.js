@@ -13,7 +13,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
     try {
       const response = await axios.post(
-        "/api/auth/login",
+        `${process.env.REACT_APP_API_BASE_URL}/auth/login`,
         { username, password },
         { withCredentials: true }
       );
