@@ -237,9 +237,16 @@ const EventsPage = () => {
       setEventDetails({
         ...event.details, scorecard:event.scorecard, total_yardage: event.total_yardage, group_pairings: response.data.group_pairings
       });
-      
+          
+      const normalizedPlayers = event.players
+        .map((player) => ({
+          ...player,
+          quota: player.quota || player.current_quota, // Normalize quota field
+        }))
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by created_at
 
-      setEventPlayers(event.players);
+
+      setEventPlayers(normalizedPlayers);
       setScorecard(event.scorecard);
 
       const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
