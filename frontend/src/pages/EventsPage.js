@@ -320,7 +320,8 @@ const EventsPage = () => {
   
       const normalizedPlayer = {
         ...newPlayer,
-        player_id: newPlayer.id, // Map `id` to `player_id` for consistency
+        player_id: newPlayer.id,
+        quota: newPlayer.current_quota
       };
   
       if (!normalizedPlayer.name || !normalizedPlayer.player_id) {
@@ -330,6 +331,8 @@ const EventsPage = () => {
   
       // Update the eventPlayers list
       setEventPlayers((prevPlayers) => [...prevPlayers, normalizedPlayer]);
+      console.log("Updated eventPlayers:", [...eventPlayers, normalizedPlayer]);
+
 
       if (pairings.length > 0) {
         console.log("Adding player to existing pairings...");
