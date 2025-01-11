@@ -12,7 +12,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const validateSession = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/auth/validate", {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/validate`, {
           withCredentials: true, // Ensure cookies are sent
         });
         setRole(response.data.role); // Update role if session is valid
