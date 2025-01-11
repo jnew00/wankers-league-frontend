@@ -135,7 +135,7 @@ const PlayerList = ({
                   {player.isEditing ? (
                     <input
                       min={0}
-                      max={10}
+                      max={40}
                       type="number"
                       value={player.score || 0}
                       onChange={(e) =>
