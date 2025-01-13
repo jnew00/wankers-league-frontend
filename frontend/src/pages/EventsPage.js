@@ -340,7 +340,7 @@ const EventsPage = () => {
         return updatedPlayers.sort((a, b) => a.name.localeCompare(b.name));
       });
 
-      
+
       if (pairings.length > 0) {
         await addPlayerToPairings(normalizedPlayer);
       }
@@ -765,12 +765,12 @@ const EventsPage = () => {
                               {player.rank || "N/A"}
                             </td>
                             <td className="p-4 text-left">{player.name}</td>
-                            <td className="p-4 text-center">{player.quota}</td>
+                            <td className="p-4 text-center">{player.event_quota}</td>
                             <td className="p-4 text-center">{player.score}</td>
                             <td className="p-4 text-center">
                               {player.score - player.quota > 0 ? (
                                 <span className="text-green-500">
-                                  +{player.score - player.quota}
+                                  +{player.score - player.event_quota}
                                 </span>
                               ) : (
                                 <span className="text-red-500">
