@@ -239,11 +239,12 @@ const EventsPage = () => {
       });
           
       const normalizedPlayers = event.players
-        .map((player) => ({
-          ...player,
-          quota: player.quota || player.current_quota, // Normalize quota field
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+      .map((player) => ({
+        ...player,
+        quota: player.quota || player.current_quota, // Normalize quota field
+        scoreDiff: (player.score - player.event_quota), // Calculate score - quota
+      }))
+      .sort((a, b) => b.scoreDiff - a.scoreDiff); 
 
 
       setEventPlayers(normalizedPlayers);
@@ -762,7 +763,7 @@ const EventsPage = () => {
                         {eventPlayers.map((player, index) => (
                           <tr key={player.player_id}>
                             <td className="p-4 text-center">
-                              {player.rank || "N/A"}
+                              {player.rank || "-"}
                             </td>
                             <td className="p-4 text-left">{player.name}</td>
                             <td className="p-4 text-center">{player.event_quota}</td>
