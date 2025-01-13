@@ -254,14 +254,18 @@ const LeaderboardPage = () => {
                     onClick={() => setSelectedPlayer(player)}
                   />
                 </td>
-                <td className="p-4 text-left"><span>{player.name}</span>
-                  {player.season_paid && (
+                <td className="p-4 text-left">
+                  <div className="flex items-center space-x-2">
+                    <span>{player.name}</span>
+                    {player.season_paid && (
                       <FaMoneyBillAlt
                         className="text-green-500 paidToolTip"
                         title="Paid for Season"
                       />
-                     )}
+                    )}
+                  </div>
                 </td>
+
                 <td className="p-2 text-center">{player.current_quota}</td>
                 <td className="p-2 text-center">${Number(player.money_won || 0).toFixed(2)}</td>
                 <td className="p-2 text-center">{player.skins}</td>
