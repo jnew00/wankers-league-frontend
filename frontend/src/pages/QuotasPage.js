@@ -56,9 +56,9 @@ const QuotasPage = () => {
         const processedQuotas = response.data.quotas.map((player) => ({
           name: player.player_name || "N/A",
           current_quota: player.current_quota || 0,
-          previous_quota: player.previous_quota || 0,
-          best_season_score: player.best_season_score || 0,
-          season_average: parseFloat(player.season_average) || 0,
+          lowest_score: player.lowest_score || 0,
+          best_score: player.best_score || 0,
+          average_score: parseFloat(player.average_score) || 0,
           date: new Date(player.date),
         }));
 
@@ -113,11 +113,11 @@ const QuotasPage = () => {
   // Dynamic labels based on selected season
   const isAllTime = selectedSeason === "All Time";
   const scoreLabel = isAllTime
-    ? "All Time Best Score"
-    : `${selectedSeason} Best Score`;
+    ? "All Time"
+    : `${selectedSeason}`;
   const averageLabel = isAllTime
-    ? "All Time Average"
-    : `${selectedSeason} Average`;
+    ? "All Time"
+    : `${selectedSeason}`;
 
   // Custom styles for smaller select dropdown
   const customStyles = {
@@ -153,7 +153,7 @@ const QuotasPage = () => {
     <div>
       <Navbar />
       <PageHeader
-        title="Quotas Overview"
+        title="Scores Overview"
         updatedText={latestUpdateTime ? `Updated on: ${new Date(latestUpdateTime).toLocaleString()}` : ""}
       />
       <div className="max-w-7xl mx-auto px-4 py-1">
@@ -182,27 +182,27 @@ const QuotasPage = () => {
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
-                onClick={() => handleSort("current_quota")}
+                onClick={() => handleSort("highest_score")}
               >
                 Current Quota {sortConfig.key === "current_quota" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
-                onClick={() => handleSort("previous_quota")}
+                onClick={() => handleSort("lowest_score")}
               >
-                Previous Quota {sortConfig.key === "previous_quota" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                {scoreLabel} Lowest Score {sortConfig.key === "lowest_score" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
-                onClick={() => handleSort("best_season_score")}
+                onClick={() => handleSort("best_score")}
               >
-                {scoreLabel} {sortConfig.key === "best_season_score" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                {scoreLabel} Best Score {sortConfig.key === "best_score" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
-                onClick={() => handleSort("season_average")}
+                onClick={() => handleSort("average_score")}
               >
-                {averageLabel} {sortConfig.key === "season_average" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                {averageLabel} Average Score {sortConfig.key === "average_score" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
             </tr>
           </thead>
@@ -216,11 +216,11 @@ const QuotasPage = () => {
               >
                 <td className="p-4 text-left">{player.name}</td>
                 <td className="p-4 text-center font-bold">{player.current_quota}</td>
-                <td className="p-4 text-center">{player.previous_quota}</td>
-                <td className="p-4 text-center">{player.best_season_score}</td>
+                <td className="p-4 text-center">{player.lowest_score}</td>
+                <td className="p-4 text-center">{player.best_score}</td>
                 <td className="p-4 text-center">
-                  {typeof player.season_average === "number"
-                    ? player.season_average.toFixed(2)
+                  {typeof player.average_score === "number"
+                    ? player.average_score.toFixed(2)
                     : "N/A"}
                 </td>
               </tr>
