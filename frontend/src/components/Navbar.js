@@ -15,7 +15,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Leaderboard", href: "/" },
-    { name: "Quota Stats", href: "/quotas" },
+    { name: "Score Stats", href: "/quotas" },
     { name: "Events", href: "/events" },
     { name: "Rules", href: "/rules" },
   ];
