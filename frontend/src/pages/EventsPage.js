@@ -243,7 +243,7 @@ const EventsPage = () => {
           ...player,
           quota: player.quota || player.current_quota, // Normalize quota field
         }))
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by created_at
+        .sort((a, b) => a.name.localeCompare(b.name));
 
 
       setEventPlayers(normalizedPlayers);
@@ -335,8 +335,12 @@ const EventsPage = () => {
         return;
       }
   
-      setEventPlayers((prevPlayers) => [...prevPlayers, normalizedPlayer]);
+      setEventPlayers((prevPlayers) => {
+        const updatedPlayers = [...prevPlayers, normalizedPlayer];
+        return updatedPlayers.sort((a, b) => a.name.localeCompare(b.name));
+      });
 
+      
       if (pairings.length > 0) {
         await addPlayerToPairings(normalizedPlayer);
       }
