@@ -10,7 +10,7 @@ const QuotasPage = () => {
   const [quotas, setQuotas] = useState([]);
   const [filteredQuotas, setFilteredQuotas] = useState([]);
   const [sortConfig, setSortConfig] = useState({
-    key: "current_quota",
+    key: "average_score",
     direction: "desc",
   });
   const [latestUpdateTime, setLatestUpdateTime] = useState(null);
@@ -176,13 +176,13 @@ const QuotasPage = () => {
             <tr>
               <th
                 className="p-2 text-left cursor-pointer"
-                onClick={() => handleSort("player_name")}
+                onClick={() => handleSort("name")}
               >
-                Name {sortConfig.key === "player_name" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
-                onClick={() => handleSort("highest_score")}
+                onClick={() => handleSort("current_quota")}
               >
                 Current Quota {sortConfig.key === "current_quota" && (sortConfig.direction === "asc" ? "▲" : "▼")}
               </th>
