@@ -84,11 +84,6 @@ const EventsPage = () => {
   }, [API_BASE_URL]);
 
 
-  const setSortedEventPlayers = (players) => {
-    setEventPlayers(players.sort((a, b) => a.name.localeCompare(b.name)));
-  };
-
-
   const availablePlayers = (allPlayers || []).filter(
     (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
   );
@@ -675,6 +670,9 @@ const EventsPage = () => {
 </div>
 {/* End Pairings Table */}
 
+
+{["admin", "moderator"].includes(role) && (
+   <>
     <h3 className="text-lg font-bold text-gray-700 mt-6">Add Player</h3>
     <div className="flex items-center space-x-4">
       <select
@@ -696,6 +694,8 @@ const EventsPage = () => {
         Add Player
       </button>
     </div>
+    </>
+)}
   </div>
 )}
 
