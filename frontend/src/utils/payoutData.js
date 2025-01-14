@@ -1,0 +1,30 @@
+const payoutData = [
+    { players: 4, places: 1, payouts: [40] },
+    { players: 5, places: 2, payouts: [40, 10] },
+    { players: 6, places: 2, payouts: [40, 20] },
+    { players: 7, places: 2, payouts: [45, 25] },
+    { players: 8, places: 3, payouts: [45, 20, 15] },
+    { players: 9, places: 3, payouts: [45, 30, 15] },
+    { players: 10, places: 3, payouts: [50, 30, 20] },
+    { players: 11, places: 4, payouts: [50, 30, 20, 10] },
+    { players: 12, places: 4, payouts: [50, 35, 20, 15] },
+    { players: 13, places: 4, payouts: [55, 35, 25, 15] },
+    { players: 14, places: 4, payouts: [60, 40, 25, 15] },
+    { players: 15, places: 5, payouts: [60, 40, 25, 15, 10] },
+    { players: 16, places: 5, payouts: [60, 40, 30, 20, 10] },
+    { players: 17, places: 5, payouts: [65, 40, 30, 20, 15] },
+    { players: 18, places: 5, payouts: [65, 45, 35, 20, 15] },
+    { players: 19, places: 6, payouts: [70, 45, 30, 20, 15, 10] },
+    { players: 20, places: 6, payouts: [70, 45, 35, 25, 15, 10] },
+    { players: 21, places: 6, payouts: [70, 45, 35, 25, 20, 15] },
+    { players: 22, places: 7, payouts: [70, 45, 35, 25, 20, 15, 10] },
+    { players: 23, places: 7, payouts: [75, 50, 35, 25, 20, 15, 10] },
+    { players: 24, places: 7, payouts: [75, 50, 40, 30, 20, 15, 10] },
+    { players: 25, places: 7, payouts: [75, 50, 40, 30, 25, 20, 10] },
+    { players: 26, places: 8, payouts: [75, 50, 40, 30, 25, 20, 15, 5] },
+    { players: 27, places: 8, payouts: [75, 50, 40, 30, 25, 20, 10, 10] },
+    { players: 28, places: 8, payouts: [75, 50, 40, 30, 25, 25, 20, 15] },
+  ];
+  
+  export default payoutData;
+  

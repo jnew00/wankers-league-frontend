@@ -11,6 +11,12 @@ module.exports = {
         "upper-roman": "upper-roman",
       },
     },
+    safelist: [
+      // Custom class for number input arrows
+      {
+        pattern: /no-arrows/,
+      },
+    ],
   },
   plugins: [],
 };

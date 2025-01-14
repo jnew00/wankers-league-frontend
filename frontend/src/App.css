@@ -13,6 +13,14 @@
   }
 }
 
+/* Custom class to remove number input arrows */
+.no-arrows {
+  -webkit-appearance: none; /* For Chrome, Safari, Edge, Opera */
+  -moz-appearance: textfield; /* For Firefox */
+  appearance: none;
+}
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;

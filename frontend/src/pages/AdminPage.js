@@ -19,6 +19,9 @@ import Modal from "../components/Modal";
 import axios from "axios";
 import Footer from "../components/Footer";
 import Swal from 'sweetalert2';
+import { calculateMoneyWonAndPot } from '../utils/moneyUtils';
+
+
 
 
 const AdminPage = () => {
@@ -35,8 +38,9 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const [feedbackMessage, setFeedbackMessage] = useState(null);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-
-
+  const [remainingPot, setRemainingPot] = useState(0);
+  const [ctpPot, setCtpPot] = useState(0);
+  const [skinPot, setSkinPot] = useState(0);
   const queryParams = new URLSearchParams(location.search);
   const eventId = queryParams.get("eventId"); // Get the eventId from the query string
   
@@ -48,6 +52,30 @@ const AdminPage = () => {
     setIsSubmitModalOpen(false);
   };
 
+  useEffect(() => {
+    const fetchPotValues = async () => {
+      if (selectedEvent?.id) {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/pots`
+          );
+          const { remainingPot, remainingSkinPot, remainingCtpPot } = response.data;
+  
+          setRemainingPot(remainingPot);
+          setSkinPot(remainingSkinPot);
+          setCtpPot(remainingCtpPot);
+        } catch (error) {
+          console.error("Error fetching pot values:", error);
+        }
+      }
+    };
+  
+    fetchPotValues();
+  }, [selectedEvent]);
+  
+
+
+  
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -184,17 +212,22 @@ const AdminPage = () => {
       prevPlayers.map((player, i) =>
         i === index
           ? {
-              ...player,
+              ...player.backup, // Restore all fields from the backup
               isEditing: false, // Exit edit mode
-              ctps: player.originalCtps || player.ctps,
-              skins: player.originalSkins || player.skins,
-              money_won: player.originalMoneyWon || player.money_won,
-              rank: player.originalRank || player.rank,
+              backup: undefined, // Clear the backup after restoring
             }
           : player
       )
     );
+
+    const backupPlayer = players[index]?.backup;
+  if (backupPlayer) {
+    setRemainingPot(backupPlayer.remainingPot);
+    setSkinPot(backupPlayer.skinPot);
+    setCtpPot(backupPlayer.ctpPot);
+  }
   };
+  
 
   const handleSavePlayer = async (player, index) => {
     try {
@@ -214,14 +247,20 @@ const AdminPage = () => {
           calculatedQuota
         },
         {
-          withCredentials: true, // Correct placement
+          withCredentials: true,
         }
       );
 
    
       setPlayers((prevPlayers) =>
         prevPlayers.map((p, i) =>
-          i === index ? { ...p, isEditing: false } : p
+          i === index
+            ? {
+                ...p,
+                isEditing: false, // Exit edit mode
+                backup: undefined, // Remove the backup after saving
+              }
+            : p
         )
       );
 
@@ -264,13 +303,19 @@ const AdminPage = () => {
   const toggleEditMode = useCallback((index) => {
     setPlayers((prevPlayers) => {
       const updatedPlayers = [...prevPlayers];
+      const player = updatedPlayers[index];
+  
       updatedPlayers[index] = {
-        ...updatedPlayers[index],
-        isEditing: !updatedPlayers[index].isEditing,
+        ...player,
+        isEditing: !player.isEditing,
+        // Only add a backup when entering edit mode
+        backup: player.isEditing ? undefined : { ...player, remainingPot, skinPot, ctpPot },
       };
+  
       return updatedPlayers;
     });
-  }, []);
+  }, [remainingPot, skinPot, ctpPot]);
+  
 
   const handleAddPlayer = () => {
     setPlayers((prevPlayers) => [
@@ -278,7 +323,7 @@ const AdminPage = () => {
       {
         player_id: null,
         name: "",
-        ctps: 0,
+        ctps: null,
         skins: 0,
         money_won: 0,
         total_points: 0,
@@ -293,19 +338,42 @@ const AdminPage = () => {
     (index, field, value) => {
       setPlayers((prevPlayers) => {
         const updatedPlayers = [...prevPlayers];
-        const player = updatedPlayers[index];
+        // const player = updatedPlayers[index];
+        const player = { ...updatedPlayers[index] };
 
-        player[field] =
-          field === "player_id" || field === "rank" ? Number(value) : value;
+        // player[field] =
+        //   field === "player_id" || field === "rank" ? Number(value) : value;
+        player[field] = value;
 
-        player.total_points = calculateTotalPoints(
-          player,
-          pointsConfig,
-          selectedEvent?.isMajor,
-          selectedEvent?.isFedupEligible
-        );
+          updatedPlayers[index] = player;
 
-        return updatedPlayers;
+          const recalculatedPlayers = updatedPlayers.map((p, i) => {
+            if (i === index && field === "money_won") {
+              return { ...p }; // Keep manually updated money_won
+            }
+            return {
+            ...p,
+            total_points: calculateTotalPoints(
+              p,
+              pointsConfig,
+              selectedEvent?.isMajor,
+              selectedEvent?.isFedupEligible,
+              updatedPlayers // Pass the updated list for tie calculations
+            ),
+          };
+          });
+
+        const { updatedPlayers: playersWithMoney, remainingPot, remainingSkinPot, remainingCtpPot } =
+        calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
+  
+        setRemainingPot(remainingPot);
+        setSkinPot(remainingSkinPot);
+        setCtpPot(remainingCtpPot);
+
+        console.log("Player Money Won:", player.money_won);
+
+
+        return playersWithMoney;
       });
     },
     [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible] // Only recalculate if these dependencies change
@@ -441,6 +509,9 @@ const AdminPage = () => {
               selectedEvent={selectedEvent}
               handleAddPlayer={handleAddPlayer}
               handleCancelEdit={handleCancelEdit}
+              ctpPot={ctpPot}
+              skinPot={skinPot}
+              remainingPot={remainingPot}
             />
           )}
             <button

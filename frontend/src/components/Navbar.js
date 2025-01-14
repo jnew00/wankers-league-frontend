@@ -59,7 +59,7 @@ const Navbar = () => {
        
 
           {/* Admin Dropdown (Visible to Admins Only) */}
-          {role === "admin" && (
+          {["admin", "moderator"].includes(role) && (
             <div
               className="relative"
               onMouseEnter={handleMouseEnter}
@@ -97,12 +97,15 @@ const Navbar = () => {
                   >
                     Manage Courses
                   </Link>
+            {/* "Record Results" is only visible to Admin */}
+            {role === "admin" && (
                   <Link
                     to="/admin/record-results"
                     className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
                   >
                     Record Results
                   </Link>
+            )}
                 </div>
               )}
             </div>

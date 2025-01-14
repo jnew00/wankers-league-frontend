@@ -4,8 +4,6 @@ import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
 
-
-
 const PlayerList = ({
   players = [],
   allPlayers = [],
@@ -16,6 +14,9 @@ const PlayerList = ({
   selectedEvent,
   handleAddPlayer,
   handleCancelEdit,
+  ctpPot,
+  skinPot,
+  remainingPot,
 }) => {
   const isFedupEligible = selectedEvent?.isFedupEligible;
 
@@ -38,20 +39,20 @@ const PlayerList = ({
         )}
       </h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+      <table className="min-w-full table-fixed border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
         <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
-              <th className="p-4 text-left w-16">Rank</th>
+              <th className="p-4 text-left w-20">Rank</th>
               <th className="p-4 text-left w-40">Player</th>
               <th className="p-4 text-center w-24">Quota</th>
               <th className="p-4 text-center w-24">Score</th>
               <th className="p-4 text-center w-24">+/-</th>
               <th className="p-4 text-center w-24">New Quota</th>
-              <th className="p-4 text-center w-24">CTPs</th>
-              <th className="p-4 text-center w-24">Skins</th>
+              <th className="p-1 text-center w-40">CTPs</th>
+              <th className="p-1 text-center w-40">Skins</th>
               <th className="p-4 text-center w-24">Money Won</th>
               <th className="p-4 text-center w-32">Total Points</th>
-              <th className="p-4 text-center w-40">Actions</th>
+              <th className="p-4 text-center w-32">Actions</th>
             </tr>
           </thead>
 
@@ -63,7 +64,7 @@ const PlayerList = ({
                   index % 2 === 0 ? "bg-blue-50" : "bg-white"
                 } hover:bg-blue-100 border-b`}
               >
-                <td className="p-4 text-left w-16 h-8">
+                <td className="p-4 text-left w-20 h-8">
                   {player.isEditing ? (
                     <select
                       value={player.rank || ""}
@@ -126,12 +127,58 @@ const PlayerList = ({
                         ))}
                     </select>
                   ) : (
-                    <div className="h-8 flex items-center">{player.name || "N/A"}</div>
+                    <div className="h-8 flex items-center">{player.name || "-"}</div>
                   )}
                 </td>
-                <td className="p-4 text-center">{player.quota || "N/A"}</td>
+                <td className="p-4 w-24 text-center h-8">{player.quota || "-"}</td>
 
-                <td className="p-4 text-left w-16 h-8">
+{/* Score Editing */}
+                <td className="p-4 w-24 text-center h-8">
+                    {player.isEditing ? (
+                      <input
+                        type="text" // Change to text to remove number input arrows
+                        value={player.score === 0 || player.score === null ? "" : player.score}
+                        placeholder="score"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numericValue = value === "" ? null : Number(value);
+                          // Allow only valid numbers within range
+                          if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 40)) {
+                            handlePlayerChange(index, "score", numericValue);
+                          }
+                        }}
+                        className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500  w-12 h-8 text-center transition-all"
+                      />
+                    ) : (
+                      <div className="h-8 flex items-center justify-center">{player.score || 0}</div>
+                    )}
+                  </td>
+                  <td className="p-4 w-24 text-center font-bold">
+                    {player.score !== null && player.quota !== null ? (
+                      <>
+                        {player.score - player.quota > 0 ? (
+                          <span className="text-green-500">
+                            +{player.score - player.quota}
+                          </span>
+                        ) : player.score - player.quota < 0 ? (
+                          <span className="text-red-500">
+                            {player.score - player.quota}
+                          </span>
+                        ) : (
+                          "0"
+                        )}
+                      </>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
+                  <td className="p-4 text-center font-bold">
+                    {calculateQuota(player.quota, player.score) || 0}
+                  </td>
+
+
+
+                {/* <td className="p-4 text-left w-16 h-8">
                   {player.isEditing ? (
                     <input
                       min={0}
@@ -172,57 +219,119 @@ const PlayerList = ({
                 </td>
                 <td className="p-4 text-center font-bold">
                   {calculateQuota(player.quota, player.score) || 0}
-                </td>
+                </td> */}
 
-                <td className="p-4 text-left w-16 h-8">
-                {player.isEditing ? (
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      value={player.ctps || 0}
-                      disabled={!isFedupEligible}
-                      onChange={(e) =>
-                        handlePlayerChange(
-                          index,
-                          "ctps",
-                          Number(e.target.value)
-                        )
-                      }
-                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
-                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
-                      }`}
-                    />
-                  ) : (
-                    <div className="h-8 flex items-center">{player.ctps || 0}</div>
-                  )}
-                </td>
+{/* CTPs Editing */}
 
-               <td className="p-4 text-left w-16 h-8">
-                {player.isEditing ? (
-                    <input
-                      min={0}
-                      max={10}
-                      type="number"
-                      value={player.skins  || 0}
-                      disabled={!isFedupEligible}
-                      onChange={(e) =>
-                        handlePlayerChange(
-                          index,
-                          "skins",
-                          Number(e.target.value)
-                        )
-                      }
-                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
-                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
-                      }`}
-                    />
-                  ) : (
-                    <div className="h-8 flex items-center">{player.skins || 0}</div>
-                  )}
-                </td>
+          <td className="text-center w-40 h-8">
+            {player.isEditing ? (
+              <div className="flex items-center space-x-1 justify-center">
+                {/* Decrement Button */}
+                <button
+                  onClick={() => {
+                    if (player.ctps > 0) {
+                      handlePlayerChange(index, "ctps", player.ctps - 1);
+                    }
+                  }}
+                  className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
+                  disabled={!isFedupEligible || player.ctps <= 0}
+                >
+                 -
+                </button>
 
-                <td className="p-4 text-left w-16 h-8">
+                {/* Display Value */}
+                <span className="font-medium">{player.ctps || 0}</span>
+
+                {/* Increment Button */}
+                <button
+                  onClick={() =>
+                    handlePlayerChange(index, "ctps", player.ctps + 1)
+                  }
+                  className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
+                  disabled={!isFedupEligible || player.ctps >= 4}
+
+                >
+                   +
+                </button>
+              </div>
+            ) : (
+              <div className="h-8 flex items-center justify-center">{player.ctps || 0}</div>
+            )}
+          </td>
+
+
+
+
+{/* Skins Editing */}
+
+        <td className="text-left w-40 h-8">
+            {player.isEditing ? (
+              <div className="flex items-center space-x-1 justify-center">
+                {/* Decrement Button */}
+                <button
+                  onClick={() => {
+                    if (player.skins > 0) {
+                      handlePlayerChange(index, "skins", player.skins - 1);
+                    }
+                  }}
+                  className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
+                  disabled={!isFedupEligible || player.skins <= 0}
+                >
+                  -
+                </button>
+
+                {/* Display Value */}
+                <span className="font-medium">{player.skins || 0}</span>
+
+                {/* Increment Button */}
+                <button
+                  onClick={() =>
+                    handlePlayerChange(index, "skins", player.skins + 1)
+                  }
+                  className="bg-blue-500 hover:bg-blue-700 text-white px-0 py-0 rounded w-6 h-6 text-center font-bold"
+                  disabled={!isFedupEligible}
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <div className="h-8 flex items-center justify-center">{player.skins || 0}</div>
+            )}
+          </td>
+
+
+{/* Money Editing */}
+<td className="p-4 w-24 text-center h-8">
+                    {player.isEditing ? (
+                      <input
+                        type="text" // Change to text to remove number input arrows
+                        value={player.money_won === 0 || player.money_won === null ? "" : player.money_won}
+                        placeholder="$"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numericValue = value === "" ? null : Number(value);
+                          // Allow only valid numbers within range
+                          if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 1000)) {
+                            handlePlayerChange(index, "money_won", numericValue);
+                          }
+                        }}
+                        className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 h-8 w-12 text-center transition-all appearance-none ${
+                          !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
+                        }`}
+                      />
+                      
+                    ) : (
+                      <div className="h-8 flex items-center justify-center">{player.money_won || 0}</div>
+                    )}
+                  </td>
+       
+
+
+
+
+{/* 
+
+                <td className="p-4 text-center w-24 h-8">
                   {player.isEditing ? (
                     <input
                       min={0}
@@ -237,7 +346,8 @@ const PlayerList = ({
                           Number(e.target.value)
                         )
                       }
-                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none ${
+
+                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500  w-10 h-8 text-sm text-center transition-all appearance-none ${
                         !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                     />
@@ -246,13 +356,13 @@ const PlayerList = ({
                   )}
 
 
-                </td>
+                </td> */}
 
-                <td className="p-4 text-center font-bold">
+                <td className="p-4 text-center w-32 font-bold">
                   {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
                 </td>
 
-                <td className="p-4 text-center w-40 h-8 whitespace-nowrap">
+                <td className="p-4 text-center w-32 h-8 whitespace-nowrap">
                 {player.isEditing ? (
                     <div className="flex items-center justify-center space-x-2">
 
@@ -292,6 +402,18 @@ const PlayerList = ({
             ))}
             {selectedEvent && (
               <tr className="bg-gray-100 hover:bg-gray-200">
+                          <td colSpan="6" className="p-4 text-right font-semibold">
+                Remaining Pots:
+              </td>
+              <td className="p-4 text-center font-semibold">
+                ${ctpPot.toFixed(2)}
+              </td>
+              <td className="p-4 text-center font-semibold">
+                ${skinPot.toFixed(2)}
+              </td>
+              <td className="p-4 text-center font-semibold">
+                ${remainingPot.toFixed(2)}
+              </td>
                 <td colSpan="11" className="p-2 text-right">
                   <button
                     onClick={handleAddPlayer}
