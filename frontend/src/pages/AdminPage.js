@@ -24,6 +24,7 @@ import { calculateMoneyWonAndPot } from '../utils/moneyUtils';
 
 
 
+
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -53,6 +54,15 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
+    players.forEach((player, index) => {
+      if (typeof player.player_id === "undefined" || player.player_id === null) {
+        console.error(`Player at index ${index} is missing a valid player_id:`, player);
+      }
+    });
+  }, [players]);
+  
+
+  useEffect(() => {
     const fetchPotValues = async () => {
       if (selectedEvent?.id) {
         try {
@@ -60,7 +70,7 @@ const AdminPage = () => {
             `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/pots`
           );
           const { remainingPot, remainingSkinPot, remainingCtpPot } = response.data;
-  
+
           setRemainingPot(remainingPot);
           setSkinPot(remainingSkinPot);
           setCtpPot(remainingCtpPot);
@@ -111,7 +121,11 @@ const AdminPage = () => {
   }, []);
   
   const memoizedAllPlayers = useMemo(() => allPlayers, [allPlayers]);
-  const memoizedPlayers = useMemo(() => players, [players]);
+
+  const memoizedPlayers = useMemo(() => {
+    return [...players].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [players]);
+  
 
   const handleCloseEvent = async () => {
     if (!selectedEvent) {
@@ -180,6 +194,7 @@ const AdminPage = () => {
               money_won: player.money_won || 0,
               total_points: player.total_points || 0,
               isEditing: false,
+              manualMoneyOverride: false,
             }))
           );
         } else {
@@ -207,29 +222,29 @@ const AdminPage = () => {
     }
   }, [eventId, handleEventChange]);
 
-  const handleCancelEdit = (index) => {
+  const handleCancelEdit = (playerId) => {
     setPlayers((prevPlayers) =>
-      prevPlayers.map((player, i) =>
-        i === index
-          ? {
-              ...player.backup, // Restore all fields from the backup
-              isEditing: false, // Exit edit mode
-              backup: undefined, // Clear the backup after restoring
-            }
-          : player
-      )
+      prevPlayers.map((player) => {
+        if (player.player_id === playerId) {
+          if (!player.backup) {
+            console.warn(`No backup found for player with ID ${playerId}`);
+            return { ...player, isEditing: false }; // Exit edit mode gracefully
+          }
+  
+          return {
+            ...player.backup, // Restore all fields from the backup
+            isEditing: false, // Exit edit mode
+            backup: undefined, // Clear the backup after restoring
+          };
+        }
+  
+        return player; // Return other players unchanged
+      })
     );
-
-    const backupPlayer = players[index]?.backup;
-  if (backupPlayer) {
-    setRemainingPot(backupPlayer.remainingPot);
-    setSkinPot(backupPlayer.skinPot);
-    setCtpPot(backupPlayer.ctpPot);
-  }
   };
   
 
-  const handleSavePlayer = async (player, index) => {
+  const handleSavePlayer = async (player) => {
     try {
 
       const calculatedQuota = calculateQuota(player.quota, player.score);
@@ -253,8 +268,8 @@ const AdminPage = () => {
 
    
       setPlayers((prevPlayers) =>
-        prevPlayers.map((p, i) =>
-          i === index
+        prevPlayers.map((p) =>
+          p.player_id === player.player_id
             ? {
                 ...p,
                 isEditing: false, // Exit edit mode
@@ -264,10 +279,10 @@ const AdminPage = () => {
         )
       );
 
-      setFeedbackMessage({
-        type: "success",
-        text: `Player "${player.name}" updated successfully!`,
-      });
+      // setFeedbackMessage({
+      //   type: "success",
+      //   text: `Player "${player.name}" updated successfully!`,
+      // });
 
     } catch (error) {
       setFeedbackMessage({
@@ -278,43 +293,95 @@ const AdminPage = () => {
     }
   };
 
-  const handleDeletePlayer = async (index, playerId) => {
+  const handleDeletePlayer = async (playerId) => {
+    // SweetAlert2 confirmation dialog
+    const confirmDelete = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will remove the player from the event.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete!',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+    });
+  
+    // If the user cancels, exit the function
+    if (!confirmDelete.isConfirmed) return;
+  
     try {
+      // Make the API call to delete the player
       await axios.delete(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/players/${playerId}`,
         {
-          withCredentials: true, // Correct placement
+          withCredentials: true,
         }
       );
-      setPlayers((prevPlayers) => prevPlayers.filter((_, i) => i !== index));
-
-      setFeedbackMessage({
-        type: "success",
-        text: `Player removed from event successfully!`,
+  
+      // Remove player from state and recalculate pots
+      setPlayers((prevPlayers) => {
+        const updatedPlayers = prevPlayers.filter(
+          (player) => player.player_id !== playerId
+        );
+  
+        // Recalculate pots and money won
+        const {
+          updatedPlayers: playersWithMoney,
+          remainingPot,
+          remainingSkinPot,
+          remainingCtpPot,
+        } = calculateMoneyWonAndPot(updatedPlayers, updatedPlayers.length);
+  
+        // Update pots
+        setRemainingPot(remainingPot);
+        setSkinPot(remainingSkinPot);
+        setCtpPot(remainingCtpPot);
+  
+        return playersWithMoney;
+      });
+  
+      // Provide success feedback
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: `The player was removed successfully.`,
+        confirmButtonColor: '#3085d6',
       });
     } catch (error) {
-      setFeedbackMessage({
-        type: "error",
-        text: "Failed to delete player data. Please try again or contact Jason!",
+      console.error("Error deleting player:", error);
+  
+      // Provide error feedback
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed!',
+        text: 'Failed to delete player data. Please try again or contact Jason!',
+        confirmButtonColor: '#3085d6',
       });
     }
   };
-
-  const toggleEditMode = useCallback((index) => {
-    setPlayers((prevPlayers) => {
-      const updatedPlayers = [...prevPlayers];
-      const player = updatedPlayers[index];
   
-      updatedPlayers[index] = {
-        ...player,
-        isEditing: !player.isEditing,
-        // Only add a backup when entering edit mode
-        backup: player.isEditing ? undefined : { ...player, remainingPot, skinPot, ctpPot },
-      };
   
-      return updatedPlayers;
-    });
-  }, [remainingPot, skinPot, ctpPot]);
+  const toggleEditMode = useCallback(
+    (playerId) => {
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((player) =>
+          player.player_id === playerId
+            ? {
+                ...player,
+                isEditing: !player.isEditing,
+                // Add backup only when entering edit mode
+                backup: player.isEditing
+                  ? undefined // Clear backup when exiting edit mode
+                  : { ...player, remainingPot, skinPot, ctpPot },
+              }
+            : player
+        )
+      );
+    },
+    [remainingPot, skinPot, ctpPot]
+  );
+  
+  
   
 
   const handleAddPlayer = () => {
@@ -335,49 +402,60 @@ const AdminPage = () => {
   };
 
   const handlePlayerChange = useCallback(
-    (index, field, value) => {
+    (playerId, field, value) => {
+
       setPlayers((prevPlayers) => {
+        // Find the index of the player using player_id
+        const playerIndex = prevPlayers.findIndex((p) => p.player_id === playerId);
+
         const updatedPlayers = [...prevPlayers];
-        // const player = updatedPlayers[index];
-        const player = { ...updatedPlayers[index] };
+        updatedPlayers[playerIndex] = {
+          ...updatedPlayers[playerIndex],
+          [field]: value, // Update the specific field
+          // Set the manual override flag if updating money_won
+          ...(field === "money_won" && { manualMoneyOverride: true }),
+        };
 
-        // player[field] =
-        //   field === "player_id" || field === "rank" ? Number(value) : value;
-        player[field] = value;
-
-          updatedPlayers[index] = player;
-
-          const recalculatedPlayers = updatedPlayers.map((p, i) => {
-            if (i === index && field === "money_won") {
-              return { ...p }; // Keep manually updated money_won
-            }
-            return {
-            ...p,
-            total_points: calculateTotalPoints(
-              p,
-              pointsConfig,
-              selectedEvent?.isMajor,
-              selectedEvent?.isFedupEligible,
-              updatedPlayers // Pass the updated list for tie calculations
-            ),
-          };
-          });
-
-        const { updatedPlayers: playersWithMoney, remainingPot, remainingSkinPot, remainingCtpPot } =
-        calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
+        // Recalculate total points for all players
+        const recalculatedPlayers = updatedPlayers.map((p) => {
+          if (p.manualMoneyOverride) {
+            return { ...p }; // Skip recalculation for manually overridden players
+          }
+          // if (p.player_id === playerId && field === "money_won") {
+          //   return { ...p }; // Keep manually updated money_won
+          // }
+          return {
+          ...p,
+          total_points: calculateTotalPoints(
+            p,
+            pointsConfig,
+            selectedEvent?.isMajor,
+            selectedEvent?.isFedupEligible,
+            updatedPlayers // Pass the updated list for tie calculations
+          ),
+        };
+      });
   
+        // Recalculate pots
+        const {
+          updatedPlayers: playersWithMoney,
+          remainingPot,
+          remainingSkinPot,
+          remainingCtpPot,
+        } = calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
+  
+        // Update state with recalculated values
         setRemainingPot(remainingPot);
         setSkinPot(remainingSkinPot);
         setCtpPot(remainingCtpPot);
 
-        console.log("Player Money Won:", player.money_won);
-
-
         return playersWithMoney;
       });
     },
-    [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible] // Only recalculate if these dependencies change
+    [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
   );
+  
+  
 
   const savePointsConfig = async () => {
     try {

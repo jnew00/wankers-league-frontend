@@ -59,22 +59,22 @@ const PlayerList = ({
           <tbody>
             {players.map((player, index) => (
               <tr
-                key={player.player_id || index} // Fallback to index if player_id is undefined
-                className={`${
-                  index % 2 === 0 ? "bg-blue-50" : "bg-white"
-                } hover:bg-blue-100 border-b`}
-              >
+              key={player.player_id}
+              className={`${
+                index % 2 === 0 ? "bg-blue-50" : "bg-white"
+              } hover:bg-blue-100 border-b`}
+            >
                 <td className="p-4 text-left w-20 h-8">
                   {player.isEditing ? (
                     <select
                       value={player.rank || ""}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         handlePlayerChange(
-                          index,
+                          player.player_id,
                           "rank",
                           Number(e.target.value)
                         )
-                      }
+                      }}
                       className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
                       >
                       <option value="">--</option>
@@ -98,17 +98,17 @@ const PlayerList = ({
                           (p) => p.id === selectedPlayerId
                         );
                         handlePlayerChange(
-                          index,
+                          player.player_id,
                           "player_id",
                           selectedPlayerId
                         );
                         handlePlayerChange(
-                          index,
+                          player.player_id,
                           "name",
                           selectedPlayer?.name || ""
                         );
                         handlePlayerChange(
-                          index,
+                          player.player_id,
                           "quota",
                           selectedPlayer?.current_quota || 0
                         );
@@ -144,7 +144,7 @@ const PlayerList = ({
                           const numericValue = value === "" ? null : Number(value);
                           // Allow only valid numbers within range
                           if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 40)) {
-                            handlePlayerChange(index, "score", numericValue);
+                            handlePlayerChange(player.player_id, "score", numericValue);
                           }
                         }}
                         className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500  w-12 h-8 text-center transition-all"
@@ -176,51 +176,6 @@ const PlayerList = ({
                     {calculateQuota(player.quota, player.score) || 0}
                   </td>
 
-
-
-                {/* <td className="p-4 text-left w-16 h-8">
-                  {player.isEditing ? (
-                    <input
-                      min={0}
-                      max={40}
-                      type="number"
-                      value={player.score || 0}
-                      onChange={(e) =>
-                        handlePlayerChange(
-                          index,
-                          "score",
-                          Number(e.target.value)
-                        )
-                      }
-                      className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 p-0 h-8 w-full text-sm text-center transition-all appearance-none"
-                      />
-                  ) : (
-                    <div className="h-8 flex items-center">{player.score || 0}</div>
-                  )}
-                </td>
-                <td className="p-4 text-center font-bold">
-                  {player.score !== null && player.quota !== null ? (
-                    <>
-                      {player.score - player.quota > 0 ? (
-                        <span className="text-green-500">
-                          +{player.score - player.quota}
-                        </span>
-                      ) : player.score - player.quota < 0 ? (
-                        <span className="text-red-500">
-                          {player.score - player.quota}
-                        </span>
-                      ) : (
-                        "0"
-                      )}
-                    </>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td className="p-4 text-center font-bold">
-                  {calculateQuota(player.quota, player.score) || 0}
-                </td> */}
-
 {/* CTPs Editing */}
 
           <td className="text-center w-40 h-8">
@@ -230,7 +185,7 @@ const PlayerList = ({
                 <button
                   onClick={() => {
                     if (player.ctps > 0) {
-                      handlePlayerChange(index, "ctps", player.ctps - 1);
+                      handlePlayerChange(player.player_id, "ctps", player.ctps - 1);
                     }
                   }}
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
@@ -245,7 +200,7 @@ const PlayerList = ({
                 {/* Increment Button */}
                 <button
                   onClick={() =>
-                    handlePlayerChange(index, "ctps", player.ctps + 1)
+                    handlePlayerChange(player.player_id, "ctps", player.ctps + 1)
                   }
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible || player.ctps >= 4}
@@ -271,7 +226,7 @@ const PlayerList = ({
                 <button
                   onClick={() => {
                     if (player.skins > 0) {
-                      handlePlayerChange(index, "skins", player.skins - 1);
+                      handlePlayerChange(player.player_id, "skins", player.skins - 1);
                     }
                   }}
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
@@ -286,7 +241,7 @@ const PlayerList = ({
                 {/* Increment Button */}
                 <button
                   onClick={() =>
-                    handlePlayerChange(index, "skins", player.skins + 1)
+                    handlePlayerChange(player.player_id, "skins", player.skins + 1)
                   }
                   className="bg-blue-500 hover:bg-blue-700 text-white px-0 py-0 rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible}
@@ -306,13 +261,14 @@ const PlayerList = ({
                       <input
                         type="text" // Change to text to remove number input arrows
                         value={player.money_won === 0 || player.money_won === null ? "" : player.money_won}
+                        // value={player.money_won}
                         placeholder="$"
                         onChange={(e) => {
                           const value = e.target.value;
                           const numericValue = value === "" ? null : Number(value);
                           // Allow only valid numbers within range
                           if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 1000)) {
-                            handlePlayerChange(index, "money_won", numericValue);
+                            handlePlayerChange(player.player_id, "money_won", numericValue);
                           }
                         }}
                         className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 h-8 w-12 text-center transition-all appearance-none ${
@@ -326,38 +282,6 @@ const PlayerList = ({
                   </td>
        
 
-
-
-
-{/* 
-
-                <td className="p-4 text-center w-24 h-8">
-                  {player.isEditing ? (
-                    <input
-                      min={0}
-                      max={1000}
-                      type="number"
-                      value={Number(player.money_won || 0)}
-                      disabled={!isFedupEligible}
-                      onChange={(e) =>
-                        handlePlayerChange(
-                          index,
-                          "money_won",
-                          Number(e.target.value)
-                        )
-                      }
-
-                      className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500  w-10 h-8 text-sm text-center transition-all appearance-none ${
-                        !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
-                      }`}
-                    />
-                  ) : (
-                    <div className="h-8 flex items-center">{`$${Number(player.money_won || 0).toFixed(2)}`}</div>
-                  )}
-
-
-                </td> */}
-
                 <td className="p-4 text-center w-32 font-bold">
                   {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
                 </td>
@@ -367,13 +291,13 @@ const PlayerList = ({
                     <div className="flex items-center justify-center space-x-2">
 
                       <button
-                        onClick={() => handleSavePlayer(player, index)}
+                        onClick={() => handleSavePlayer(player, player.player_id)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs"
                       >
                         Save
                       </button>
                       <button
-                        onClick={() => handleCancelEdit(index)}
+                        onClick={() => handleCancelEdit(player.player_id)}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded-lg text-xs"
                       >
                         Cancel
@@ -382,14 +306,14 @@ const PlayerList = ({
                   ) : (
                     <div className="flex items-center justify-center space-x-2">
                       <button
-                        onClick={() => toggleEditMode(index)}
+                        onClick={() => toggleEditMode(player.player_id)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs"
                         >
                         Edit
                       </button>
                       <button
                         onClick={() =>
-                          handleDeletePlayer(index, player.player_id)
+                          handleDeletePlayer(player.player_id)
                         }
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs"
                         >

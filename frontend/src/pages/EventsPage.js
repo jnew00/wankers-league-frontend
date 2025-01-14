@@ -68,8 +68,8 @@ const EventsPage = () => {
         console.error("Error fetching events:", error.message);
       }
     };
+  
     
-
     const fetchAllPlayers = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/players`);
@@ -82,6 +82,12 @@ const EventsPage = () => {
     fetchEvents();
     fetchAllPlayers();
   }, [API_BASE_URL]);
+
+
+  const setSortedEventPlayers = (players) => {
+    setEventPlayers(players.sort((a, b) => a.name.localeCompare(b.name)));
+  };
+
 
   const availablePlayers = (allPlayers || []).filter(
     (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
@@ -243,9 +249,15 @@ const EventsPage = () => {
         ...player,
         quota: player.quota || player.current_quota, // Normalize quota field
         scoreDiff: (player.score - player.event_quota), // Calculate score - quota
-      }))
-      .sort((a, b) => b.scoreDiff - a.scoreDiff); 
-
+      }));
+    
+      if (upcomingEvents.some((event) => event.id === eventId)) {
+        // Sort alphabetically for upcoming events
+        setEventPlayers(normalizedPlayers.sort((a, b) => a.name.localeCompare(b.name)));
+      } else {
+        // Sort by score difference for past events
+        setEventPlayers(normalizedPlayers.sort((a, b) => b.scoreDiff - a.scoreDiff));
+      }
 
       setEventPlayers(normalizedPlayers);
       setScorecard(event.scorecard);
@@ -265,9 +277,11 @@ const EventsPage = () => {
       await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`,{
         withCredentials: true,
       });
-       // Remove player from eventPlayers
-    const updatedPlayers = eventPlayers.filter((player) => player.player_id !== playerId);
-    setEventPlayers(updatedPlayers);
+     
+       setEventPlayers((prevPlayers) => {
+        const updatedPlayers = prevPlayers.filter((player) => player.player_id !== playerId);
+        return updatedPlayers.sort((a, b) => a.name.localeCompare(b.name));
+      });
 
       // Remove player from pairings
       const updatedPairings = pairings
@@ -335,7 +349,7 @@ const EventsPage = () => {
         console.error("New player data is incomplete:", normalizedPlayer);
         return;
       }
-  
+
       setEventPlayers((prevPlayers) => {
         const updatedPlayers = [...prevPlayers, normalizedPlayer];
         return updatedPlayers.sort((a, b) => a.name.localeCompare(b.name));

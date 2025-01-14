@@ -15,27 +15,46 @@ export const calculateMoneyWonAndPot = (players, numPlayers) => {
     let totalSkinsPaid = 0;
     let totalCTPsPaid = 0;
   
+    // const updatedPlayers = players.map((p) => {
+    //   const moneyFromRank = rankPayouts[p.rank - 1] || 0;
+    //   const moneyFromSkins = (p.skins || 0) * skinValue;
+    //   const moneyFromCTPs = (p.ctps || 0) * ctpValue;
+  
+     
+
+    //   totalPaidOut += moneyFromRank;
+    //   totalSkinsPaid += moneyFromSkins;
+    //   totalCTPsPaid += moneyFromCTPs;
+  
+    //   return {
+    //     ...p,
+    //     money_won:
+    //       p.money_won === null // Preserve null values (from cleared input)
+    //         ? null
+    //         : p.money_won !== undefined // Preserve manually entered values
+    //         ? p.money_won
+    //         : moneyFromRank + moneyFromSkins + moneyFromCTPs, // Default fallback if no manual value
+    //   };
+    // });
+  
     const updatedPlayers = players.map((p) => {
-      const moneyFromRank = rankPayouts[p.rank - 1] || 0;
-      const moneyFromSkins = (p.skins || 0) * skinValue;
-      const moneyFromCTPs = (p.ctps || 0) * ctpValue;
-  
-      totalPaidOut += moneyFromRank;
-      totalSkinsPaid += moneyFromSkins;
-      totalCTPsPaid += moneyFromCTPs;
-  
-      return {
-        ...p,
-        money_won:
-          p.money_won === null // Preserve null values (from cleared input)
-            ? null
-            : p.money_won !== undefined // Preserve manually entered values
-            ? p.money_won
-            : moneyFromRank + moneyFromSkins + moneyFromCTPs, // Default fallback if no manual value
-      };
-    });
-  
-   
+        if (p.manualMoneyOverride) {
+            // Skip recalculation for manually overridden players
+            return { ...p };
+          }
+        const moneyFromRank = rankPayouts[p.rank - 1] || 0;
+        const moneyFromSkins = (p.skins || 0) * skinValue;
+        const moneyFromCTPs = (p.ctps || 0) * ctpValue;
+    
+        const moneyWon = moneyFromRank + moneyFromSkins + moneyFromCTPs;
+        totalPaidOut += moneyWon;
+    
+        return {
+          ...p,
+          money_won: moneyWon, // Update money_won
+        };
+      });
+
     const remainingPot = Math.max(
         totalPot - totalPaidOut - totalSkinsPaid - totalCTPsPaid,
         0
