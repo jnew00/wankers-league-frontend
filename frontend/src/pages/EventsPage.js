@@ -8,11 +8,12 @@ import PairingsModal from "../components/PairingsModal";
 import EventDetailsImage from "../components/EventDetailsImage";
 import ImageModal from "../components/ImageModal";
 import ScorecardSheet from "../components/ScoreCardSheet";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { useUser } from "../context/UserContext";
 import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
+import PayoutTablePrint from "../components/PayoutTablePrint";
+import generatePDF from "../utils/generatePDF";
+
 
 
 import tippy from 'tippy.js';
@@ -102,29 +103,38 @@ const EventsPage = () => {
     }
   };
   
-
-  const generatePDF = async () => {
-    const element = document.getElementById("scorecard-sheet");
+  // const generatePDF = async () => {
+  //   const scorecardHtml = document.getElementById("scorecard-sheet")?.outerHTML;
+  //   const payoutHtml = document.getElementById("payout-table")?.outerHTML;
   
-    // Ensure element is visible during rendering
-    element.style.display = "block";
+  //   if (!scorecardHtml || !payoutHtml) {
+  //     alert("Failed to find necessary HTML elements.");
+  //     return;
+  //   }
   
-    try {
-      const canvas = await html2canvas(element, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "letter");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Maintain aspect ratio
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${eventDetails.course_name}_Scorecard.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-    } finally {
-      // Hide element again after rendering
-      element.style.display = "none";
-    }
-  };
+  //   try {
+  //     // Send the HTML to the backend
+  //     const response = await axios.post(
+  //       `${API_BASE_URL}/pdf/generate`, 
+  //       { scorecardHtml, payoutHtml }, 
+  //       { responseType: "blob" } 
+  //     );
+  
+  //     // Automatically download the PDF
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", "Scorecard_and_Payout.pdf");
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  
 
+  //   } catch (error) {
+  //     console.error("Error generating PDF:", error);
+  //     alert("Failed to generate PDF. Please try again.");
+  //   }
+  // };
 
   const closeImageModal = () => {
     setGeneratedImage(null);
@@ -855,6 +865,12 @@ const EventsPage = () => {
           />
         </div>
       )}
+
+{selectedEvent && (
+    <div id="payout-table" className="hidden">
+      <PayoutTablePrint />
+    </div>
+  )}
 <Footer />
     </div>
 

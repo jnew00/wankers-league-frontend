@@ -8,6 +8,8 @@ import AddEventPage from "./pages/AddEventPage";
 import AddPlayerPage from "./pages/AddPlayerPage";
 import AddCourse from "./pages/AddCoursePage";
 import Rules from "./pages/RulesPage";
+import './App.css';
+
 
 
 

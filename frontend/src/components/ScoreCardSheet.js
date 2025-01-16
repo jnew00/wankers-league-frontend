@@ -10,34 +10,6 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const emptyPlayerSlots = 2;
   const skinsRowsPerTable = 8; // Number of rows per table
 
-  const payoutData = [
-    { players: 4, places: 1, payouts: [40] },
-    { players: 5, places: 2, payouts: [40, 10] },
-    { players: 6, places: 2, payouts: [40, 20] },
-    { players: 7, places: 2, payouts: [45, 25] },
-    { players: 8, places: 3, payouts: [45, 20, 15] },
-    { players: 9, places: 3, payouts: [45, 30, 15] },
-    { players: 10, places: 3, payouts: [50, 30, 20] },
-    { players: 11, places: 4, payouts: [50, 30, 20, 10] },
-    { players: 12, places: 4, payouts: [50, 35, 20, 15] },
-    { players: 13, places: 4, payouts: [55, 35, 25, 15] },
-    { players: 14, places: 4, payouts: [60, 40, 25, 15] },
-    { players: 15, places: 5, payouts: [60, 40, 25, 15, 10] },
-    { players: 16, places: 5, payouts: [60, 40, 30, 20, 10] },
-    { players: 17, places: 5, payouts: [65, 40, 30, 20, 15] },
-    { players: 18, places: 5, payouts: [65, 45, 35, 20, 15] },
-    { players: 19, places: 6, payouts: [70, 45, 30, 20, 15, 10] },
-    { players: 20, places: 6, payouts: [70, 45, 35, 25, 15, 10] },
-    { players: 21, places: 6, payouts: [70, 45, 35, 25, 20, 15] },
-    { players: 22, places: 7, payouts: [70, 45, 35, 25, 20, 15, 10] },
-    { players: 23, places: 7, payouts: [75, 50, 35, 25, 20, 15, 10] },
-    { players: 24, places: 7, payouts: [75, 50, 40, 30, 20, 15, 10] },
-    { players: 25, places: 7, payouts: [75, 50, 40, 30, 25, 20, 10] },
-    { players: 26, places: 8, payouts: [75, 50, 40, 30, 25, 20, 15, 5] },
-    { players: 27, places: 8, payouts: [75, 50, 40, 30, 25, 20, 10, 10] },
-    { players: 28, places: 8, payouts: [75, 50, 40, 30, 25, 25, 20, 15] },
-  ];
-
   const getHardestHoles = (start, end, count) => {
     return scorecard
       .filter((hole) => hole.hole >= start && hole.hole <= end)
@@ -62,70 +34,53 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const hardestHoleBack9 = getHardestHoles(10, 18, 1); // Hardest 1 hole for back 9
 
 
-  const getPayoutRows = (playerCount) => {
-    const rows = [];
-    [
-      playerCount - 4,
-      playerCount - 3,
-      playerCount - 2,
-      playerCount - 1,
-      playerCount,
-      playerCount + 1,
-      playerCount + 2,
-    ].forEach((count) => {
-      const row = payoutData.find((data) => data.players === count);
-      if (row) rows.push(row);
-    });
-    return rows;
-  };
-
-  const currentPlayerCount = players.length;
-  const payoutRows = getPayoutRows(currentPlayerCount);
-
   return (
-    <div className="p-6 bg-white mx-auto">
+<div>
+    {/* <div className="w-[1056px]  h-[816px] mx-auto bg-white border border-black"> */}
+    {/* <div class="flex flex-col h-full"></div> */}
+     <div className="p-6 bg-white mx-auto">
       {/* Header Section */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center">
           <span className="font-bold mr-2"></span>
           <span>{eventDetails?.course_name || ""}</span>
-        </div>
+          </div>
         <div>
           <span className="font-bold mr-2">Date:</span>
           <span>
             {eventDetails?.date ? new Date(eventDetails.date).toLocaleDateString() : ""}
           </span>
+          </div>
         </div>
-      </div>
 
       {/* Scorecard Section */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300 text-xs">
+        <table className="w-full border-collapse border border-black text-xs">
           <thead>
             <tr>
-              <th className="border border-gray-300 p-1 text-center text-[7px] w-[25px]">Paid?</th>
-              <th className="border border-gray-300 p-1 text-right w-[90px]">Hole</th>
+              <th className="border border-black p-1 text-center text-[7px] w-[20px]">Paid?</th>
+              <th className="border border-black text-right w-[120px]">Hole</th>
               {holes.map((hole) => (
-                <th key={hole} className="border border-gray-300 p-1 w-[50px] text-center">{hole}</th>
+                <th key={hole} className="border border-black p-2 w-[50px] text-center">{hole}</th>
               ))}
-              <th className="border border-gray-300 p-1 text-center w-[30px]">Score</th>
-              <th className="border border-gray-300 p-1 text-center w-[30px]">Quota</th>
-              <th className="border border-gray-300 p-1 text-center w-[50px]">+/-</th>
-              <th className="border border-gray-300 p-1 text-center w-[30px]">Rank</th>
+              <th className="border border-black p-1 text-center w-[30px]">Score</th>
+              <th className="border border-black p-1 text-center w-[30px]">Quota</th>
+              <th className="border border-black p-1 text-center w-[50px]">+/-</th>
+              <th className="border border-black p-1 text-center w-[30px]">Rank</th>
             </tr>
             <tr>
-              <td className="border border-gray-300 p-1"></td>
-              <td className="border border-gray-300 p-1 text-right">Par</td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1 text-right">Par</td>
               {holes.map((hole, idx) => {
                 const par = scorecard.find((item) => item.hole === hole)?.par || "-";
                 return (
-                <td key={idx} className="border border-gray-300 p-1 text-center">{par}</td>
+                <td key={idx} className="border border-black p-2 text-center">{par}</td>
               );
             })}
-              <td className="border border-gray-300 p-1"></td>
-              <td className="border border-gray-300 p-1"></td>
-              <td className="border border-gray-300 p-1"></td>
-              <td className="border border-gray-300 p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
             </tr>
           </thead>
           <tbody>
@@ -137,132 +92,115 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
 
               return (
                 <tr key={index}>
-                  <td className="border border-gray-300 p-1"></td>
-                  <td className="border border-gray-300 p-1 text-left">{abbreviatedName}</td>
+                  <td className="border border-black p-1"></td>
+                  <td className="border border-black pb-1 text-left text-sm font-bold">{abbreviatedName}</td>
                   {holes.map((hole) => {
                     const isHighlighted = highlightedHoles.includes(hole);
                     return (
                       <td
                         key={hole}
-                        className={`border border-gray-300 p-1 text-center ${
-                          isHighlighted ? "bg-yellow-100" : ""
+                        className={`border border-black p-1 text-center ${
+                          isHighlighted ? "bg-yellow-300" : ""
                         }`}
                       ></td>
                     );
                   })}
-                  <td className="border border-gray-300 p-1 text-center"></td>
-                  <td className="border border-gray-300 p-1 font-bold text-center">{player.quota}</td>
-                  <td className="border border-gray-300 p-1 text-center"></td>
-                  <td className="border border-gray-300 p-1 text-center"></td>
+                  <td className="border border-black p-1 text-center"></td>
+                  <td className="border border-black p-1 font-bold text-center">{player.quota}</td>
+                  <td className="border border-black p-1 text-center"></td>
+                  <td className="border border-black p-1 text-center"></td>
                 </tr>
               );
             })}
             {Array.from({ length: emptyPlayerSlots }).map((_, index) => (
               <tr key={`empty-${index}`}>
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
                 {holes.map((_, idx) => (
-                  <td key={`empty-${index}-${idx}`} className="h-[30px] border border-gray-300 p-1 text-center"></td>
+                  <td key={`empty-${index}-${idx}`} className="h-[30px] border border-black p-1 text-center"></td>
                 ))}
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
-                <td className="border border-gray-300 p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
+                <td className="border border-black p-1 h-[30px]"></td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+        </div>
 
       <div className="mt-6 flex space-x-6 text-xs">
         {/* CTP Section */}
         <div>
-          <label className="block font-bold mb-3">CTPs Pay $_____</label>
-          <table className="table-fixed w-[220px] border-collapse border border-gray-300">
-            <thead>
-              <tr className="h-[30px]">
-                <th className="border border-gray-300 pb-1 text-center w-[50px]">Hole</th>
-                <th className="border border-gray-300 pb-1 w-[170px]">Wanker</th>
-              </tr>
-            </thead>
-            <tbody>
-              {par3Holes.map((hole, idx) => (
-                <tr key={`ctp-${idx}`} className="h-[30px]">
-                  <td className="border border-gray-300 pb-1 text-center">{hole}</td>
-                  <td className="border border-gray-300 pb-1"></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex space-x-4">
+  {/* First Table */}
+  <table className="table-fixed w-[250px] border-collapse border border-black">
+    <thead>
+      <tr className="h-[25px]">
+        <th className="border border-black pb-2 text-center w-[50px]">Hole</th>
+        <th className="border border-black pb-2 text-center w-[200px]">Wanker</th>
+      </tr>
+    </thead>
+    <tbody>
+      {par3Holes.slice(0, Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
+        <tr key={`ctp-1-${idx}`} className="h-[25px]">
+          <td className="border border-black pb-2 text-center">{hole}</td>
+          <td className="border border-black pb-2"></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  {/* Second Table */}
+  <table className="table-fixed w-[250px] border-collapse border border-black">
+    <thead>
+      <tr className="h-[25px]">
+        <th className="border border-black pb-2 text-center w-[50px]">Hole</th>
+        <th className="border border-black pb-2 text-center w-[200px]">Wanker</th>
+      </tr>
+    </thead>
+    <tbody>
+      {par3Holes.slice(Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
+        <tr key={`ctp-2-${idx}`} className="h-[25px]">
+          <td className="border border-black pb-2 text-center">{hole}</td>
+          <td className="border border-black pb-2"></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+
         </div>
 
         {/* Skins Section */}
-        <div className="text-xs">
+        {/* <div className="text-xs">
           <label className="block font-bold mb-3">Skins Pay $_____</label>
           <div className="flex space-x-3">
-            <table className="table-fixed w-[200px] border-collapse border border-gray-300">
+            <table className="table-fixed w-[200px] border-collapse border border-black">
               <thead>
                 <tr className="h-[30px]">
-                  <th className="border border-gray-300 pb-1 w-[170px] text-center">Wanker</th>
+                  <th className="border border-black pb-1 w-[170px] text-center">Wanker</th>
                   <th className
-                  ="border border-gray-300 pb-1 w-[30px] text-center">#</th>
+                  ="border border-black pb-1 w-[30px] text-center">#</th>
                   </tr>
                 </thead>
                 <tbody>
                   {Array.from({ length: skinsRowsPerTable }).map((_, idx) => (
                     <tr key={`table1-${idx}`} className="h-[30px]">
-                      <td className="border border-gray-300 p-0"></td>
-                      <td className="border border-gray-300 p-0"></td>
+                      <td className="border border-black p-0"></td>
+                      <td className="border border-black p-0"></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-  
-              {/* <table className="table-fixed w-[200px] border-collapse border border-gray-300">
-                <thead>
-                  <tr className="h-[30px]">
-                    <th className="border border-gray-300 p-0 w-[170px] text-center">Wanker</th>
-                    <th className="border border-gray-300 p-0 w-[30px] text-center">#</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: skinsRowsPerTable }).map((_, idx) => (
-                    <tr key={`table2-${idx}`} className="h-[30px]">
-                      <td className="border border-gray-300 p-0"></td>
-                      <td className="border border-gray-300 p-0"></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table> */}
             </div>
-          </div>
-  
-          {/* Payout Table */}
-          <div className="absolute right-10">
-            <h3 className="font-bold mb-3 text-center">Payout Table</h3>
-            <table className="table-fixed  w-[400px] border-collapse border border-gray-300 text-xs">
-              <thead>
-                <tr className="h-[30px]">
-                  <th className="border border-gray-300 p-0 text-center">Players</th>
-                  <th className="border border-gray-300 p-0 text-center">Places</th>
-                  <th className="border border-gray-300 p-0 text-center">Payouts</th>
-                  <th className="border border-gray-300 p-0 text-center">Pot Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payoutRows.map((row, idx) => (
-                  <tr key={idx} className="h-[30px]">
-                    <td className="border border-gray-300 p-0 text-center">{row.players}</td>
-                    <td className="border border-gray-300 p-0 text-center">{row.places}</td>
-                    <td className="border border-gray-300 p-0 text-center">{row.payouts.join(", ")}</td>
-                    <td className="border border-gray-300 p-0 text-center">{row.players * 24}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+          </div>*/}
+        </div> 
+     </div>
+
+
+</div>   
     );
   };
   

@@ -13,6 +13,22 @@
   }
 }
 
+/* @media print {
+  #payout-table {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+  }
+  #payout-table table {
+    border: 1px solid black;
+  }
+  #payout-table th, #payout-table td {
+    border: 1px solid black;
+    padding: 4px;
+  }
+} */
+
+
 /* Custom class to remove number input arrows */
 .no-arrows {
   -webkit-appearance: none; /* For Chrome, Safari, Edge, Opera */
