@@ -11,9 +11,7 @@ const generatePDF = async () => {
     try {
       const pdf = new jsPDF("l", "mm", "letter");
       const canvas = await html2canvas(element, { scale: 2.5 });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width; 
-
+    
      
       const scorecardImg = canvas.toDataURL("image/png");
     //   pdf.addImage(scorecardImg, "PNG", 0, 0, pdfWidth, pdfHeight);

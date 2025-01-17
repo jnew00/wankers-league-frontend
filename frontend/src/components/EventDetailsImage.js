@@ -1,16 +1,21 @@
 import React, { useRef, useImperativeHandle, forwardRef } from "react";
 import { toPng } from "html-to-image";
 import { formatTime } from "../utils/formatTime";
+import EventWeather from "./EventWeather";
 
 
 
-const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) => {
+
+const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers, coordinates }, ref) => {
   const detailsRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
     generateImage: () => {
       if (detailsRef.current) {
-        return toPng(detailsRef.current);
+        return toPng(detailsRef.current, {
+          quality: 1.0, // Maximum image quality
+          pixelRatio: 2,
+        });
       } else {
         console.error("detailsRef is not set.");
         return Promise.reject("detailsRef is not set.");
@@ -70,26 +75,46 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers }, ref) =>
 
   return (
     <div ref={detailsRef} className="p-6 bg-white rounded-lg shadow-lg">
+      <div className="flex flex-wrap lg:flex-nowrap justify-between items-start gap-4">
+      <div className="flex-1 space-y-2">
+
       <h2 className="text-2xl font-bold mb-4">{event.course_name || "N/A"}</h2>
-      <p className="text-gray-700">
+     
+      <p className="text-black">
         <span className="font-semibold">Date:</span>{" "}
         {event.date ? new Date(event.date).toLocaleDateString() : "N/A"}
       </p>
-      <p className="text-gray-700">
+      <p className="text-black">
         <span className="font-semibold">1<sup>st</sup> Tee Time:</span>{" "}
         {formatTime(event.tee_time)}
       </p>
-      <p className="text-gray-700">
+      <p className="text-black">
         <span className="font-semibold">Address:</span> {event.course_address || "N/A"}
       </p>
-      <p className="text-gray-700">
+      <p className="text-black">
         <span className="font-semibold">Tees:</span>{" "}
         {event.front_tee || "N/A"} / {event.back_tee || "N/A"}
       </p>
-      <p className="text-gray-700">
+      <p className="text-black">
         <span className="font-semibold">Total Yardage:</span>{" "}
         {event.total_yardage || "N/A"} yards
       </p>
+
+      </div>
+      {coordinates && (
+          <div className="w-100">
+            <EventWeather
+              latitude={coordinates.lat}
+              longitude={coordinates.lon}
+              date={event.date}
+            />
+          </div>
+        )}
+      </div>
+
+ 
+        
+
 
       {pairings?.length > 0 && (
         <>

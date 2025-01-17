@@ -13,6 +13,8 @@ import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 import PayoutTablePrint from "../components/PayoutTablePrint";
 import generatePDF from "../utils/generatePDF";
+import {fetchCoordinates} from "../utils/geoCoordinates";
+import EventWeather from "../components/EventWeather";
 
 
 
@@ -43,6 +45,10 @@ const EventsPage = () => {
   const eventDetailsRef = useRef(null);
   const [scorecard, setScorecard] = useState([]);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
+  
+
+
 
   
 
@@ -52,7 +58,7 @@ const EventsPage = () => {
   useEffect(() => {
   }, [eventPlayers]);
 
-
+  
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -89,6 +95,26 @@ const EventsPage = () => {
     (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
   );
   
+  useEffect(() => {
+    const loadCoordinates = async () => {
+
+      if (eventDetails?.course_address && eventDetails?.date) {
+        try {
+          const coordinates = await fetchCoordinates(eventDetails.course_address);
+
+          setCoordinates(coordinates);
+          console.log("Coordinates fetched:", coordinates);
+  
+        } catch (error) {
+          console.error("Unable to fetch coordinates for the event address.", error.message);
+        }
+      }
+    };
+
+    loadCoordinates();
+
+  }, [eventDetails]);
+  
   const handleGenerateImage = async () => {
     if (!eventDetailsRef.current) {
       console.error("Ref is not set. Ensure EventDetailsImage is rendered.");
@@ -103,38 +129,6 @@ const EventsPage = () => {
     }
   };
   
-  // const generatePDF = async () => {
-  //   const scorecardHtml = document.getElementById("scorecard-sheet")?.outerHTML;
-  //   const payoutHtml = document.getElementById("payout-table")?.outerHTML;
-  
-  //   if (!scorecardHtml || !payoutHtml) {
-  //     alert("Failed to find necessary HTML elements.");
-  //     return;
-  //   }
-  
-  //   try {
-  //     // Send the HTML to the backend
-  //     const response = await axios.post(
-  //       `${API_BASE_URL}/pdf/generate`, 
-  //       { scorecardHtml, payoutHtml }, 
-  //       { responseType: "blob" } 
-  //     );
-  
-  //     // Automatically download the PDF
-  //     const url = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", "Scorecard_and_Payout.pdf");
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     link.remove();
-  
-
-  //   } catch (error) {
-  //     console.error("Error generating PDF:", error);
-  //     alert("Failed to generate PDF. Please try again.");
-  //   }
-  // };
 
   const closeImageModal = () => {
     setGeneratedImage(null);
@@ -493,18 +487,27 @@ const EventsPage = () => {
 
 
 <div className="flex items-center justify-between">
-{feedbackMessage && (
-              <div
-                className={`p-4 mb-4 rounded-lg ${
-                  feedbackMessage.type === "success"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {feedbackMessage.text}
-              </div>
-            )}
+<div
+  className={`p-4 mb-4 rounded-lg transition-all duration-300 h-16 ${
+    feedbackMessage
+      ? feedbackMessage.type === "success"
+        ? "bg-green-100 text-green-800 opacity-100 visible"
+        : "bg-red-100 text-red-800 opacity-100 visible"
+      : "opacity-0 invisible"
+  }`}
+>
+  {feedbackMessage?.text || ""}
+</div>
 
+
+          {/* Weather Component */}
+          {coordinates && (
+                <EventWeather
+                  latitude={coordinates.lat}
+                  longitude={coordinates.lon}
+                  date={eventDetails.date}
+                />
+                )}
           </div>
 <div className="flex justify-between items-center mb-4">
 
@@ -519,58 +522,13 @@ const EventsPage = () => {
    
 </div>
 
-{/* Right Content: Admin Box */}
-{role === "admin" && (
-  <div className="flex flex-col bg-gray-100 p-4 rounded-lg shadow-lg space-y-4 w-64">
-    <h4 className="text-lg font-bold text-center">Admin Actions</h4>
-    
-    {/* Generate Pairings Button */}
-    <button
-      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-      onClick={async () => {
-        const response = await axios.get(`${API_BASE_URL}/pairings/${event.id}`);
-        const existingPairings = response.data;
+  
+                
 
-        if (existingPairings.length > 0) {
-          setPairings(existingPairings); // Load existing pairings
-        } else {
-          openPairingsModal(); // Generate new pairings
-        }
-
-        setShowPairingsModal(true);
-      }}
-    >
-      {pairings.length > 0 ? "Update Pairings" : "Generate Pairings"}
-    </button>
-
-    {/* Clear Pairings Button */}
-    <button
-      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-      onClick={clearPairings}
-    >
-      Clear Pairings
-    </button>
-
-    {/* Generate Email Button */}
-    <button
-      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
-      onClick={handleGenerateImage}
-    >
-      Generate Email
-    </button>
-
-    {/* Generate Scorecard PDF Button */}
-    <button
-      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg"
-      onClick={generatePDF}
-    >
-      Generate Scorecard PDF
-    </button>
-  </div>
-
-    )}
 </div>
+
     <div className="grid grid-cols-2 gap-4 mb-6">
+      
       <div>
         <p className="text-gray-700">
         <span className="font-semibold">Course:</span>{" "}
@@ -593,8 +551,19 @@ const EventsPage = () => {
             {eventDetails.course_address}
           </a>
         </p>
+        <p className="text-gray-700">
+        <span className="font-semibold">Notes:</span>{" "}
+          <span>
+            {eventDetails.notes}
+          </span>        
+        </p>
       </div>
       <div>
+
+
+
+
+
 
         <p className="text-gray-700">
           <span className="font-semibold">Tees:</span> {eventDetails.front_tee} /{" "}
@@ -607,19 +576,17 @@ const EventsPage = () => {
         </p>
       </div>
     </div>
-
-    <div className="flex flex-row gap-8 mt-6">
-    <div className="flex-1">
-
+    <div className="flex flex-wrap lg:flex-nowrap gap-4 mt-6 items-start">
+  {/* Left: Player List */}
+  <div className="flex-1">
     <h3 className="text-lg font-bold text-gray-700 mb-2">Wankers Signed Up</h3>
     <table className="table-auto border-collapse border border-gray-300">
       <thead className="bg-gray-100">
         <tr>
-          <th className="border p-1 text-left"></th>
+          <th className="border p-1 text-left">#</th>
           <th className="border p-1 text-left">Name</th>
           <th className="border p-1 text-left">Quota</th>
-          <th className="border p-1 text-left"></th>
-
+          <th className="border p-1 text-right">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -629,10 +596,10 @@ const EventsPage = () => {
             <td className="border p-1">{player.name}</td>
             <td className="border p-1">{player.quota}</td>
             <td className="border p-1 text-right">
-            <button
+              <button
                 onClick={() => handleDeletePlayer(player.player_id, player.name)}
                 className="Xtooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
-                >
+              >
                 X
               </button>
             </td>
@@ -640,18 +607,18 @@ const EventsPage = () => {
         ))}
       </tbody>
     </table>
-    </div>
-  
-  {/* Pairings Table */}
+  </div>
+
+  {/* Middle: Pairings Table */}
   <div className="flex-1">
     {pairings.length > 0 && (
       <>
-        <h3 className="text-lg font-bold mb-2">Pairings</h3>
+        <h3 className="text-lg font-bold text-gray-700 mb-2">Pairings</h3>
         <table className="table-auto border-collapse w-full bg-white shadow rounded-lg">
           <thead className="bg-gray-100">
             <tr>
               {pairings.map((_, index) => (
-                <th key={index} className="border p-1 text-center">
+                <th key={index} className="border p-2 text-center">
                   Group {index + 1}
                 </th>
               ))}
@@ -664,7 +631,7 @@ const EventsPage = () => {
                   {pairings.map((group, colIndex) => (
                     <td
                       key={`${rowIndex}-${colIndex}`}
-                      className="border p-1 text-center"
+                      className="border p-2 text-center"
                     >
                       {group[rowIndex] ? group[rowIndex].name : ""}
                     </td>
@@ -677,8 +644,60 @@ const EventsPage = () => {
       </>
     )}
   </div>
+
+  {/* Right: Admin Actions */}
+  {role === "admin" && (
+   
+    <div className="flex-1">
+       <h3 className="text-lg font-bold text-gray-700 mb-2">Admin Actions</h3>
+      {/* <h4 className="text-lg font-bold text-center mb-4">Admin Actions</h4> */}
+      <div className="space-y-4 bg-gray-100 p-4 rounded-lg shadow-lg w-64">
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={async () => {
+            const response = await axios.get(`${API_BASE_URL}/pairings/${selectedEvent}`);
+            const existingPairings = response.data;
+
+            if (existingPairings.length > 0) {
+              setPairings(existingPairings); // Load existing pairings
+            } else {
+              openPairingsModal(); // Generate new pairings
+            }
+
+            setShowPairingsModal(true);
+          }}
+        >
+          {pairings.length > 0 ? "Update Pairings" : "Generate Pairings"}
+        </button>
+
+        <button
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={clearPairings}
+        >
+          Clear Pairings
+        </button>
+
+        <button
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={handleGenerateImage}
+        >
+          Generate Email
+        </button>
+
+        <button
+          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={generatePDF}
+        >
+          Generate Scorecard PDF
+        </button>
+      </div>
+    </div>
+    
+  )}
 </div>
-{/* End Pairings Table */}
+
+
+
 
 
 {["admin", "moderator"].includes(role) && (
@@ -850,6 +869,7 @@ const EventsPage = () => {
           event={eventDetails  || {}}
           pairings={pairings || []}
           eventPlayers={eventPlayers  || []}
+          coordinates={coordinates}
         />
       </div>
   {showImageModal && (

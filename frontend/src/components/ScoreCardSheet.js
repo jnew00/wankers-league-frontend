@@ -8,7 +8,6 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   .map((hole) => hole.hole);
 
   const emptyPlayerSlots = 2;
-  const skinsRowsPerTable = 8; // Number of rows per table
 
   const getHardestHoles = (start, end, count) => {
     return scorecard

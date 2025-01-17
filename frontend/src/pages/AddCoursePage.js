@@ -13,6 +13,7 @@ const AddCoursePage = () => {
   const [frontTee, setFrontTee] = useState("");
   const [backTee, setBackTee] = useState("");
   const [website, setWebsite] = useState("");
+  const [notes, setNotes] = useState("");
   const [imagePath, setImagePath] = useState("");
   const [scorecard, setScorecard] = useState(
     Array.from({ length: 18 }, (_, i) => ({
@@ -69,6 +70,7 @@ const AddCoursePage = () => {
         backTee,
         website,
         imagePath,
+        notes,
         scorecard,
       };
 
@@ -107,6 +109,7 @@ const AddCoursePage = () => {
     setFrontTee(course.front_tee);
     setBackTee(course.back_tee);
     setWebsite(course.website);
+    setNotes(course.notes);
     setImagePath(course.image_path);
     setScorecard(
       course.scorecard ||
@@ -149,6 +152,7 @@ const AddCoursePage = () => {
     setFrontTee("");
     setBackTee("");
     setWebsite("");
+    setNotes("");
     setImagePath("");
     setScorecard(
       Array.from({ length: 18 }, (_, i) => ({
@@ -358,20 +362,22 @@ const AddCoursePage = () => {
       </div>
       <div>
         <label className="block text-gray-700 font-medium mb-2">
-          Front Tee
+          Front 9 Tees Playing
         </label>
         <input
           type="text"
           value={frontTee}
+          placeholder="White"
           onChange={(e) => setFrontTee(e.target.value)}
           className="w-full border border-gray-300 rounded-lg p-2"
         />
       </div>
       <div>
-        <label className="block text-gray-700 font-medium mb-2">Back Tee</label>
+        <label className="block text-gray-700 font-medium mb-2">Back 9 Tees Playing</label>
         <input
           type="text"
           value={backTee}
+          placeholder="White"
           onChange={(e) => setBackTee(e.target.value)}
           className="w-full border border-gray-300 rounded-lg p-2"
         />
@@ -382,6 +388,15 @@ const AddCoursePage = () => {
           type="url"
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg p-2"
+        />
+      </div>
+      <div>
+        <label className="block text-gray-700 font-medium mb-2">Notes</label>
+        <input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
           className="w-full border border-gray-300 rounded-lg p-2"
         />
       </div>
