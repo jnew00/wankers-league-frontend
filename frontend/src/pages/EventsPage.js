@@ -18,6 +18,7 @@ import EventWeather from "../components/EventWeather";
 
 
 
+
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
@@ -45,7 +46,9 @@ const EventsPage = () => {
   const eventDetailsRef = useRef(null);
   const [scorecard, setScorecard] = useState([]);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
-  const [coordinates, setCoordinates] = useState(null);
+  // const [coordinates, setCoordinates] = useState(null);
+  const [loadingEventDetails, setLoadingEventDetails] = useState(false); // Add loading state
+
   
 
 
@@ -95,25 +98,25 @@ const EventsPage = () => {
     (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
   );
   
-  useEffect(() => {
-    const loadCoordinates = async () => {
+  // useEffect(() => {
+  //   const loadCoordinates = async () => {
 
-      if (eventDetails?.course_address && eventDetails?.date) {
-        try {
-          const coordinates = await fetchCoordinates(eventDetails.course_address);
+  //     if (eventDetails?.course_address && eventDetails?.date) {
+  //       try {
+  //         const coordinates = await fetchCoordinates(eventDetails.course_address);
 
-          setCoordinates(coordinates);
-          console.log("Coordinates fetched:", coordinates);
+  //         setCoordinates(coordinates);
+  //         console.log("Coordinates fetched:", coordinates);
   
-        } catch (error) {
-          console.error("Unable to fetch coordinates for the event address.", error.message);
-        }
-      }
-    };
+  //       } catch (error) {
+  //         console.error("Unable to fetch coordinates for the event address.", error.message);
+  //       }
+  //     }
+  //   };
 
-    loadCoordinates();
+  //   loadCoordinates();
 
-  }, [eventDetails]);
+  // }, [eventDetails]);
   
   const handleGenerateImage = async () => {
     if (!eventDetailsRef.current) {
@@ -235,42 +238,124 @@ const EventsPage = () => {
     setShowPairingsModal(false);
   };
 
-  const fetchEventDetails = async (eventId) => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
-      const event = response.data;
-      setEventDetails({
-        ...event.details, scorecard:event.scorecard, total_yardage: event.total_yardage, group_pairings: response.data.group_pairings
-      });
+  // const fetchEventDetails = async (eventId) => {
+  //   // setLoadingEventDetails(true); 
+  //   try {
+  //     const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
+  //     const event = response.data;
+
+
+  //   // Consolidate all state updates into one object
+  //   const newEventDetails = {
+  //     ...event.details,
+  //     teeTime: event.details?.tee_time,
+  //     numTimes: event.details?.num_teetimes,
+  //     scorecard: event.scorecard,
+  //     total_yardage: event.total_yardage,
+  //     group_pairings: response.data.group_pairings,
+  //     players: event.players.map((player) => ({
+  //       ...player,
+  //       quota: player.quota || player.current_quota,
+  //       scoreDiff: player.score - player.event_quota,
+  //     })),
+  //   };
+
           
-      const normalizedPlayers = event.players
-      .map((player) => ({
-        ...player,
-        quota: player.quota || player.current_quota, // Normalize quota field
-        scoreDiff: (player.score - player.event_quota), // Calculate score - quota
-      }));
+  //     const normalizedPlayers = event.players
+  //     .map((player) => ({
+  //       ...player,
+  //       quota: player.quota || player.current_quota, // Normalize quota field
+  //       scoreDiff: (player.score - player.event_quota), // Calculate score - quota
+  //     }));
     
-      if (upcomingEvents.some((event) => event.id === eventId)) {
-        // Sort alphabetically for upcoming events
-        setEventPlayers(normalizedPlayers.sort((a, b) => a.name.localeCompare(b.name)));
-      } else {
-        // Sort by score difference for past events
-        setEventPlayers(normalizedPlayers.sort((a, b) => b.scoreDiff - a.scoreDiff));
-      }
+  //     if (upcomingEvents.some((event) => event.id === eventId)) {
+  //       // Sort alphabetically for upcoming events
+  //       setEventPlayers(normalizedPlayers.sort((a, b) => a.name.localeCompare(b.name)));
+  //     } else {
+  //       // Sort by score difference for past events
+  //       setEventPlayers(normalizedPlayers.sort((a, b) => b.scoreDiff - a.scoreDiff));
+  //     }
 
-      setEventPlayers(normalizedPlayers);
-      setScorecard(event.scorecard);
+  //     setEventPlayers(normalizedPlayers);
+  //     setScorecard(event.scorecard);
 
-      const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
-      setPairings(pairingsResponse.data || []); // Load pairings if they exist
+  //     const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
+  //     setPairings(pairingsResponse.data || []); // Load pairings if they exist
   
      
 
+  //   } catch (error) {
+  //     console.error("Error fetching event details:", error.message);
+  //   } finally {
+  //   // setLoadingEventDetails(false); // Clear loading state
+  // }
+  // };
+  const fetchEventDetails = async (eventId) => {
+    setLoadingEventDetails(true); 
+    try {
+
+      // Fetch the event details from the API
+      const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
+      const event = response.data;
+  
+      // Consolidate the event details into a single object
+      const newEventDetails = {
+        ...event.details,
+        teeTime: event.details?.tee_time, // Tee time as a separate field
+        numTimes: event.details?.num_teetimes, // Total number of tee times
+        scorecard: event.scorecard, // Scorecard data
+        total_yardage: event.total_yardage, // Total yardage for the event
+        group_pairings: response.data.group_pairings, // Pairing data for groups
+        players: event.players.map((player) => ({
+          ...player,
+          quota: player.quota || player.current_quota, // Normalize the quota field
+          scoreDiff: player.score - player.event_quota, // Calculate score difference
+        })),
+      };
+  
+      // Update the event details state
+      setEventDetails(newEventDetails);
+  
+      // Update event players and pairings derived from event details
+      setEventPlayers(
+        newEventDetails.players.sort((a, b) =>
+          upcomingEvents.some((e) => e.id === eventId)
+            ? a.name.localeCompare(b.name) // Alphabetical for upcoming events
+            : b.scoreDiff - a.scoreDiff // Score difference for past events
+        )
+      );
+  
+      // If pairings data exists, update state and backend
+      if (response.data.group_pairings) {
+        setPairings(response.data.group_pairings);
+      } else {
+        // Generate pairings if they don't already exist
+        const shuffledPlayers = [...newEventDetails.players].sort(() => Math.random() - 0.5);
+        const generatedPairings = [];
+  
+        for (let i = 0; i < shuffledPlayers.length; i += 4) {
+          generatedPairings.push(shuffledPlayers.slice(i, i + 4));
+        }
+  
+        setPairings(generatedPairings);
+  
+        // Update the database with generated pairings
+        await axios.post(
+          `${API_BASE_URL}/pairings/${eventId}`,
+          { pairings: generatedPairings },
+          { withCredentials: true }
+        );
+      } 
+  
+      console.log("Event details successfully loaded.");
     } catch (error) {
       console.error("Error fetching event details:", error.message);
+      alert("Failed to load event details. Please try again.");
+    }  finally {
+       setLoadingEventDetails(false); 
     }
   };
-
+  
   const handleDeletePlayer = async (playerId, playerName) => {
     try {
       await axios.delete(`${API_BASE_URL}/admin/events/${selectedEvent}/players/${playerId}`,{
@@ -488,7 +573,7 @@ const EventsPage = () => {
 
 <div className="flex items-center justify-between">
 <div
-  className={`p-4 mb-4 rounded-lg transition-all duration-300 h-16 ${
+  className={`p-2 rounded-lg transition-all duration-300 h-10 ${
     feedbackMessage
       ? feedbackMessage.type === "success"
         ? "bg-green-100 text-green-800 opacity-100 visible"
@@ -501,19 +586,24 @@ const EventsPage = () => {
 
 
           {/* Weather Component */}
-          {coordinates && (
-                <EventWeather
-                  latitude={coordinates.lat}
-                  longitude={coordinates.lon}
-                  date={eventDetails.date}
-                />
-                )}
+          {!loadingEventDetails && eventDetails && eventDetails.teeTime && eventDetails.latitude && eventDetails.longitude ? (
+  <EventWeather
+    latitude={eventDetails.latitude}
+    longitude={eventDetails.longitude}
+    date={eventDetails.date}
+    teeTime={eventDetails.teeTime}
+  />
+) : (
+  <p>Loading weather...</p>
+)}
+          
+
           </div>
 <div className="flex justify-between items-center mb-4">
 
 <div>
-    <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.num_teetimes} booked: 
-      <span className="text-red-600 pl-1">{formatTime(eventDetails.tee_time)}</span><br />
+    <h3 className="text-xl font-bold mb-4 text-blue-600">1<sup>st</sup> Tee Time of {eventDetails.numTimes} booked: 
+      <span className="text-red-600 pl-1">{formatTime(eventDetails.teeTime)}</span><br />
       <span className="italic text-gray-600 ">${Number(eventDetails.cost).toFixed(2)}</span>
 
     </h3>
@@ -576,6 +666,13 @@ const EventsPage = () => {
         </p>
       </div>
     </div>
+
+
+
+
+
+
+    
     <div className="flex flex-wrap lg:flex-nowrap gap-4 mt-6 items-start">
   {/* Left: Player List */}
   <div className="flex-1">
@@ -869,7 +966,6 @@ const EventsPage = () => {
           event={eventDetails  || {}}
           pairings={pairings || []}
           eventPlayers={eventPlayers  || []}
-          coordinates={coordinates}
         />
       </div>
   {showImageModal && (

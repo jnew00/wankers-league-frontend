@@ -101,15 +101,16 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers, coordinat
       </p>
 
       </div>
-      {coordinates && (
+     
           <div className="w-100">
             <EventWeather
-              latitude={coordinates.lat}
-              longitude={coordinates.lon}
+              latitude={event.latitude}
+              longitude={event.longitude}
+              teeTime={event.teeTime}
               date={event.date}
             />
           </div>
-        )}
+      
       </div>
 
  

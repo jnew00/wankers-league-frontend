@@ -12,6 +12,7 @@ const AdminManagePlayerPage = () => {
     email: "",
     phone: "",
     startingQuota: "",
+    new_player: "",
     image: null,
   });
   const [feedbackMessage, setFeedbackMessage] = useState(null);
@@ -40,6 +41,7 @@ const AdminManagePlayerPage = () => {
         email: player.email,
         phone: player.phone_number,
         startingQuota: player.current_quota,
+        new_player: player.new_player,
         image: null, // Reset image input for editing
       });
     } else {
@@ -48,16 +50,17 @@ const AdminManagePlayerPage = () => {
         email: "",
         phone: "",
         startingQuota: "",
+        new_player: "",
         image: null,
       });
     }
   };
 
   const handleFormChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, type, checked, files } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: files ? files[0] : value,
+      [name]:type === "checkbox" ? checked : files ? files[0] : value,
     }));
   };
 
@@ -110,6 +113,7 @@ const AdminManagePlayerPage = () => {
         email: "",
         phone: "",
         startingQuota: "",
+        new_player: "",
         image: null,
       });
     } catch (error) {
@@ -144,6 +148,7 @@ const AdminManagePlayerPage = () => {
         email: "",
         phone: "",
         startingQuota: "",
+        new_player: "",
         image: null,
       });
     } catch (error) {
@@ -264,6 +269,24 @@ const AdminManagePlayerPage = () => {
                 required
               />
             </div>
+            <div>
+              <label
+                htmlFor="new_player"
+                className="block font-medium text-gray-700"
+              >
+                New Player to Group?
+              </label>
+              <input
+                type="checkbox"
+                checked={formData.new_player}
+                id="new_player"
+                name="new_player"
+                onChange={handleFormChange}
+                // onChange={(e) => setIsMajor(e.target.checked)}
+                className="form-checkbox text-blue-600"
+              />
+            </div>
+
 
             <div>
               <label htmlFor="image" className="block font-medium text-gray-700">

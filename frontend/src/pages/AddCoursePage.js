@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import CourseModal from "../components/CourseModal";
 import Footer from "../components/Footer";
+import {fetchCoordinates} from "../utils/geoCoordinates";
+
 
 
 const AddCoursePage = () => {
@@ -63,6 +65,8 @@ const AddCoursePage = () => {
     }
 
     try {
+      const coordinates = await fetchCoordinates(address);
+
       const payload = {
         name: courseName,
         address,
@@ -72,7 +76,13 @@ const AddCoursePage = () => {
         imagePath,
         notes,
         scorecard,
+        longitude:  coordinates.lon,
+        latitude: coordinates.lat,
       };
+
+
+     
+
 
       if (editCourse) {
         await axios.put(
@@ -87,12 +97,15 @@ const AddCoursePage = () => {
           `${process.env.REACT_APP_API_BASE_URL}/admin/courses/add-course`,
           payload,
           {
-            withCredentials: true, // Correct placement
+            withCredentials: true,
           }
         );
       }
 
       window.location.reload();
+
+
+      
     } catch (error) {
       console.error("Error saving course:", error.message);
       setFeedbackMessage({
