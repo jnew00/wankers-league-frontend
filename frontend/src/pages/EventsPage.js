@@ -915,7 +915,7 @@ const EventsPage = () => {
                                 </span>
                               ) : (
                                 <span className="text-red-500">
-                                  {player.score - player.quota}
+                                  {player.score - player.event_quota}
                                 </span>
                               )}
                             </td>
