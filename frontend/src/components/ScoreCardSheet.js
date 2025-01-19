@@ -2,7 +2,6 @@ import React from "react";
 
 const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
- 
   const par3Holes = scorecard
   .filter((hole) => Number(hole.par) === 3)
   .map((hole) => hole.hole);

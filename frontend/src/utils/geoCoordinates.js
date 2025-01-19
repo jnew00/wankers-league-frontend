@@ -6,16 +6,6 @@ export const fetchCoordinates = async (address) => {
       const encodeAddress = encodeURIComponent(address);
       const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeAddress}&key=${encodedApiKey}`;
 
-    //   const response = await axios.get(
-    //     `https://api.opencagedata.com/geocode/v1/json`,
-    //     {
-    //       params: {
-    //         q: encodeAddress,
-    //         key: encodedApiKey,
-    //       },
-    //     }
-    //   );
-    console.log(url);
     const response = await axios.get(url);
     
     if (response.data.results.length === 0) {

@@ -13,7 +13,6 @@ import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 import PayoutTablePrint from "../components/PayoutTablePrint";
 import generatePDF from "../utils/generatePDF";
-import {fetchCoordinates} from "../utils/geoCoordinates";
 import EventWeather from "../components/EventWeather";
 
 
@@ -46,14 +45,8 @@ const EventsPage = () => {
   const eventDetailsRef = useRef(null);
   const [scorecard, setScorecard] = useState([]);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
-  // const [coordinates, setCoordinates] = useState(null);
   const [loadingEventDetails, setLoadingEventDetails] = useState(false); // Add loading state
 
-  
-
-
-
-  
 
   useEffect(() => {
   }, [pairings]);
@@ -98,25 +91,6 @@ const EventsPage = () => {
     (player) => !(eventPlayers || []).some((eventPlayer) => eventPlayer.player_id === player.id)
   );
   
-  // useEffect(() => {
-  //   const loadCoordinates = async () => {
-
-  //     if (eventDetails?.course_address && eventDetails?.date) {
-  //       try {
-  //         const coordinates = await fetchCoordinates(eventDetails.course_address);
-
-  //         setCoordinates(coordinates);
-  //         console.log("Coordinates fetched:", coordinates);
-  
-  //       } catch (error) {
-  //         console.error("Unable to fetch coordinates for the event address.", error.message);
-  //       }
-  //     }
-  //   };
-
-  //   loadCoordinates();
-
-  // }, [eventDetails]);
   
   const handleGenerateImage = async () => {
     if (!eventDetailsRef.current) {
@@ -238,58 +212,6 @@ const EventsPage = () => {
     setShowPairingsModal(false);
   };
 
-  // const fetchEventDetails = async (eventId) => {
-  //   // setLoadingEventDetails(true); 
-  //   try {
-  //     const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
-  //     const event = response.data;
-
-
-  //   // Consolidate all state updates into one object
-  //   const newEventDetails = {
-  //     ...event.details,
-  //     teeTime: event.details?.tee_time,
-  //     numTimes: event.details?.num_teetimes,
-  //     scorecard: event.scorecard,
-  //     total_yardage: event.total_yardage,
-  //     group_pairings: response.data.group_pairings,
-  //     players: event.players.map((player) => ({
-  //       ...player,
-  //       quota: player.quota || player.current_quota,
-  //       scoreDiff: player.score - player.event_quota,
-  //     })),
-  //   };
-
-          
-  //     const normalizedPlayers = event.players
-  //     .map((player) => ({
-  //       ...player,
-  //       quota: player.quota || player.current_quota, // Normalize quota field
-  //       scoreDiff: (player.score - player.event_quota), // Calculate score - quota
-  //     }));
-    
-  //     if (upcomingEvents.some((event) => event.id === eventId)) {
-  //       // Sort alphabetically for upcoming events
-  //       setEventPlayers(normalizedPlayers.sort((a, b) => a.name.localeCompare(b.name)));
-  //     } else {
-  //       // Sort by score difference for past events
-  //       setEventPlayers(normalizedPlayers.sort((a, b) => b.scoreDiff - a.scoreDiff));
-  //     }
-
-  //     setEventPlayers(normalizedPlayers);
-  //     setScorecard(event.scorecard);
-
-  //     const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
-  //     setPairings(pairingsResponse.data || []); // Load pairings if they exist
-  
-     
-
-  //   } catch (error) {
-  //     console.error("Error fetching event details:", error.message);
-  //   } finally {
-  //   // setLoadingEventDetails(false); // Clear loading state
-  // }
-  // };
   const fetchEventDetails = async (eventId) => {
     setLoadingEventDetails(true); 
     try {
@@ -297,57 +219,39 @@ const EventsPage = () => {
       // Fetch the event details from the API
       const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
       const event = response.data;
+
+
+      setEventDetails({
+        ...event.details, 
+        scorecard:event.scorecard, 
+        teeTime: event.details?.tee_time,
+        numTimes: event.details?.num_teetimes,
+        total_yardage: event.total_yardage, 
+        group_pairings: response.data.group_pairings
+      });
   
-      // Consolidate the event details into a single object
-      const newEventDetails = {
-        ...event.details,
-        teeTime: event.details?.tee_time, // Tee time as a separate field
-        numTimes: event.details?.num_teetimes, // Total number of tee times
-        scorecard: event.scorecard, // Scorecard data
-        total_yardage: event.total_yardage, // Total yardage for the event
-        group_pairings: response.data.group_pairings, // Pairing data for groups
-        players: event.players.map((player) => ({
-          ...player,
-          quota: player.quota || player.current_quota, // Normalize the quota field
-          scoreDiff: player.score - player.event_quota, // Calculate score difference
-        })),
-      };
   
-      // Update the event details state
-      setEventDetails(newEventDetails);
-  
-      // Update event players and pairings derived from event details
-      setEventPlayers(
-        newEventDetails.players.sort((a, b) =>
-          upcomingEvents.some((e) => e.id === eventId)
-            ? a.name.localeCompare(b.name) // Alphabetical for upcoming events
-            : b.scoreDiff - a.scoreDiff // Score difference for past events
-        )
-      );
-  
-      // If pairings data exists, update state and backend
-      if (response.data.group_pairings) {
-        setPairings(response.data.group_pairings);
+      const normalizedPlayers = event.players
+      .map((player) => ({
+        ...player,
+        quota: player.quota || player.current_quota, // Normalize quota field
+        scoreDiff: (player.score - player.event_quota), // Calculate score - quota
+      }));
+    
+      if (upcomingEvents.some((event) => event.id === eventId)) {
+        // Sort alphabetically for upcoming events
+        setEventPlayers(normalizedPlayers.sort((a, b) => a.name.localeCompare(b.name)));
       } else {
-        // Generate pairings if they don't already exist
-        const shuffledPlayers = [...newEventDetails.players].sort(() => Math.random() - 0.5);
-        const generatedPairings = [];
+        // Sort by score difference for past events
+        setEventPlayers(normalizedPlayers.sort((a, b) => b.scoreDiff - a.scoreDiff));
+      }
+
+      setEventPlayers(normalizedPlayers);
+      setScorecard(event.scorecard);
+
+      const pairingsResponse = await axios.get(`${API_BASE_URL}/pairings/${eventId}`);
+      setPairings(pairingsResponse.data || []); // Load pairings if they exist
   
-        for (let i = 0; i < shuffledPlayers.length; i += 4) {
-          generatedPairings.push(shuffledPlayers.slice(i, i + 4));
-        }
-  
-        setPairings(generatedPairings);
-  
-        // Update the database with generated pairings
-        await axios.post(
-          `${API_BASE_URL}/pairings/${eventId}`,
-          { pairings: generatedPairings },
-          { withCredentials: true }
-        );
-      } 
-  
-      console.log("Event details successfully loaded.");
     } catch (error) {
       console.error("Error fetching event details:", error.message);
       alert("Failed to load event details. Please try again.");
@@ -786,6 +690,12 @@ const EventsPage = () => {
           onClick={generatePDF}
         >
           Generate Scorecard PDF
+        </button>
+        <button
+          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={generatePDF}
+        >
+          Generate Scorecard Image
         </button>
       </div>
     </div>
