@@ -1,0 +1,34 @@
+@media print {
+
+    .page-break {
+      break-before: page; /* Ensures a page break before the element */
+    }
+  
+    /* Optional: Add default print styling */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  
+    #print-content {
+      padding: 1rem;
+    }
+  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .highlight {
+        background-color: yellow !important;
+        color: black !important;
+      }
+  
+    /* Hide buttons when printing */
+    button {
+      display: none !important;
+    }
+
+      
+  }
+  

@@ -96,11 +96,15 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     const isHighlighted = highlightedHoles.includes(hole);
                     return (
                       <td
-                        key={hole}
-                        className={`border border-black p-1 text-center ${
-                          isHighlighted ? "bg-yellow-300" : ""
-                        }`}
-                      ></td>
+                      key={hole}
+                      className="border border-black p-1 text-center"
+                      style={{
+                        backgroundColor: isHighlighted ? "yellow" : "transparent", // Simple, reliable
+                        color: isHighlighted ? "black" : "inherit", // Ensure contrast
+                      }}
+                    >
+            
+                    </td>
                     );
                   })}
                   <td className="border border-black p-1 text-center"></td>

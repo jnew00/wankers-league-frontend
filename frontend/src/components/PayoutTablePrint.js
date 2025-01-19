@@ -3,7 +3,7 @@ import payoutData from "../utils/payoutData"
  
 const PayoutTablePrint = () => {
   return (
-   <div id="payout-table" className="p-6 mx-auto border border-black">
+   <div id="payout-table" className="p-6 mx-auto">
       <h2 className="text-xl font-bold mb-4">Payout Table</h2>
       <table className="w-auto text-xs border-collapse border border-black">
         <thead className="bg-blue-600 text-white h-8">

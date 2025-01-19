@@ -693,7 +693,11 @@ const EventsPage = () => {
         </button>
         <button
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
-          onClick={generatePDF}
+          onClick={() =>
+            navigate("/printScorecard", {
+              state: { eventDetails, eventPlayers, scorecard },
+            })
+          }
         >
           Generate Scorecard Image
         </button>
