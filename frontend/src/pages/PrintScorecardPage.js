@@ -74,7 +74,6 @@ const PrintScorecardPage = () => {
       {/* Content to Print */}
       <div id="print-content" className="p-4">
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Scorecard</h2>
           <ScorecardSheet
             eventDetails={eventDetails}
             players={eventPlayers}
