@@ -42,8 +42,8 @@ const PlayerList = ({
       <table className="min-w-full table-fixed border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
         <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
-              <th className="p-4 text-left w-20">Rank</th>
-              <th className="p-4 text-left w-40">Player</th>
+              <th className="p-4 text-left w-20">Player</th>
+              <th className="p-4 text-left w-40">Place</th>
               <th className="p-4 text-center w-24">Quota</th>
               <th className="p-4 text-center w-24">Score</th>
               <th className="p-4 text-center w-24">+/-</th>
@@ -64,32 +64,10 @@ const PlayerList = ({
                 index % 2 === 0 ? "bg-blue-50" : "bg-white"
               } hover:bg-blue-100 border-b`}
             >
-                <td className="p-4 text-left w-20 h-8">
-                  {player.isEditing ? (
-                    <select
-                      value={player.rank || ""}
-                      onChange={(e) => {
-                        handlePlayerChange(
-                          player.player_id,
-                          "rank",
-                          Number(e.target.value)
-                        )
-                      }}
-                      className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
-                      >
-                      <option value="">--</option>
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((rank) => (
-                        <option key={rank} value={rank}>
-                          {rank}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="h-8 flex items-center">{player.rank || "N/A"}</div>
-                  )}
-                </td>
+         
                 <td className="p-4 text-left w-40 h-8">
                 {player.isEditing && !player.player_id ? (
+                  
                     <select
                       value={player.player_id || ""}
                       onChange={(e) => {
@@ -97,21 +75,12 @@ const PlayerList = ({
                         const selectedPlayer = allPlayers.find(
                           (p) => p.id === selectedPlayerId
                         );
-                        handlePlayerChange(
-                          player.player_id,
-                          "player_id",
-                          selectedPlayerId
-                        );
-                        handlePlayerChange(
-                          player.player_id,
-                          "name",
-                          selectedPlayer?.name || ""
-                        );
-                        handlePlayerChange(
-                          player.player_id,
-                          "quota",
-                          selectedPlayer?.current_quota || 0
-                        );
+                 
+                        handlePlayerChange(selectedPlayerId, {
+                          player_id: selectedPlayerId,
+                          name: selectedPlayer?.name || "",
+                          quota: selectedPlayer?.current_quota || 0,
+                      });
                       }}
                       className="border border-gray-300 rounded-lg p-1 h-8 w-full text-sm"
                       >
@@ -130,6 +99,29 @@ const PlayerList = ({
                     <div className="h-8 flex items-center">{player.name || "-"}</div>
                   )}
                 </td>
+
+                <td className="p-4 text-left w-20 h-8">
+                  {player.isEditing ? (
+                    <select
+                      value={player.rank || ""}
+                      onChange={(e) => {
+                        const newRank = Number(e.target.value);
+                        handlePlayerChange(player.player_id, { rank:  newRank });
+                      }}
+                      disabled={!player.player_id} // Disable if player_id is null or undefined
+                      className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
+                      >
+                      <option value="">--</option>
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((rank) => (
+                        <option key={rank} value={rank}>
+                          {rank}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="h-8 flex items-center">{player.rank || "N/A"}</div>
+                  )}
+                </td>
                 <td className="p-4 w-24 text-center h-8">{player.quota || "-"}</td>
 
 {/* Score Editing */}
@@ -144,7 +136,7 @@ const PlayerList = ({
                           const numericValue = value === "" ? null : Number(value);
                           // Allow only valid numbers within range
                           if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 40)) {
-                            handlePlayerChange(player.player_id, "score", numericValue);
+                            handlePlayerChange(player.player_id, { score: numericValue });
                           }
                         }}
                         className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500  w-12 h-8 text-center transition-all"
@@ -184,9 +176,7 @@ const PlayerList = ({
                 {/* Decrement Button */}
                 <button
                   onClick={() => {
-                    if (player.ctps > 0) {
-                      handlePlayerChange(player.player_id, "ctps", player.ctps - 1);
-                    }
+                    handlePlayerChange(player.player_id, { ctps: Math.max(0, (player.ctps || 0) - 1) });
                   }}
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible || player.ctps <= 0}
@@ -199,9 +189,9 @@ const PlayerList = ({
 
                 {/* Increment Button */}
                 <button
-                  onClick={() =>
-                    handlePlayerChange(player.player_id, "ctps", player.ctps + 1)
-                  }
+                  onClick={() => {
+                    handlePlayerChange(player.player_id, { ctps: (player.ctps || 0) + 1 });
+                  }}
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible || player.ctps >= 4}
 
@@ -225,9 +215,8 @@ const PlayerList = ({
                 {/* Decrement Button */}
                 <button
                   onClick={() => {
-                    if (player.skins > 0) {
-                      handlePlayerChange(player.player_id, "skins", player.skins - 1);
-                    }
+                    handlePlayerChange(player.player_id, { skins: Math.max(0, (player.skins || 0) - 1) });
+
                   }}
                   className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible || player.skins <= 0}
@@ -240,9 +229,9 @@ const PlayerList = ({
 
                 {/* Increment Button */}
                 <button
-                  onClick={() =>
-                    handlePlayerChange(player.player_id, "skins", player.skins + 1)
-                  }
+                  onClick={() => {
+                    handlePlayerChange(player.player_id, { skins: (player.skins || 0) + 1 });
+                  }}
                   className="bg-blue-500 hover:bg-blue-700 text-white px-0 py-0 rounded w-6 h-6 text-center font-bold"
                   disabled={!isFedupEligible}
                 >
@@ -268,7 +257,7 @@ const PlayerList = ({
                           const numericValue = value === "" ? null : Number(value);
                           // Allow only valid numbers within range
                           if (numericValue === null || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 1000)) {
-                            handlePlayerChange(player.player_id, "money_won", numericValue);
+                            handlePlayerChange(player.player_id, { money_won: numericValue });
                           }
                         }}
                         className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 h-8 w-12 text-center transition-all appearance-none ${

@@ -279,10 +279,6 @@ const AdminPage = () => {
         )
       );
 
-      // setFeedbackMessage({
-      //   type: "success",
-      //   text: `Player "${player.name}" updated successfully!`,
-      // });
 
     } catch (error) {
       setFeedbackMessage({
@@ -294,7 +290,6 @@ const AdminPage = () => {
   };
 
   const handleDeletePlayer = async (playerId) => {
-    // SweetAlert2 confirmation dialog
     const confirmDelete = await Swal.fire({
       title: 'Are you sure?',
       text: 'This action will remove the player from the event.',
@@ -388,9 +383,11 @@ const AdminPage = () => {
     setPlayers((prevPlayers) => [
       ...prevPlayers,
       {
+        // player_id: `temp-${Date.now()}`,
         player_id: null,
         name: "",
-        ctps: null,
+        ctps: 0,
+        score: null,
         skins: 0,
         money_won: 0,
         total_points: 0,
@@ -401,61 +398,61 @@ const AdminPage = () => {
     ]);
   };
 
-  const handlePlayerChange = useCallback(
-    (playerId, field, value) => {
-
-      setPlayers((prevPlayers) => {
-        // Find the index of the player using player_id
-        const playerIndex = prevPlayers.findIndex((p) => p.player_id === playerId);
-
-        const updatedPlayers = [...prevPlayers];
-        updatedPlayers[playerIndex] = {
-          ...updatedPlayers[playerIndex],
-          [field]: value, // Update the specific field
-          // Set the manual override flag if updating money_won
-          ...(field === "money_won" && { manualMoneyOverride: true }),
-        };
-
-        // Recalculate total points for all players
-        const recalculatedPlayers = updatedPlayers.map((p) => {
-          if (p.manualMoneyOverride) {
-            return { ...p }; // Skip recalculation for manually overridden players
-          }
-          // if (p.player_id === playerId && field === "money_won") {
-          //   return { ...p }; // Keep manually updated money_won
-          // }
-          return {
-          ...p,
-          total_points: calculateTotalPoints(
-            p,
-            pointsConfig,
-            selectedEvent?.isMajor,
-            selectedEvent?.isFedupEligible,
-            updatedPlayers // Pass the updated list for tie calculations
-          ),
-        };
-      });
   
-        // Recalculate pots
+  const handlePlayerChange = useCallback((playerId, updates) => {
+
+    if (!playerId && !updates.player_id) {
+        console.error("Invalid player_id: Both playerId and updates.player_id are missing.");
+        return; // Exit early if playerId is null or undefined and no replacement ID is provided
+    }
+
+    setPlayers((prevPlayers) => {
+        // Update players by mapping through the array
+        const updatedPlayers = prevPlayers.map((player) => {
+            if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
+
+                // Merge updates and replace temporary IDs if applicable
+                const updatedPlayer = {
+                    ...player,
+                    ...updates,
+                    player_id: updates.player_id || player.player_id, // Replace temp ID if updates.player_id exists
+                    ...(updates.money_won !== undefined && { manualMoneyOverride: true }),
+                };
+
+                // Only recalculate total_points if not manually overridden
+                if (!updatedPlayer.manualMoneyOverride) {
+                    updatedPlayer.total_points = calculateTotalPoints(
+                        updatedPlayer,
+                        pointsConfig,
+                        selectedEvent?.isMajor,
+                        selectedEvent?.isFedupEligible,
+                        prevPlayers
+                    );
+                }
+
+                return updatedPlayer;
+            }
+            return player; // Return unchanged player
+        });
+
+
+        // Recalculate pots and return updated state
         const {
-          updatedPlayers: playersWithMoney,
-          remainingPot,
-          remainingSkinPot,
-          remainingCtpPot,
-        } = calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
-  
-        // Update state with recalculated values
+            updatedPlayers: playersWithMoney,
+            remainingPot,
+            remainingSkinPot,
+            remainingCtpPot,
+        } = calculateMoneyWonAndPot(updatedPlayers, updatedPlayers.length);
+
         setRemainingPot(remainingPot);
         setSkinPot(remainingSkinPot);
         setCtpPot(remainingCtpPot);
 
         return playersWithMoney;
-      });
-    },
-    [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
-  );
-  
-  
+    });
+}, [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]);
+
+
 
   const savePointsConfig = async () => {
     try {
