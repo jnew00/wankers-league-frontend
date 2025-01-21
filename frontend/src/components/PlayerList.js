@@ -252,6 +252,7 @@ const PlayerList = ({
                         value={player.money_won === 0 || player.money_won === null ? "" : player.money_won}
                         // value={player.money_won}
                         placeholder="$"
+                        disabled={!isFedupEligible}
                         onChange={(e) => {
                           const value = e.target.value;
                           const numericValue = value === "" ? null : Number(value);
