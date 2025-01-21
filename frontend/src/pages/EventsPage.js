@@ -29,6 +29,7 @@ const EventsPage = () => {
   const { role } = useUser();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
+  const [fedupEvents, setFedupEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventDetails, setEventDetails] = useState({});
   const [allPlayers, setAllPlayers] = useState([]);
@@ -61,10 +62,14 @@ const EventsPage = () => {
         const response = await axios.get(`${API_BASE_URL}/admin/events`);
 
         const upcoming = response.data.filter((event) => !event.closed);
-        const past = response.data.filter((event) => event.closed);
-        
+        const past = response.data.filter((event) => event.closed && !event.fedup_eligible);
+        const fedupEvents = response.data.filter((event) => event.closed && event.fedup_eligible);
+
+
+         
         setUpcomingEvents(upcoming);
         setPastEvents(past);
+        setFedupEvents(fedupEvents);
          
         
       } catch (error) {
@@ -744,15 +749,17 @@ const EventsPage = () => {
           )}
         </div>
 
-        {/* Past Events Section */}
-        <div className="past-section py-6 px-4 rounded-lg shadow-md bg-gray-100">
+
+
+ {/* Past Fedup Events Section */}
+        <div className="past-section py-6 px-4 mb-16 rounded-lg shadow-md bg-gray-100">
           <h2 className="text-2xl font-bold border-b-4 border-gray-600 inline-block mb-4">
-            Past Events
+            Past FedUp Events
           </h2>
-          {pastEvents.length === 0 ? (
+          {fedupEvents.length === 0 ? (
             <p className="text-gray-500">No past events available.</p>
           ) : (
-            pastEvents.map((event) => (
+            fedupEvents.map((event) => (
               <div
                 key={event.id}
                 className={`border border-gray-300 rounded-lg mb-4 shadow-md ${
@@ -847,11 +854,108 @@ const EventsPage = () => {
                        
                 )}
               </div>
+            ))
+            )}
+
+        </div>
+
+
+        {/* Past Non-Fedup Events Section */}
+        <div className="py-6 px-4 rounded-lg shadow-md bg-gray-300">
+          <h2 className="text-2xl font-bold border-b-4 border-gray-600 inline-block mb-4">
+            Past Non-FedUp Events
+          </h2>
+          {pastEvents.length === 0 ? (
+            <p className="text-gray-500">No past events available.</p>
+          ) : (
+            pastEvents.map((event) => (
+              <div
+                key={event.id}
+                className={`border border-gray-300 rounded-lg mb-4 shadow-md ${
+                  event.is_major ? "bg-yellow-50" : ""
+                }`}
+              >
+                <div
+                className="relative cursor-pointer font-bold text-lg py-2 px-4 bg-gray-50 hover:bg-blue-50 hover:shadow-md transition-colors duration-200 flex justify-between items-center border border-gray-300 hover:border-blue-500"
+                onClick={() => toggleEventDetails(event.id)}
+                >
+                  
+                  <div className="flex items-center">
+                    <span>
+                      {new Date(event.date).toLocaleDateString()} -{" "}
+                      {event.course_name}
+                    </span>
+                    {event.is_major && (
+                      <span className="ml-2 px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                        Major
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    {event.winner_name && ( 
+                      <span className="text-gray-500 italic mr-2">
+                      Winner: {event.winner_name}
+                      </span>
+                )}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-gray-500"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 9.293a1 1 0 011.414 0L10 12.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                  </div>
+  
+                </div>
+
+                {selectedEvent === event.id && (
+                  <div className="mt-4 p-4">
+                    <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+                      <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                        <tr>
+                          <th className="p-4 text-left">Player</th>
+                          <th className="p-4 text-center">Quota</th>
+                          <th className="p-4 text-center">Score</th>
+                          <th className="p-4 text-center">+/-</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventPlayers.map((player, index) => (
+                          <tr key={player.player_id}>
+                            <td className="p-4 text-left">{player.name}</td>
+                            <td className="p-4 text-center">{player.event_quota}</td>
+                            <td className="p-4 text-center">{player.score}</td>
+                            <td className="p-4 text-center">
+                              {player.score - player.quota > 0 ? (
+                                <span className="text-green-500">
+                                  +{player.score - player.event_quota}
+                                </span>
+                              ) : (
+                                <span className="text-red-500">
+                                  {player.score - player.event_quota}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                       
+                )}
+              </div>
                 
             ))
           )}
       
-        </div>
+          </div>
+
+          
         <div>
         {showPairingsModal && (
   <PairingsModal
