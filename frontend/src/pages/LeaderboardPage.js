@@ -8,9 +8,6 @@ import { FaMoneyBillAlt } from "react-icons/fa";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
-tippy('.paidToolTip', {
-  content: 'Paid for the Season',
-});
 
 const LeaderboardPage = () => {
   const [players, setPlayers] = useState([]);
@@ -41,6 +38,13 @@ const LeaderboardPage = () => {
   };
   
   
+  useEffect(() => {
+    tippy('.paidToolTip',
+    {
+      content: 'Paid for the Season'
+    });
+  }, [players]);
+
 
   const handleTogglePaidPlayers = () => {
     setOnlyPaid(!onlyPaid);

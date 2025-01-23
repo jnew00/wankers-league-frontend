@@ -690,12 +690,12 @@ const EventsPage = () => {
           Generate Email
         </button>
 
-        <button
+        {/* <button
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
           onClick={generatePDF}
         >
           Generate Scorecard PDF
-        </button>
+        </button> */}
         <button
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
           onClick={() =>
@@ -704,7 +704,7 @@ const EventsPage = () => {
             })
           }
         >
-          Generate Scorecard Image
+          Generate Scoresheet
         </button>
       </div>
     </div>

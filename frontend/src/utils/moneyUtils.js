@@ -14,29 +14,7 @@ export const calculateMoneyWonAndPot = (players, numPlayers) => {
     let totalPaidOut = 0;
     let totalSkinsPaid = 0;
     let totalCTPsPaid = 0;
-  
-    // const updatedPlayers = players.map((p) => {
-    //   const moneyFromRank = rankPayouts[p.rank - 1] || 0;
-    //   const moneyFromSkins = (p.skins || 0) * skinValue;
-    //   const moneyFromCTPs = (p.ctps || 0) * ctpValue;
-  
-     
 
-    //   totalPaidOut += moneyFromRank;
-    //   totalSkinsPaid += moneyFromSkins;
-    //   totalCTPsPaid += moneyFromCTPs;
-  
-    //   return {
-    //     ...p,
-    //     money_won:
-    //       p.money_won === null // Preserve null values (from cleared input)
-    //         ? null
-    //         : p.money_won !== undefined // Preserve manually entered values
-    //         ? p.money_won
-    //         : moneyFromRank + moneyFromSkins + moneyFromCTPs, // Default fallback if no manual value
-    //   };
-    // });
-  
     const updatedPlayers = players.map((p) => {
         if (p.manualMoneyOverride) {
             // Skip recalculation for manually overridden players
@@ -45,6 +23,10 @@ export const calculateMoneyWonAndPot = (players, numPlayers) => {
         const moneyFromRank = rankPayouts[p.rank - 1] || 0;
         const moneyFromSkins = (p.skins || 0) * skinValue;
         const moneyFromCTPs = (p.ctps || 0) * ctpValue;
+
+        totalSkinsPaid += moneyFromSkins;
+        totalCTPsPaid += moneyFromCTPs;
+
     
         const moneyWon = moneyFromRank + moneyFromSkins + moneyFromCTPs;
         totalPaidOut += moneyWon;

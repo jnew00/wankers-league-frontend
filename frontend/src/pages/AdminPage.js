@@ -134,9 +134,9 @@ const AdminPage = () => {
     }
 
     try {
-      await axios.put(
+      await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/close`,
-        { closed: true },
+        {},
         { withCredentials: true }
       );
 
@@ -172,21 +172,22 @@ const AdminPage = () => {
         console.error("Event not found");
         return;
       }
-  
+
       try {
         const eventResponse = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/admin/events/${eventId}`
         );
   
         const { players = [], details } = eventResponse.data;
-  
+
         if (Array.isArray(players)) {
           setPlayers(
             players.map((player) => ({
               player_id: player.player_id,
               name: player.name || "N/A",
               image: player.image_path || null,
-              quota: player.quota || 0,
+              event_quota: player.event_quota || player.player_quota,
+              calculated_quota: calculateQuota(player.event_quota || player.player_quota, player.score), 
               score: player.score || 0,
               rank: player.rank || null,
               ctps: player.ctps || 0,
@@ -195,6 +196,8 @@ const AdminPage = () => {
               total_points: player.total_points || 0,
               isEditing: false,
               manualMoneyOverride: false,
+              new_player: player.new_player || false,
+              events_played: player.events_played || 0,
             }))
           );
         } else {
@@ -247,19 +250,19 @@ const AdminPage = () => {
   const handleSavePlayer = async (player) => {
     try {
 
-      const calculatedQuota = calculateQuota(player.quota, player.score);
+      const calculatedQuota = calculateQuota(player.event_quota, player.score);
 
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/player/${player.player_id}`,
         {
           ctps: player.ctps || 0,
+          eventQuota: player.event_quota,
+          calculatedQuota,
           skins: player.skins || 0,
           moneyWon: player.money_won || 0,
           rank: player.rank || null,
           totalPoints: player.total_points || 0,
           score: player.score || 0,
-          previousQuota: player.quota,
-          calculatedQuota
         },
         {
           withCredentials: true,
@@ -392,66 +395,116 @@ const AdminPage = () => {
         money_won: 0,
         total_points: 0,
         rank: null,
-        quota: 0,
+        event_quota: 0,
         isEditing: true,
+        new_player: false,
+        events_played: 0,
       },
     ]);
   };
 
+  const handlePlayerChange = useCallback(
+    (playerId, updates) => {
   
-  const handlePlayerChange = useCallback((playerId, updates) => {
-
-    if (!playerId && !updates.player_id) {
-        console.error("Invalid player_id: Both playerId and updates.player_id are missing.");
-        return; // Exit early if playerId is null or undefined and no replacement ID is provided
-    }
-
-    setPlayers((prevPlayers) => {
+      if (!playerId && !updates.player_id) {
+        console.error(
+          "Invalid player_id: Both playerId and updates.player_id are missing."
+        );
+        return;
+      }
+  
+      setPlayers((prevPlayers) => {
+  
+        let playerUpdated = false;
+  
         // Update players by mapping through the array
         const updatedPlayers = prevPlayers.map((player) => {
-            if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
-
-                // Merge updates and replace temporary IDs if applicable
-                const updatedPlayer = {
-                    ...player,
-                    ...updates,
-                    player_id: updates.player_id || player.player_id, // Replace temp ID if updates.player_id exists
-                    ...(updates.money_won !== undefined && { manualMoneyOverride: true }),
-                };
-
-                // Only recalculate total_points if not manually overridden
-                if (!updatedPlayer.manualMoneyOverride) {
-                    updatedPlayer.total_points = calculateTotalPoints(
-                        updatedPlayer,
-                        pointsConfig,
-                        selectedEvent?.isMajor,
-                        selectedEvent?.isFedupEligible,
-                        prevPlayers
-                    );
-                }
-
-                return updatedPlayer;
+          // Handle case for blank row update
+          if (player.player_id === null && updates.player_id) {
+            const selectedPlayer = allPlayers.find((p) => p.id === updates.player_id);
+  
+            if (!selectedPlayer) {
+              console.error("Selected player not found in allPlayers:", updates.player_id);
+              return player;
             }
-            return player; // Return unchanged player
+
+            
+  
+            playerUpdated = true;
+  
+            return {
+              ...player,
+              player_id: selectedPlayer.id,
+              name: selectedPlayer.name,
+              event_quota: selectedPlayer.current_quota || 0,
+              new_player: selectedPlayer.new_player,
+              events_played: selectedPlayer.events_played,
+              score: 0, // Default for new players
+              rank: null,
+              isEditing: true, // Allow immediate editing
+              calculated_quota: calculateQuota(selectedPlayer.player_quota, 0),
+            };
+          }
+  
+          // Handle updates for existing players
+          if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
+            playerUpdated = true;
+  
+            if (updates.score !== undefined) {
+              const newScore = Number(updates.score) || 0; // Ensure score is a valid number
+              updates.calculated_quota = calculateQuota(player.event_quota, newScore);
+            }
+
+            const updatedPlayer = {
+              ...player,
+              ...updates,
+              player_id: updates.player_id || player.player_id, // Replace temp ID if updates.player_id exists
+              ...(updates.money_won !== undefined && { manualMoneyOverride: true }),
+            };
+  
+            // Only recalculate total_points if not manually overridden
+            if (!updatedPlayer.manualMoneyOverride) {
+              updatedPlayer.total_points = calculateTotalPoints(
+                updatedPlayer,
+                pointsConfig,
+                selectedEvent?.isMajor,
+                selectedEvent?.isFedupEligible,
+                prevPlayers
+              );
+            }
+  
+            return updatedPlayer;
+          }
+  
+          return player; // Return unchanged player
         });
-
-
+  
+        if (!playerUpdated) {
+          console.error(
+            "No matching player or blank row found to update for playerId:",
+            playerId
+          );
+        }
+    
         // Recalculate pots and return updated state
         const {
-            updatedPlayers: playersWithMoney,
-            remainingPot,
-            remainingSkinPot,
-            remainingCtpPot,
+          updatedPlayers: playersWithMoney,
+          remainingPot,
+          remainingSkinPot,
+          remainingCtpPot,
         } = calculateMoneyWonAndPot(updatedPlayers, updatedPlayers.length);
-
+  
+  
         setRemainingPot(remainingPot);
         setSkinPot(remainingSkinPot);
         setCtpPot(remainingCtpPot);
-
+  
         return playersWithMoney;
-    });
-}, [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]);
-
+      });
+    },
+    [allPlayers, pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
+  );
+  
 
 
   const savePointsConfig = async () => {
