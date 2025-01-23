@@ -31,6 +31,14 @@ const PlayerList = ({
     tippy("[data-tippy-content]");
   }, [players, selectedEvent]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      tippy("[data-tippy-content]");
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [players, selectedEvent]);
+  
+
   return (
     <div className="mt-6">
       <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
@@ -47,16 +55,16 @@ const PlayerList = ({
         <table className="min-w-full table-fixed border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
             <tr>
-              <th className="p-4 text-left w-20">Player</th>
-              <th className="p-4 text-left w-40">Place</th>
+              <th className="p-4 text-left w-60">Player</th>
+              {isFedupEligible && <th className="p-4 text-left w-20">Place</th>}
               <th className="p-4 text-center w-24">Quota</th>
               <th className="p-4 text-center w-24">Score</th>
               <th className="p-4 text-center w-24">+/-</th>
               <th className="p-4 text-center w-24">New Quota</th>
-              <th className="p-1 text-center w-40">CTPs</th>
-              <th className="p-1 text-center w-40">Skins</th>
-              <th className="p-4 text-center w-24">Money Won</th>
-              <th className="p-4 text-center w-32">Total Points</th>
+              {isFedupEligible && <th className="p-1 text-center w-40">CTPs</th>}
+              {isFedupEligible && <th className="p-1 text-center w-40">Skins</th>}
+              {isFedupEligible && <th className="p-4 text-center w-24">Money Won</th>}
+              {isFedupEligible && <th className="p-4 text-center w-32">Total Points</th>}
               <th className="p-4 text-center w-32">Actions</th>
             </tr>
           </thead>
@@ -74,7 +82,8 @@ const PlayerList = ({
                     index % 2 === 0 ? "bg-blue-50" : "bg-white"
                   } hover:bg-blue-100 border-b`}
                 >
-                  <td className="p-4 text-left w-40 h-8">
+{/* Player name */}
+                  <td className="p-4 text-left w-50 h-8">
                     {player.isEditing && !player.player_id ? (
                       <select
                         value={player.player_id || ""}
@@ -92,7 +101,7 @@ const PlayerList = ({
                         }}
                         className="border border-gray-300 rounded-lg p-1 h-8 w-full text-sm"
                       >
-                        <option value="">-- Select Player --</option>
+                        <option value="">Select Player</option>
                         {allPlayers
                           .filter(
                             (p) => !players.some((player) => player.player_id === p.id)
@@ -107,7 +116,10 @@ const PlayerList = ({
                       <div className="h-8 flex items-center">{player.name || "-"}</div>
                     )}
                   </td>
-                  <td className="p-4 text-left w-20 h-8">
+
+{/* Rank (Place) */}
+{isFedupEligible && (         
+                  <td className="p-4 text-center w-30 h-8">
                     {player.isEditing ? (
                       <select
                         value={player.rank || ""}
@@ -115,10 +127,14 @@ const PlayerList = ({
                           const newRank = Number(e.target.value);
                           handlePlayerChange(player.player_id, { rank: newRank });
                         }}
-                        disabled={!player.player_id || remainingRanks.length === 0} // Disable if player_id is null or undefined
-                        className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
+                        disabled={!player.player_id || remainingRanks.length === 0  } // Disable if player_id is null or undefined
+                        
+                        className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm" ${
+                          !player.player_id || remainingRanks.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50"
+                          : "bg-white text-black cursor-pointer" }`}
+                          
                       >
-                        <option value="">--</option>
+                        <option value="">-</option>
                         {remainingRanks.map((rank) => (
                           <option key={rank} value={rank}>
                             {rank}
@@ -126,10 +142,14 @@ const PlayerList = ({
                         ))}
                       </select>
                     ) : (
-                      <div className="h-8 flex items-center">{player.rank || "N/A"}</div>
+                      <div className="h-8 flex items-center text-center">{player.rank || "-"}</div>
                     )}
                   </td>
+                )}
+{/* Event Quota */}                  
                   <td className="p-4 w-24 text-center h-8">{player.event_quota || "-"}</td>
+{/* Score Editing */}
+               
                   <td className="p-4 w-24 text-center h-8">
                     {player.isEditing ? (
                       <input
@@ -150,6 +170,8 @@ const PlayerList = ({
                       <div className="h-8 flex items-center justify-center">{player.score || 0}</div>
                     )}
                   </td>
+             
+{/* +/- */}                
                   <td className="p-4 w-24 text-center font-bold">
                     {player.score !== null && player.event_quota !== null ? (
                       <>
@@ -178,11 +200,15 @@ const PlayerList = ({
                       </>
                     ) : (
                       "N/A"
-                    )}
+                   )}
                   </td>
+{/* Calculated Quota */}                
                   <td className="p-4 text-center font-bold">
                     {calculateQuota(player.event_quota, player.score) || 0}
                   </td>
+
+{/* CTPs Editing */}
+{isFedupEligible && (
                   <td className="text-center w-40 h-8">
                     {player.isEditing ? (
                       <div className="flex items-center space-x-1 justify-center">
@@ -210,12 +236,9 @@ const PlayerList = ({
                       <div className="h-8 flex items-center justify-center">{player.ctps || 0}</div>
                     )}
                   </td>
-
-
-
-
+                )}
 {/* Skins Editing */}
-
+{isFedupEligible && (
                   <td className="text-left w-40 h-8">
                     {player.isEditing ? (
                       <div className="flex items-center space-x-1 justify-center">
@@ -243,9 +266,10 @@ const PlayerList = ({
                       <div className="h-8 flex items-center justify-center">{player.skins || 0}</div>
                     )}
                   </td>
-
-
+                )}
+       
 {/* Money Editing */}
+{isFedupEligible && (
                   <td className="p-4 w-24 text-center h-8">
                     {player.isEditing ? (
                       <input
@@ -269,9 +293,15 @@ const PlayerList = ({
                       <div className="h-8 flex items-center justify-center">{player.money_won || 0}</div>
                     )}
                   </td>
+                )}
+{/* Total Points */}
+{isFedupEligible && (
+ 
                   <td className="p-4 text-center w-32 font-bold">
                     {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
                   </td>
+  )}
+{/* Actions */}
                   <td className="p-4 text-center w-32 h-8 whitespace-nowrap">
                     {player.isEditing ? (
                       <div className="flex items-center justify-center space-x-2">
@@ -308,7 +338,9 @@ const PlayerList = ({
                 </tr>
               );
             })}
-            {selectedEvent && (
+
+{selectedEvent && isFedupEligible && (
+              
               <tr className="bg-gray-100 hover:bg-gray-200">
                 <td colSpan="6" className="p-4 text-right font-semibold">
                   Remaining Pots:
