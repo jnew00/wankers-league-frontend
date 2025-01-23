@@ -217,7 +217,7 @@ const PlayerList = ({
                             handlePlayerChange(player.player_id, { ctps: Math.max(0, (player.ctps || 0) - 1) });
                           }}
                           className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
-                          disabled={!isFedupEligible || player.ctps <= 0}
+                          disabled={player.ctps <= 0}
                         >
                           -
                         </button>
@@ -227,7 +227,7 @@ const PlayerList = ({
                             handlePlayerChange(player.player_id, { ctps: (player.ctps || 0) + 1 });
                           }}
                           className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
-                          disabled={!isFedupEligible || player.ctps >= 4}
+                          disabled={player.ctps >= 4}
                         >
                           +
                         </button>
@@ -247,7 +247,7 @@ const PlayerList = ({
                             handlePlayerChange(player.player_id, { skins: Math.max(0, (player.skins || 0) - 1) });
                           }}
                           className="bg-blue-500 hover:bg-blue-700 text-white rounded w-6 h-6 text-center font-bold"
-                          disabled={!isFedupEligible || player.skins <= 0}
+                          disabled={player.skins <= 0}
                         >
                           -
                         </button>
@@ -257,7 +257,6 @@ const PlayerList = ({
                             handlePlayerChange(player.player_id, { skins: (player.skins || 0) + 1 });
                           }}
                           className="bg-blue-500 hover:bg-blue-700 text-white px-0 py-0 rounded w-6 h-6 text-center font-bold"
-                          disabled={!isFedupEligible}
                         >
                           +
                         </button>
@@ -276,7 +275,6 @@ const PlayerList = ({
                         type="text"
                         value={player.money_won === 0 || player.money_won === null ? "" : player.money_won}
                         placeholder="$"
-                        disabled={!isFedupEligible}
                         onChange={(e) => {
                           const value = e.target.value;
                           const numericValue = value === "" ? null : Number(value);
@@ -285,9 +283,7 @@ const PlayerList = ({
                           handlePlayerChange(player.player_id, { money_won: numericValue });
                           }
                         }}
-                        className={`border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 h-8 w-12 text-center transition-all appearance-none ${
-                          !isFedupEligible ? "bg-gray-100 cursor-not-allowed" : ""
-                        }`}
+                        className="border border-gray-300 rounded focus:ring focus:ring-blue-300 focus:border-blue-500 h-8 w-12 text-center transition-all appearance-none"      
                       />
                     ) : (
                       <div className="h-8 flex items-center justify-center">{player.money_won || 0}</div>
@@ -298,7 +294,7 @@ const PlayerList = ({
 {isFedupEligible && (
  
                   <td className="p-4 text-center w-32 font-bold">
-                    {isFedupEligible ? Number(player.total_points || 0).toFixed(0) : "--"}
+                    {Number(player.total_points || 0).toFixed(0)}
                   </td>
   )}
 {/* Actions */}
