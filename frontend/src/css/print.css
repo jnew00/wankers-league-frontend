@@ -19,10 +19,6 @@
       border-collapse: collapse;
     }
 
-    .highlight {
-        background-color: yellow !important;
-        color: black !important;
-      }
   
     /* Hide buttons when printing */
     button {

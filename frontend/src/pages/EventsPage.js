@@ -12,7 +12,6 @@ import { useUser } from "../context/UserContext";
 import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 import PayoutTablePrint from "../components/PayoutTablePrint";
-import generatePDF from "../utils/generatePDF";
 import EventWeather from "../components/EventWeather";
 
 
@@ -239,7 +238,7 @@ const EventsPage = () => {
       const normalizedPlayers = event.players
       .map((player) => ({
         ...player,
-        quota: player.quota || player.current_quota, // Normalize quota field
+        quota: player.player_quota || player.current_quota, // Normalize quota field
         scoreDiff: (player.score - player.event_quota), // Calculate score - quota
       }));
     
@@ -407,10 +406,6 @@ const EventsPage = () => {
     fetchEventDetails(eventId);
   };
 
-  // eslint-disable-next-line 
-  const handleEditEvent = (eventId) => {
-    navigate(`/admin/manage-events?eventId=${eventId}`);
-  };
 
   return (
     <div>

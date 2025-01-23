@@ -53,7 +53,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
 
       {/* Scorecard Section */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-black text-xs">
+        <table className="w-full border-collapse border border-black text-xs [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
           <thead>
             <tr>
               <th className="border border-black p-1 text-center text-[7px] w-[20px]">Paid?</th>
@@ -97,11 +97,10 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     return (
                       <td
                       key={hole}
-                      className="border border-black p-2 text-center"
-                      style={{
-                        backgroundColor: isHighlighted ? "yellow" : "transparent", // Simple, reliable
-                        color: isHighlighted ? "black" : "inherit", // Ensure contrast
-                      }}
+                      className={`
+                        border border-black p-2 text-center
+                        ${isHighlighted ? '[print-color-adjust:exact] [-webkit-print-color-adjust:exact] bg-yellow-200 print:!bg-yellow-200' : ''}
+                      `}
                     >
             
                     </td>
