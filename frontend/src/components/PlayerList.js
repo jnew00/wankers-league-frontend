@@ -63,7 +63,7 @@ const PlayerList = ({
               <th className="p-4 text-center w-24">New Quota</th>
               {isFedupEligible && <th className="p-1 text-center w-40">CTPs</th>}
               {isFedupEligible && <th className="p-1 text-center w-40">Skins</th>}
-              {isFedupEligible && <th className="p-4 text-center w-24">Money Won</th>}
+              <th className="p-4 text-center w-24">Money Won</th>
               {isFedupEligible && <th className="p-4 text-center w-32">Total Points</th>}
               <th className="p-4 text-center w-32">Actions</th>
             </tr>
@@ -268,7 +268,7 @@ const PlayerList = ({
                 )}
        
 {/* Money Editing */}
-{isFedupEligible && (
+
                   <td className="p-4 w-24 text-center h-8">
                     {player.isEditing ? (
                       <input
@@ -289,7 +289,7 @@ const PlayerList = ({
                       <div className="h-8 flex items-center justify-center">{player.money_won || 0}</div>
                     )}
                   </td>
-                )}
+              
 {/* Total Points */}
 {isFedupEligible && (
  
