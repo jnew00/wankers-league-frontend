@@ -130,7 +130,7 @@ const PlayerList = ({
                   </td>
                 )}
 {/* Event Quota */}                  
-                  <td className="p-4 w-24 text-center h-8">{player.event_quota || "-"}</td>
+                  <td className="p-4 w-24 text-center h-8">{player.current_quota || "-"}</td>
 {/* Score Editing */}
                
                   <td className="p-4 w-24 text-center h-8">
@@ -156,13 +156,13 @@ const PlayerList = ({
              
 {/* +/- */}                
                   <td className="p-4 w-24 text-center font-bold">
-                    {player.score !== null && player.event_quota !== null ? (
+                    {player.score !== null && player.current_quota !== null ? (
                       <>
-                        {player.new_player && player.events_played < 2 && player.score - player.event_quota > 2 ? (
+                        {player.new_player && player.events_played < 2 && player.score - player.current_quota > 2 ? (
                           <div className="flex items-center justify-center space-x-1">
                             <span
                               className="text-green-500 font-bold"
-                              data-tippy-content={`Score capped at +2 for new player rule. Actual: +${player.score - player.event_quota}. Remaining caps: ${1 - player.events_played}`}
+                              data-tippy-content={`Score capped at +2 for new player rule. Actual: +${player.score - player.current_quota}. Remaining caps: ${1 - player.events_played}`}
                             >
                               +2
                             </span>
@@ -173,10 +173,10 @@ const PlayerList = ({
                               🧢
                             </span>
                           </div>
-                        ) : player.score - player.event_quota > 0 ? (
-                          <span className="text-green-500">+{player.score - player.event_quota}</span>
-                        ) : player.score - player.event_quota < 0 ? (
-                          <span className="text-red-500">{player.score - player.event_quota}</span>
+                        ) : player.score - player.current_quota > 0 ? (
+                          <span className="text-green-500">+{player.score - player.current_quota}</span>
+                        ) : player.score - player.current_quota < 0 ? (
+                          <span className="text-red-500">{player.score - player.current_quota}</span>
                         ) : (
                           "0"
                         )}
@@ -187,7 +187,7 @@ const PlayerList = ({
                   </td>
 {/* Calculated Quota */}                
                   <td className="p-4 text-center font-bold">
-                    {calculateQuota(player.event_quota, player.score) || 0}
+                    {calculateQuota(player.current_quota, player.score) || 0}
                   </td>
 
 {/* CTPs Editing */}

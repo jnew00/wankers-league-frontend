@@ -201,8 +201,8 @@ const AdminPage = () => {
               player_id: player.player_id,
               name: player.name || "N/A",
               image: player.image_path || null,
-              event_quota: player.event_quota || player.player_quota,
-              calculated_quota: calculateQuota(player.event_quota || player.player_quota, player.score), 
+              current_quota: player.current_quota,
+              calculated_quota: calculateQuota(player.current_quota, player.score), 
               score: player.score || 0,
               rank: player.rank || null,
               ctps: player.ctps || 0,
@@ -268,8 +268,8 @@ const AdminPage = () => {
       const playersToSync = players.map((player) => ({
         player_id: player.player_id,
         ctps: player.ctps || 0,
-        event_quota: player.event_quota,
-        calculated_quota: calculateQuota(player.event_quota, player.score),
+        current_quota: player.current_quota,
+        calculated_quota: calculateQuota(player.current_quota, player.score),
         skins: player.skins || 0,
         money_won: player.money_won || 0,
         rank: player.rank || null,
@@ -406,7 +406,7 @@ const AdminPage = () => {
         money_won: 0,
         total_points: 0,
         rank: null,
-        event_quota: 0,
+        current_quota: 0,
         isEditing: true,
         new_player: false,
         events_played: 0,
@@ -414,167 +414,65 @@ const AdminPage = () => {
     ]);
   };
 
-  const handlePlayerChange = useCallback(
-    (playerId, updates) => {
-      if (!playerId && !updates.player_id) {
-        console.error("Invalid player_id: Both playerId and updates.player_id are missing.");
-        return;
-      }
-  
-      setPlayers((prevPlayers) => {
-        let playerUpdated = false;
-  
-        // Update the relevant player
-        const updatedPlayers = prevPlayers.map((player) => {
-          if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
-            playerUpdated = true;
-  
-            if (updates.score !== undefined) {
-              const newScore = Number(updates.score) || 0;
-              updates.calculated_quota = calculateQuota(player.event_quota, newScore);
-            }
-  
-            return {
-              ...player,
-              ...updates,
-              player_id: updates.player_id || player.player_id,
-            };
-          }
-          return player; // Return unchanged player
-        });
-  
-        if (!playerUpdated) {
-          console.error("No matching player or blank row found to update for playerId:", playerId);
-          return prevPlayers;
-        }
-  
-        // Recalculate total points for all players
-        const recalculatedPlayers = updatedPlayers.map((player) => {
-          player.total_points = calculateTotalPoints(
-            player,
-            pointsConfig,
-            selectedEvent?.isMajor,
-            selectedEvent?.isFedupEligible,
-            updatedPlayers // Pass the full list for tie handling
-          );
-          return player;
-        });
-  
-        // Sync updated players to the database
-        // const changedPlayers = recalculatedPlayers.filter(
-        //   (player, idx) => player.total_points !== prevPlayers[idx]?.total_points
-        // );
-        // syncPlayersToDatabase(changedPlayers, selectedEvent?.id);
-  
-        // Recalculate pots and money won
-        const {
-          updatedPlayers: playersWithMoney,
-          remainingPot,
-          remainingSkinPot,
-          remainingCtpPot,
-        } = calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
-  
-        setRemainingPot(remainingPot);
-        setSkinPot(remainingSkinPot);
-        setCtpPot(remainingCtpPot);
-  
-        return playersWithMoney;
-      });
-    },
-    [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
-  );
-  
   // const handlePlayerChange = useCallback(
   //   (playerId, updates) => {
-  
   //     if (!playerId && !updates.player_id) {
-  //       console.error(
-  //         "Invalid player_id: Both playerId and updates.player_id are missing."
-  //       );
+  //       console.error("Invalid player_id: Both playerId and updates.player_id are missing.");
   //       return;
   //     }
   
   //     setPlayers((prevPlayers) => {
-  
   //       let playerUpdated = false;
   
-  //       // Update players by mapping through the array
+  //       // Update the relevant player
   //       const updatedPlayers = prevPlayers.map((player) => {
-  //         // Handle case for blank row update
-  //         if (player.player_id === null && updates.player_id) {
-  //           const selectedPlayer = allPlayers.find((p) => p.id === updates.player_id);
-  
-  //           if (!selectedPlayer) {
-  //             console.error("Selected player not found in allPlayers:", updates.player_id);
-  //             return player;
-  //           }
-
-
-  
-  //           playerUpdated = true;
-  
-  //           return {
-  //             ...player,
-  //             player_id: selectedPlayer.id,
-  //             name: selectedPlayer.name,
-  //             event_quota: selectedPlayer.current_quota || 0,
-  //             new_player: selectedPlayer.new_player,
-  //             events_played: selectedPlayer.events_played,
-  //             score: 0, // Default for new players
-  //             rank: null,
-  //             isEditing: true, // Allow immediate editing
-  //             calculated_quota: calculateQuota(selectedPlayer.player_quota, 0),
-  //           };
-  //         }
-  
-  //         // Handle updates for existing players
   //         if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
   //           playerUpdated = true;
   
   //           if (updates.score !== undefined) {
-  //             const newScore = Number(updates.score) || 0; // Ensure score is a valid number
+  //             const newScore = Number(updates.score) || 0;
   //             updates.calculated_quota = calculateQuota(player.event_quota, newScore);
   //           }
-
-  //           const updatedPlayer = {
+  
+  //           return {
   //             ...player,
   //             ...updates,
-  //             player_id: updates.player_id || player.player_id, // Replace temp ID if updates.player_id exists
-  //             ...(updates.money_won !== undefined && { manualMoneyOverride: true }),
+  //             player_id: updates.player_id || player.player_id,
   //           };
-  
-  //           // Only recalculate total_points if not manually overridden
-  //           if (!updatedPlayer.manualMoneyOverride) {
-  //             updatedPlayer.total_points = calculateTotalPoints(
-  //               updatedPlayer,
-  //               pointsConfig,
-  //               selectedEvent?.isMajor,
-  //               selectedEvent?.isFedupEligible,
-  //               prevPlayers
-  //             );
-  //           }
-  
-  //           return updatedPlayer;
   //         }
-  
   //         return player; // Return unchanged player
   //       });
   
   //       if (!playerUpdated) {
-  //         console.error(
-  //           "No matching player or blank row found to update for playerId:",
-  //           playerId
-  //         );
+  //         console.error("No matching player or blank row found to update for playerId:", playerId);
+  //         return prevPlayers;
   //       }
-    
-  //       // Recalculate pots and return updated state
+  
+  //       // Recalculate total points for all players
+  //       const recalculatedPlayers = updatedPlayers.map((player) => {
+  //         player.total_points = calculateTotalPoints(
+  //           player,
+  //           pointsConfig,
+  //           selectedEvent?.isMajor,
+  //           selectedEvent?.isFedupEligible,
+  //           updatedPlayers // Pass the full list for tie handling
+  //         );
+  //         return player;
+  //       });
+  
+  //       // Sync updated players to the database
+  //       // const changedPlayers = recalculatedPlayers.filter(
+  //       //   (player, idx) => player.total_points !== prevPlayers[idx]?.total_points
+  //       // );
+  //       // syncPlayersToDatabase(changedPlayers, selectedEvent?.id);
+  
+  //       // Recalculate pots and money won
   //       const {
   //         updatedPlayers: playersWithMoney,
   //         remainingPot,
   //         remainingSkinPot,
   //         remainingCtpPot,
-  //       } = calculateMoneyWonAndPot(updatedPlayers, updatedPlayers.length);
-  
+  //       } = calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
   
   //       setRemainingPot(remainingPot);
   //       setSkinPot(remainingSkinPot);
@@ -583,8 +481,122 @@ const AdminPage = () => {
   //       return playersWithMoney;
   //     });
   //   },
-  //   [allPlayers, pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
+  //   [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible, selectedEvent?.id]
   // );
+  
+  const handlePlayerChange = useCallback(
+    (playerId, updates) => {
+  
+      if (!playerId && !updates.player_id) {
+        console.error(
+          "Invalid player_id: Both playerId and updates.player_id are missing."
+        );
+        return;
+      }
+  
+      setPlayers((prevPlayers) => {
+  
+        let playerUpdated = false;
+  
+        // Update players by mapping through the array
+        let updatedPlayers = prevPlayers.map((player) => {
+          // Handle case for blank row update
+          if (player.player_id === null && updates.player_id) {
+            const selectedPlayer = allPlayers.find((p) => p.id === updates.player_id);
+  
+            if (!selectedPlayer) {
+              console.error("Selected player not found in allPlayers:", updates.player_id);
+              return player;
+            }
+
+            if (updates.score !== undefined) {
+              const newScore = Number(updates.score) || 0;
+              updates.calculated_quota = calculateQuota(player.current_quota, newScore);
+            }
+  
+            playerUpdated = true;
+  
+            return {
+              ...player,
+              player_id: selectedPlayer.id,
+              name: selectedPlayer.name,
+              current_quota: selectedPlayer.current_quota || 0,
+              new_player: selectedPlayer.new_player,
+              events_played: selectedPlayer.events_played,
+              score: 0, // Default for new players
+              rank: null,
+              isEditing: true, // Allow immediate editing
+              calculated_quota: calculateQuota(selectedPlayer.current_quota, 0),
+              
+            };
+            
+          }
+
+          // Handle updates for existing players
+          if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
+            playerUpdated = true;
+  
+
+            const updatedPlayer = {
+              ...player,
+              ...updates,
+              player_id: updates.player_id || player.player_id, // Replace temp ID if updates.player_id exists
+              ...(updates.money_won !== undefined && { manualMoneyOverride: true }),
+            };
+  
+            // Only recalculate total_points if not manually overridden
+            if (!updatedPlayer.manualMoneyOverride) {
+              updatedPlayer.total_points = calculateTotalPoints(
+                updatedPlayer,
+                pointsConfig,
+                selectedEvent?.isMajor,
+                selectedEvent?.isFedupEligible,
+                prevPlayers
+              );
+            }
+       
+            return updatedPlayer;
+          }
+  
+          return player; // Return unchanged player
+        });
+  
+        if (!playerUpdated) {
+          console.error("No matching player or blank row found to update for playerId:", playerId);
+          return prevPlayers;
+        }
+    
+
+              // Recalculate total_points for all players
+      updatedPlayers = updatedPlayers.map((player) => ({
+        ...player,
+        total_points: calculateTotalPoints(
+          player,
+          pointsConfig,
+          selectedEvent?.isMajor,
+          selectedEvent?.isFedupEligible,
+          updatedPlayers // Use the updated players array
+        ),
+      }));
+
+        // Recalculate pots and return updated state
+        const {
+          updatedPlayers: playersWithMoney,
+          remainingPot,
+          remainingSkinPot,
+          remainingCtpPot,
+        } = calculateMoneyWonAndPot(updatedPlayers, updatedPlayers.length);
+  
+  
+        setRemainingPot(remainingPot);
+        setSkinPot(remainingSkinPot);
+        setCtpPot(remainingCtpPot);
+  
+        return playersWithMoney;
+      });
+    },
+    [allPlayers, pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible]
+  );
   
 
 
