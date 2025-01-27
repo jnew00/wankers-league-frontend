@@ -2,7 +2,6 @@ import React, { useEffect, memo } from "react";
 import calculateQuota from "../utils/calculateQuota";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import { getPayoutForPlayers } from "../utils/payoutUtils";
 
 const PlayerList = ({
   allPlayers = [],
@@ -19,14 +18,6 @@ const PlayerList = ({
   remainingPot,
 }) => {
   const isFedupEligible = selectedEvent?.isFedupEligible;
-  const numPlayers = players.length;
-  const { places } = getPayoutForPlayers(numPlayers) || { places: 0 };
-
-  // Get all assigned ranks from players
-  const assignedRanks = players
-    .filter((p) => p.rank !== null && p.rank !== undefined) // Only include players with assigned ranks
-    .map((p) => p.rank); // Extract ranks
-
   useEffect(() => {
     tippy("[data-tippy-content]");
   }, [players, selectedEvent]);
@@ -70,11 +61,7 @@ const PlayerList = ({
           </thead>
           <tbody>
             {players.map((player, index) => {
-              // Dynamically calculate available ranks per player
-              const remainingRanks = Array.from({ length: places }, (_, i) => i + 1).filter(
-                (rank) => !assignedRanks.includes(rank) || rank === player.rank
-              );
-
+      
               return (
                 <tr
                   key={player.player_id}
@@ -121,21 +108,17 @@ const PlayerList = ({
 {isFedupEligible && (         
                   <td className="p-4 text-center w-30 h-8">
                     {player.isEditing ? (
-                      <select
+                        <select
                         value={player.rank || ""}
                         onChange={(e) => {
                           const newRank = Number(e.target.value);
-                          handlePlayerChange(player.player_id, { rank: newRank });
+                          handlePlayerChange(player.player_id, { rank:  newRank });
                         }}
-                        disabled={!player.player_id || remainingRanks.length === 0  } // Disable if player_id is null or undefined
-                        
-                        className={`border border-gray-300 rounded-lg p-0 h-8 w-full text-sm" ${
-                          !player.player_id || remainingRanks.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50"
-                          : "bg-white text-black cursor-pointer" }`}
-                          
-                      >
-                        <option value="">-</option>
-                        {remainingRanks.map((rank) => (
+                        disabled={!player.player_id} // Disable if player_id is null or undefined
+                        className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
+                        >
+                        <option value="">--</option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((rank) => (
                           <option key={rank} value={rank}>
                             {rank}
                           </option>
