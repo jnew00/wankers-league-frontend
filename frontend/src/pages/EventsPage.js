@@ -917,6 +917,7 @@ const EventsPage = () => {
                           <th className="p-4 text-center">Quota</th>
                           <th className="p-4 text-center">Score</th>
                           <th className="p-4 text-center">+/-</th>
+                          <th className="p-4 text-center">Money Won</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -935,6 +936,9 @@ const EventsPage = () => {
                                   {player.score - player.event_quota}
                                 </span>
                               )}
+                            </td>
+                            <td className="p-4 text-center">
+                              ${parseFloat(player.money_won).toFixed(2)}
                             </td>
                           </tr>
                         ))}
