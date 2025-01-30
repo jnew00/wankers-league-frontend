@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 const ImageModal = ({ imageSrc, onClose }) => {
+  useEffect(() => {
+    // Close modal when Escape key is pressed
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const handleCopyImage = async () => {
     try {
@@ -18,17 +29,28 @@ const ImageModal = ({ imageSrc, onClose }) => {
   if (!imageSrc) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-3xl w-full">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose} // Clicking outside the modal closes it
+    >
+      <div 
+        className="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto relative"
+        onClick={(e) => e.stopPropagation()} // Prevent modal close on content click
+      >
+        {/* Close Button - More Prominent */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-900 p-2 rounded-full text-lg"
+          aria-label="Close modal"
         >
           ✕
         </button>
+
         <div className="flex flex-col items-center">
           <h3 className="text-lg font-bold mb-4">Generated Email Image</h3>
-          <img src={imageSrc} alt="Generated Email" className="max-w-full rounded-lg" />
+          {/* Image - Ensures it fits inside modal with scrolling */}
+          <img src={imageSrc} alt="Generated Email" className="max-w-full max-h-[75vh] rounded-lg" />
+          
           <div className="flex gap-4 mt-4">
             <button
               onClick={handleCopyImage}
