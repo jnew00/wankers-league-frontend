@@ -7,7 +7,7 @@ const Navbar = () => {
   const location = useLocation();
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const timeoutRef = useRef(null);
-  const { role, logout } = useUser();
+  const { hasRole, logout } = useUser();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
@@ -59,7 +59,7 @@ const Navbar = () => {
        
 
           {/* Admin Dropdown (Visible to Admins Only) */}
-          {["admin", "moderator"].includes(role) && (
+          {(hasRole("admin") || hasRole("moderator")) && (
             <div
               className="relative"
               onMouseEnter={handleMouseEnter}
@@ -98,7 +98,7 @@ const Navbar = () => {
                     Manage Courses
                   </Link>
             {/* "Record Results" is only visible to Admin */}
-            {role === "admin" && (
+            {hasRole("admin") && (
                   <Link
                     to="/admin/record-results"
                     className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
@@ -113,7 +113,7 @@ const Navbar = () => {
    </div>
           {/* User Account Links */}
           <div className="flex justify-end">
-          {role === "guest" ? (
+          {hasRole("guest") ? (
             <button
               onClick={openLogin}
               className="text-blue-600 font-medium hover:underline"

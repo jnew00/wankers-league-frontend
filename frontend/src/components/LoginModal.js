@@ -18,7 +18,7 @@ const LoginModal = ({ isOpen, onClose }) => {
         { withCredentials: true }
       );
 
-      login(response.data.role); // Update role in context
+      login(response.data.roles); 
       onClose(); // Close modal after login
     } catch (err) {
       console.error("Login Error:", err.message || err.response?.data || err);

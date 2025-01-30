@@ -5,17 +5,29 @@
  * @returns {number} - The calculated new quota.
  */
 function calculateQuota(previousQuota, score) {
-  if (!score) {
+  console.log("calculateQuota - previousQuota:", previousQuota, "score:", score);
+  
+  if (previousQuota == null) {
+    console.warn("Warning: previousQuota is null or undefined!");
+    return 0; // Default to 0 if invalid
+  }
+  if (score == null) { // Only check for null or undefined, not 0
+    console.warn("Warning: score is null or undefined!");
     return previousQuota;
   }
 
   const difference = score - previousQuota;
 
+
+  let newQuota;
   if (difference >= -2) {
-    return Math.round((difference / 2) + previousQuota);
+    newQuota = Math.round((difference / 2) + previousQuota);
   } else {
-    return Math.round(previousQuota - 2);
+    newQuota = Math.round(previousQuota - 2);
   }
+
+  console.log("Calculated Quota:", newQuota); // Debug log
+  return newQuota;
 }
 
 module.exports = calculateQuota;

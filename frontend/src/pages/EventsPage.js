@@ -6,6 +6,7 @@ import PageHeader from "../components/PageHeader";
 import CourseModal from "../components/CourseModal";
 import PairingsModal from "../components/PairingsModal";
 import EventDetailsImage from "../components/EventDetailsImage";
+import EventDailyImage from "../components/EventDailyImage";
 import ImageModal from "../components/ImageModal";
 import ScorecardSheet from "../components/ScoreCardSheet";
 import { useUser } from "../context/UserContext";
@@ -13,19 +14,16 @@ import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 import PayoutTablePrint from "../components/PayoutTablePrint";
 import EventWeather from "../components/EventWeather";
-
-
-
-
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
+
 
 tippy('.Xtooltip', {
   content: 'Remove',
 });
 
 const EventsPage = () => {
-  const { role } = useUser();
+  const { hasRole } = useUser();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [fedupEvents, setFedupEvents] = useState([]);
@@ -43,6 +41,7 @@ const EventsPage = () => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false); // Image modal visibility
   const eventDetailsRef = useRef(null);
+  const eventDailyEmailRef = useRef(null);
   const [scorecard, setScorecard] = useState([]);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
   const [loadingEventDetails, setLoadingEventDetails] = useState(false); // Add loading state
@@ -103,6 +102,20 @@ const EventsPage = () => {
     }
     try {
       const imageData = await eventDetailsRef.current.generateImage();
+      setGeneratedImage(imageData);
+      setShowImageModal(true);
+    } catch (error) {
+      console.error("Error generating image:", error);
+    }
+  };
+
+  const handleGenerateDailyImage = async () => {
+    if (!eventDailyEmailRef.current) {
+      console.error("Ref is not set. Ensure EventDetailsImage is rendered.");
+      return;
+    }
+    try {
+      const imageData = await eventDailyEmailRef.current.generateImage();
       setGeneratedImage(imageData);
       setShowImageModal(true);
     } catch (error) {
@@ -231,15 +244,16 @@ const EventsPage = () => {
         teeTime: event.details?.tee_time,
         numTimes: event.details?.num_teetimes,
         total_yardage: event.total_yardage, 
-        group_pairings: response.data.group_pairings
+        group_pairings: response.data.group_pairings,
       });
   
-  
+
       const normalizedPlayers = event.players
       .map((player) => ({
         ...player,
         quota: player.player_quota || player.current_quota, // Normalize quota field
         scoreDiff: (player.score - player.event_quota), // Calculate score - quota
+      
       }));
     
       if (upcomingEvents.some((event) => event.id === eventId)) {
@@ -647,12 +661,14 @@ const EventsPage = () => {
   </div>
 
   {/* Right: Admin Actions */}
-  {role === "admin" && (
+  {(hasRole("admin") || hasRole("moderator")) && (
    
     <div className="flex-1">
        <h3 className="text-lg font-bold text-gray-700 mb-2">Admin Actions</h3>
       {/* <h4 className="text-lg font-bold text-center mb-4">Admin Actions</h4> */}
       <div className="space-y-4 bg-gray-100 p-4 rounded-lg shadow-lg w-64">
+      {hasRole("admin") && (
+        <>
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full"
           onClick={async () => {
@@ -685,12 +701,9 @@ const EventsPage = () => {
           Generate Email
         </button>
 
-        {/* <button
-          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
-          onClick={generatePDF}
-        >
-          Generate Scorecard PDF
-        </button> */}
+
+    
+        
         <button
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
           onClick={() =>
@@ -701,6 +714,16 @@ const EventsPage = () => {
         >
           Generate Scoresheet
         </button>
+        </>
+         )}
+        {hasRole("moderator") && (
+        <button
+          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg w-full"
+          onClick={handleGenerateDailyImage}
+        >
+          Generate Daily Email Image
+        </button>
+          )}
       </div>
     </div>
     
@@ -711,7 +734,7 @@ const EventsPage = () => {
 
 
 
-{["admin", "moderator"].includes(role) && (
+{(hasRole("admin") || hasRole("moderator")) && (
    <>
     <h3 className="text-lg font-bold text-gray-700 mt-6">Add Player</h3>
     <div className="flex items-center space-x-4">
@@ -982,6 +1005,20 @@ const EventsPage = () => {
           ref={eventDetailsRef}
           event={eventDetails  || {}}
           pairings={pairings || []}
+          eventPlayers={eventPlayers  || []}
+        />
+      </div>
+  {showImageModal && (
+  <ImageModal imageSrc={generatedImage} onClose={closeImageModal}></ImageModal>
+)}
+
+  {/* Modal to Display Generated Email Image */}
+
+        {/* Always Render Hidden Version for Image Generation */}
+        <div className="opacity-0 absolute pointer-events-none">
+        <EventDailyImage
+          ref={eventDailyEmailRef}
+          event={eventDetails  || {}}
           eventPlayers={eventPlayers  || []}
         />
       </div>

@@ -4,7 +4,7 @@ import axios from "axios";
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [role, setRole] = useState("guest"); // Default role
+  const [roles, setRoles] = useState(["guest"]); // Default role
 
   useEffect(() => {
     const validateSession = async () => {
@@ -12,36 +12,43 @@ export const UserProvider = ({ children }) => {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/validate`, {
           withCredentials: true, 
         });
-        setRole(response.data.role); 
-        localStorage.setItem("role", response.data.role); 
+        setRoles(response.data.roles || ["guest"]);
+        localStorage.setItem("roles", JSON.stringify(response.data.roles)); 
       } catch (error) {
         console.error("Session validation failed:", error.message);
-        setRole("guest"); 
-        localStorage.removeItem("role");
+        setRoles(["guest"]); 
+        localStorage.removeItem("roles");
       }
     };
 
     validateSession(); 
   }, []); 
 
-  const login = (newRole) => {
-    setRole(newRole);
-    localStorage.setItem("role", newRole);
+  const login = (newRoles) => {
+    setRoles(newRoles);
+    localStorage.setItem("roles", JSON.stringify(newRoles));
   };
 
   const logout = () => {
-    setRole("guest"); 
-    localStorage.removeItem("role");
+    setRoles(["guest"]); 
+    localStorage.removeItem("roles");
   };
 
+    // Retrieve roles from localStorage and parse as array
+    useEffect(() => {
+      const storedRoles = localStorage.getItem("roles");
+      if (storedRoles) {
+        setRoles(JSON.parse(storedRoles)); // Convert back to array
+      }
+    }, []);
+
+    const hasRole = (role) => roles.includes(role);
+
   return (
-    <UserContext.Provider value={{ role, login, logout }}>
+    <UserContext.Provider value={{ roles, hasRole, login, logout }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// Custom hook for accessing the user context
-export const useUser = () => {
-  return useContext(UserContext);
-};
+export const useUser = () => useContext(UserContext);

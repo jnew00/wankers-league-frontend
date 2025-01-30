@@ -53,6 +53,8 @@ const AdminPage = () => {
     setIsSubmitModalOpen(false);
   };
 
+ 
+
   useEffect(() => {
     players.forEach((player, index) => {
       if (typeof player.player_id === "undefined" || player.player_id === null) {
@@ -63,6 +65,7 @@ const AdminPage = () => {
   
 
   useEffect(() => {
+    let isMounted = true; 
     const fetchPotValues = async () => {
       if (selectedEvent?.id) {
         try {
@@ -71,9 +74,11 @@ const AdminPage = () => {
           );
           const { remainingPot, remainingSkinPot, remainingCtpPot } = response.data;
 
-          setRemainingPot(remainingPot);
-          setSkinPot(remainingSkinPot);
-          setCtpPot(remainingCtpPot);
+          if (isMounted) {
+            setRemainingPot(remainingPot);
+            setSkinPot(remainingSkinPot);
+            setCtpPot(remainingCtpPot);
+          }
         } catch (error) {
           console.error("Error fetching pot values:", error);
         }
@@ -196,14 +201,17 @@ const AdminPage = () => {
         const { players = [], details } = eventResponse.data;
 
         if (Array.isArray(players)) {
-          setPlayers(
-            players.map((player) => ({
+          const updatedPlayers = players.map((player) => {
+            const calculatedQuota = calculateQuota(player.current_quota ?? 0, player.score ?? 0);
+    
+    
+            return {
               player_id: player.player_id,
               name: player.name || "N/A",
               image: player.image_path || null,
-              current_quota: player.current_quota,
-              calculated_quota: calculateQuota(player.current_quota, player.score), 
-              score: player.score || 0,
+              current_quota: player.current_quota ?? 0,
+              score: player.score ?? 0,
+              calculated_quota: calculatedQuota, // ✅ Ensure it's always set
               rank: player.rank || null,
               ctps: player.ctps || 0,
               skins: player.skins || 0,
@@ -213,13 +221,27 @@ const AdminPage = () => {
               manualMoneyOverride: false,
               new_player: player.new_player || false,
               events_played: player.events_played || 0,
-            }))
-          );
+            };
+          });
+    
+
+
+          // ✅ Merge new player data with existing state to avoid resetting fields
+          setPlayers((prevPlayers) => {
+
+
+            return prevPlayers.length > 0 ? prevPlayers.map((player) => {
+              const newPlayer = updatedPlayers.find((p) => p.player_id === player.player_id);
+              return newPlayer ? { ...player, ...newPlayer } : player;
+            }) : updatedPlayers;
+          });
+          
+          
+          
         } else {
           console.error("Unexpected format for players:", players);
         }
-  
-        setSelectedEvent({
+          setSelectedEvent({
           id: details.id,
           date: details.date,
           courseName: details.course_name,
@@ -235,10 +257,13 @@ const AdminPage = () => {
   
 
   useEffect(() => {
-    if (eventId) {
-      handleEventChange(Number(eventId)); // Convert to number if necessary
+    if (eventId && players.length === 0) { // ✅ Prevents redundant calls
+      handleEventChange(Number(eventId));
     }
-  }, [eventId, handleEventChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, players.length]);
+  
+  
 
   const handleCancelEdit = (playerId) => {
     setPlayers((prevPlayers) =>
@@ -255,7 +280,6 @@ const AdminPage = () => {
             backup: undefined, // Clear the backup after restoring
           };
         }
-  
         return player; // Return other players unchanged
       })
     );
@@ -395,8 +419,10 @@ const AdminPage = () => {
 
   const handleAddPlayer = () => {
     setPlayers((prevPlayers) => [
+      
       ...prevPlayers,
       {
+        
         // player_id: `temp-${Date.now()}`,
         player_id: null,
         name: "",
@@ -411,79 +437,10 @@ const AdminPage = () => {
         new_player: false,
         events_played: 0,
       },
+      
     ]);
   };
 
-  // const handlePlayerChange = useCallback(
-  //   (playerId, updates) => {
-  //     if (!playerId && !updates.player_id) {
-  //       console.error("Invalid player_id: Both playerId and updates.player_id are missing.");
-  //       return;
-  //     }
-  
-  //     setPlayers((prevPlayers) => {
-  //       let playerUpdated = false;
-  
-  //       // Update the relevant player
-  //       const updatedPlayers = prevPlayers.map((player) => {
-  //         if (player.player_id === playerId || (player.player_id === null && updates.player_id)) {
-  //           playerUpdated = true;
-  
-  //           if (updates.score !== undefined) {
-  //             const newScore = Number(updates.score) || 0;
-  //             updates.calculated_quota = calculateQuota(player.event_quota, newScore);
-  //           }
-  
-  //           return {
-  //             ...player,
-  //             ...updates,
-  //             player_id: updates.player_id || player.player_id,
-  //           };
-  //         }
-  //         return player; // Return unchanged player
-  //       });
-  
-  //       if (!playerUpdated) {
-  //         console.error("No matching player or blank row found to update for playerId:", playerId);
-  //         return prevPlayers;
-  //       }
-  
-  //       // Recalculate total points for all players
-  //       const recalculatedPlayers = updatedPlayers.map((player) => {
-  //         player.total_points = calculateTotalPoints(
-  //           player,
-  //           pointsConfig,
-  //           selectedEvent?.isMajor,
-  //           selectedEvent?.isFedupEligible,
-  //           updatedPlayers // Pass the full list for tie handling
-  //         );
-  //         return player;
-  //       });
-  
-  //       // Sync updated players to the database
-  //       // const changedPlayers = recalculatedPlayers.filter(
-  //       //   (player, idx) => player.total_points !== prevPlayers[idx]?.total_points
-  //       // );
-  //       // syncPlayersToDatabase(changedPlayers, selectedEvent?.id);
-  
-  //       // Recalculate pots and money won
-  //       const {
-  //         updatedPlayers: playersWithMoney,
-  //         remainingPot,
-  //         remainingSkinPot,
-  //         remainingCtpPot,
-  //       } = calculateMoneyWonAndPot(recalculatedPlayers, recalculatedPlayers.length);
-  
-  //       setRemainingPot(remainingPot);
-  //       setSkinPot(remainingSkinPot);
-  //       setCtpPot(remainingCtpPot);
-  
-  //       return playersWithMoney;
-  //     });
-  //   },
-  //   [pointsConfig, selectedEvent?.isMajor, selectedEvent?.isFedupEligible, selectedEvent?.id]
-  // );
-  
   const handlePlayerChange = useCallback(
     (playerId, updates) => {
   
@@ -495,7 +452,7 @@ const AdminPage = () => {
       }
   
       setPlayers((prevPlayers) => {
-  
+
         let playerUpdated = false;
   
         // Update players by mapping through the array
