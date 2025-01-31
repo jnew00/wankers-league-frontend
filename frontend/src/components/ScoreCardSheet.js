@@ -34,18 +34,16 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
 
   return (
 <div>
-    {/* <div className="w-[1056px]  h-[816px] mx-auto bg-white border border-black"> */}
-    {/* <div class="flex flex-col h-full"></div> */}
      <div className="p-6 bg-white mx-auto">
       {/* Header Section */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center">
           <span className="font-bold mr-2"></span>
-          <span>{eventDetails?.course_name || ""}</span>
+          <span className="font-bold text-3xl">{eventDetails?.course_name || ""}</span>
           </div>
         <div>
-          <span className="font-bold mr-2">Date:</span>
-          <span>
+          <span className="font-bold text-3xl mr-2">Date:</span>
+          <span className="font-bold text-3xl mr-2">
             {eventDetails?.date ? new Date(eventDetails.date).toLocaleDateString() : ""}
           </span>
           </div>
@@ -57,14 +55,17 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
           <thead>
             <tr>
               <th className="border border-black p-1 text-center text-[7px] w-[20px]">Paid?</th>
-              <th className="border border-black text-right w-[120px]">Hole</th>
+              <th className="border border-black font-bold text-right w-[120px]">Hole</th>
               {holes.map((hole) => (
-                <th key={hole} className="border border-black p-2 w-[50px] text-center">{hole}</th>
+                      <th key={hole} className={`border border-black p-2 w-[50px] text-center
+                        ${hole === 9 ? "border-r-4 border-double border-black" : ""}`}>
+                          {hole}
+                    </th>              
               ))}
               <th className="border border-black p-2 text-center w-[30px]">Score</th>
               <th className="border border-black p-2 text-center w-[30px]">Quota</th>
               <th className="border border-black p-2 text-center w-[50px]">+/-</th>
-              <th className="border border-black p-2 text-center w-[30px]">Rank</th>
+              <th className="border border-black p-2 text-center w-[30px]">Place</th>
             </tr>
             <tr>
               <td className="border border-black p-2"></td>
@@ -72,8 +73,14 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
               {holes.map((hole, idx) => {
                 const par = scorecard.find((item) => item.hole === hole)?.par || "-";
                 return (
-                <td key={idx} className="border border-black p-2 text-center">{par}</td>
-              );
+                  <td
+                  key={idx}
+                  className={`border border-black p-2 text-center font-bold
+                    ${hole === 9 ? "border-r-4 border-double border-black" : ""}
+                  `}
+                >
+                  {par}
+                </td>              );
             })}
               <td className="border border-black p-2"></td>
               <td className="border border-black p-2"></td>
@@ -91,23 +98,27 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
               return (
                 <tr key={index}>
                   <td className="border border-black p-2 h-[50px]"></td>
-                  <td className="border border-black p-2 text-left text-xl font-bold">{abbreviatedName}</td>
-                  {holes.map((hole) => {
+                  <td className="w-[120px] h-[50px] p-1 border border-black text-left font-bold text-[clamp(10px,5vw,40px)]">
+                         {abbreviatedName}
+                </td>
+
+                {holes.map((hole) => {
                     const isHighlighted = highlightedHoles.includes(hole);
                     return (
                       <td
-                      key={hole}
-                      className={`
-                        border border-black p-2 text-center
-                        ${isHighlighted ? '[print-color-adjust:exact] [-webkit-print-color-adjust:exact] bg-yellow-200 print:!bg-yellow-200' : ''}
-                      `}
-                    >
-            
-                    </td>
+                        key={hole}
+                        className={`
+                          border border-black p-2 text-center
+                          ${isHighlighted ? "[print-color-adjust:exact] [-webkit-print-color-adjust:exact] bg-yellow-200 print:!bg-yellow-200" : ""}
+                          ${hole === 9 ? "border-r-4 border-double border-black" : ""}
+                        `}
+                      >
+                        {/* Cell Content Here */}
+                      </td>
                     );
                   })}
                   <td className="border border-black p-1 text-center"></td>
-                  <td className="border border-black p-1 text-lg font-bold text-center">{player.quota}</td>
+                  <td className="border border-black p-1 text-2xl font-bold text-center">{player.quota}</td>
                   <td className="border border-black p-1 text-center"></td>
                   <td className="border border-black p-1 text-center"></td>
                 </tr>
@@ -118,7 +129,8 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                 <td className="border border-black p-1 h-[40px]"></td>
                 <td className="border border-black p-1 h-[40px]"></td>
                 {holes.map((_, idx) => (
-                  <td key={`empty-${index}-${idx}`} className="h-[40px] border border-black p-1 text-center"></td>
+                  <td key={`empty-${index}-${idx}`} className={`h-[40px] border border-black p-1 text-center
+                  ${idx+1 === 9 ? "border-r-4 border-double border-black" : ""}`}></td>
                 ))}
                 <td className="border border-black p-1 h-[40px]"></td>
                 <td className="border border-black p-1 h-[40px]"></td>
@@ -145,7 +157,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
     <tbody>
       {par3Holes.slice(0, Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
         <tr key={`ctp-1-${idx}`} className="h-[50px]">
-          <td className="border border-black pb-2 text-center">{hole}</td>
+          <td className="border border-black pb-2 font-bold text-center">{hole}</td>
           <td className="border border-black pb-2"></td>
         </tr>
       ))}
@@ -163,7 +175,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
     <tbody>
       {par3Holes.slice(Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
         <tr key={`ctp-2-${idx}`} className="h-[50px]">
-          <td className="border border-black pb-2 text-center">{hole}</td>
+          <td className="border border-black pb-2 font-bold text-center">{hole}</td>
           <td className="border border-black pb-2"></td>
         </tr>
       ))}
