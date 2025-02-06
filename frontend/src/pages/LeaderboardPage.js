@@ -252,10 +252,11 @@ const LeaderboardPage = () => {
                     const url = getPlayerImageUrl(player, API_BASE_URL);
                     return url;
                   })()}
-                  
                     alt={player.name}
                     className="w-10 h-10 rounded-full cursor-pointer"
-                    onClick={() => setSelectedPlayer(player)}
+                    onClick={() => {
+                      setSelectedPlayer(player);
+                    }}
                   />
                 </td>
                 <td className="p-4 text-left">
@@ -298,10 +299,9 @@ const LeaderboardPage = () => {
               <img
                 src={getPlayerImageUrl(selectedPlayer, API_BASE_URL)}
                 alt="Profile"
-              
                 className="w-36 h-36 rounded-full mx-auto mb-4 cursor-pointer transition-transform transform hover:scale-105 hover:ring-2 hover:ring-blue-500"
-
-                onClick={() => setEnlargedImage(getPlayerImageUrl(selectedPlayer, API_BASE_URL))}
+                onClick={() =>    
+                  setEnlargedImage(getPlayerImageUrl(selectedPlayer, API_BASE_URL))}
               />
               <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
               <p className="text-gray-500 text-sm">

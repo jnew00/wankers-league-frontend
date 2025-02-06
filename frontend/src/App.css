@@ -14,11 +14,6 @@
 }
 
 
-img {
-  display: block; /* Ensures no extra space around the image */
-  pointer-events: none; /* Prevents interaction with the image */
-}
-
 
 
 /* Custom class to remove number input arrows */
