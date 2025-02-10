@@ -142,74 +142,34 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
         </table>
         </div>
 
-      <div className="mt-6 flex space-x-6 text-xs">
-        {/* CTP Section */}
-        <div>
-        <div className="flex space-x-4">
-  {/* First Table */}
-  <table className="table-fixed w-[250px] border-collapse border border-black">
-    <thead>
-      <tr className="h-[50px]">
-        <th className="border border-black pb-2 text-center w-[50px]">Hole</th>
-        <th className="border border-black pb-2 text-center w-[200px]">Wanker</th>
-      </tr>
-    </thead>
-    <tbody>
-      {par3Holes.slice(0, Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
-        <tr key={`ctp-1-${idx}`} className="h-[50px]">
-          <td className="border border-black pb-2 font-bold text-center">{hole}</td>
-          <td className="border border-black pb-2"></td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-
-  {/* Second Table */}
-  <table className="table-fixed w-[250px] border-collapse border border-black">
-    <thead>
-      <tr className="h-[50px]">
-        <th className="border border-black pb-2 text-center w-[50px]">Hole</th>
-        <th className="border border-black pb-2 text-center w-[200px]">Wanker</th>
-      </tr>
-    </thead>
-    <tbody>
-      {par3Holes.slice(Math.ceil(par3Holes.length / 2)).map((hole, idx) => (
-        <tr key={`ctp-2-${idx}`} className="h-[50px]">
-          <td className="border border-black pb-2 font-bold text-center">{hole}</td>
-          <td className="border border-black pb-2"></td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
 
 
-        </div>
 
-        {/* Skins Section */}
-        {/* <div className="text-xs">
-          <label className="block font-bold mb-3">Skins Pay $_____</label>
-          <div className="flex space-x-3">
-            <table className="table-fixed w-[200px] border-collapse border border-black">
-              <thead>
-                <tr className="h-[30px]">
-                  <th className="border border-black pb-1 w-[170px] text-center">Wanker</th>
-                  <th className
-                  ="border border-black pb-1 w-[30px] text-center">#</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: skinsRowsPerTable }).map((_, idx) => (
-                    <tr key={`table1-${idx}`} className="h-[30px]">
-                      <td className="border border-black p-0"></td>
-                      <td className="border border-black p-0"></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>*/}
-        </div> 
+  {/* CTPs info positioned at the bottom */}
+  <div className="ctp-info absolute bottom-5 left-5 right-0 p-4 bg-white">
+    <div className="flex items-center">
+    <span className="font-bold mr-4 text-center">CTPs:</span>
+    {par3Holes.map((hole, idx) => (
+      <table
+        key={idx}
+        className="table-fixed w-[400px] border-collapse border border-black mr-4 inline-block"
+      >
+        <tbody>
+          <tr className="h-[60px]">
+            <td className="border border-black pb-2 font-bold text-center w-[50px]">
+              {hole}
+            </td>
+            <td className="border border-black pb-2 w-[400px]"></td>
+          </tr>
+        </tbody>
+      </table>
+    ))}
+    </div>
+  </div>
+
+
+
+
      </div>
 
 
