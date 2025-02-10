@@ -16,6 +16,8 @@ import PayoutTablePrint from "../components/PayoutTablePrint";
 import EventWeather from "../components/EventWeather";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
+import dayjs from "dayjs";
+
 
 
 tippy('.Xtooltip', {
@@ -63,11 +65,14 @@ const EventsPage = () => {
         const past = response.data.filter((event) => event.closed && !event.fedup_eligible);
         const fedupEvents = response.data.filter((event) => event.closed && event.fedup_eligible);
 
+        const sortedUpcoming = [...upcoming].sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
+        const sortedPast = [...past].sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf());
+        const sortedFedupEvents = [...fedupEvents].sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf());
 
          
-        setUpcomingEvents(upcoming);
-        setPastEvents(past);
-        setFedupEvents(fedupEvents);
+        setUpcomingEvents(sortedUpcoming);
+        setPastEvents(sortedPast);
+        setFedupEvents(sortedFedupEvents);
          
         
       } catch (error) {
