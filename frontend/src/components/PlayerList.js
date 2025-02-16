@@ -100,7 +100,18 @@ const PlayerList = ({
                           ))}
                       </select>
                     ) : (
-                      <div className="h-8 flex items-center">{player.name || "-"}</div>
+                      <div className="flex items-center space-x-2">
+                      <span>{player.name || "-"}</span>
+                      {/* Add Badge for Non-FedUp Players */}
+                      {!player.season_paid && (
+                        <span
+                          className="px-2 py-1 text-xs font-bold text-yellow-800 bg-yellow-200 rounded-lg"
+                          data-tippy-content="Not a FedUp Cup Participant"
+                        >
+                          🏷️
+                        </span>
+                      )}
+                    </div>
                     )}
                   </td>
 
@@ -277,8 +288,8 @@ const PlayerList = ({
 {isFedupEligible && (
  
                   <td className="p-4 text-center w-32 font-bold">
-                    {Number(player.total_points || 0).toFixed(0)}
-                  </td>
+                     {player.season_paid ? Number(player.total_points || 0).toFixed(0) : "-"}
+                   </td>
   )}
 {/* Actions */}
                   <td className="p-4 text-center w-32 h-8 whitespace-nowrap">

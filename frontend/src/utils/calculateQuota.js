@@ -5,7 +5,6 @@
  * @returns {number} - The calculated new quota.
  */
 function calculateQuota(previousQuota, score) {
-  console.log("calculateQuota - previousQuota:", previousQuota, "score:", score);
   
   if (previousQuota == null) {
     console.warn("Warning: previousQuota is null or undefined!");
@@ -26,7 +25,6 @@ function calculateQuota(previousQuota, score) {
     newQuota = Math.round(previousQuota - 2);
   }
 
-  console.log("Calculated Quota:", newQuota); // Debug log
   return newQuota;
 }
 

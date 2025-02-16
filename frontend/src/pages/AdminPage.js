@@ -221,6 +221,7 @@ const AdminPage = () => {
               manualMoneyOverride: false,
               new_player: player.new_player || false,
               events_played: player.events_played || 0,
+              season_paid: player.season_paid || false,
             };
           });
     
@@ -481,8 +482,7 @@ const AdminPage = () => {
               score: 0, // Default for new players
               rank: null,
               isEditing: true, // Allow immediate editing
-              calculated_quota: calculateQuota(selectedPlayer.current_quota, 0),
-              
+              calculated_quota: calculateQuota(selectedPlayer.current_quota, 0),              
             };
             
           }
