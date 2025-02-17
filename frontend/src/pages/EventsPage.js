@@ -1024,6 +1024,7 @@ const EventsPage = () => {
         <EventDailyImage
           ref={eventDailyEmailRef}
           event={eventDetails  || {}}
+          upcomingEvents={upcomingEvents} 
           eventPlayers={eventPlayers  || []}
         />
       </div>
