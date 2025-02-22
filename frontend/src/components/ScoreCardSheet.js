@@ -51,10 +51,10 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
 
       {/* Scorecard Section */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-black text-xs [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+        <table className="w-full border-collapse border border-black text-2xl [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
           <thead>
             <tr>
-              <th className="border border-black p-1 text-center text-[7px] w-[20px]">Paid?</th>
+              <th className="border border-black p-1 text-center text-[10px] w-[20px]">Paid?</th>
               <th className="border border-black font-bold text-right w-[120px]">Hole</th>
               {holes.map((hole) => (
                       <th key={hole} className={`border border-black p-2 w-[50px] text-center
@@ -63,7 +63,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     </th>              
               ))}
               <th className="border border-black p-2 text-center w-[30px]">Score</th>
-              <th className="border border-black p-2 text-center w-[30px]">Quota</th>
+              <th className="border border-black p-1 text-center w-[30px]">Quota</th>
               <th className="border border-black p-2 text-center w-[50px]">+/-</th>
               <th className="border border-black p-2 text-center w-[30px]">Place</th>
             </tr>
@@ -98,7 +98,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
               return (
                 <tr key={index}>
                   <td className="border border-black p-2 h-[50px]"></td>
-                  <td className="w-[120px] h-[50px] p-1 border border-black text-left font-bold text-[clamp(10px,5vw,40px)]">
+                  <td className="w-[125px] h-[50px] p-1 border border-black text-left font-bold text-[clamp(8px,5vw,50px)]">
                          {abbreviatedName}
                 </td>
 
@@ -118,7 +118,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                     );
                   })}
                   <td className="border border-black p-1 text-center"></td>
-                  <td className="border border-black p-1 text-2xl font-bold text-center">{player.quota}</td>
+                  <td className="border border-black p-1 text-4xl font-bold text-center">{player.quota}</td>
                   <td className="border border-black p-1 text-center"></td>
                   <td className="border border-black p-1 text-center"></td>
                 </tr>
