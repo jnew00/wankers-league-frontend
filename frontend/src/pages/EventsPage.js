@@ -24,6 +24,8 @@ tippy('.Xtooltip', {
   content: 'Remove',
 });
 
+
+
 const EventsPage = () => {
   const { hasRole } = useUser();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -55,7 +57,10 @@ const EventsPage = () => {
   useEffect(() => {
   }, [eventPlayers]);
 
-  
+  useEffect(() => {
+    tippy("[data-tippy-content]");
+  }, [eventPlayers, selectedEvent]);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -849,11 +854,23 @@ const EventsPage = () => {
                             <td className="p-4 text-center">
                               {player.rank || "-"}
                             </td>
-                            <td className="p-4 text-left">{player.name}</td>
+                            <td className="p-4 text-left">{player.name}
+
+                            {!player.season_paid && (
+                              <span
+                                className="px-2 py-1 text-s font-bold rounded-lg"
+                                data-tippy-content="Not a FedUp Cup Participant"
+                              >
+                                ⛔️
+                              </span>
+                            )}
+
+                          </td>
+
                             <td className="p-4 text-center">{player.event_quota}</td>
                             <td className="p-4 text-center">{player.score}</td>
                             <td className="p-4 text-center">
-                              {player.score - player.quota > 0 ? (
+                              {player.score - player.event_quota > 0 ? (
                                 <span className="text-green-500">
                                   +{player.score - player.event_quota}
                                 </span>
@@ -868,7 +885,9 @@ const EventsPage = () => {
                             <td className="p-4 text-center">
                               ${parseFloat(player.money_won).toFixed(2)}
                             </td>
-                            <td className="p-4 text-center">{player.total_points}</td>
+                            <td className="p-4 text-center">
+                            {player.season_paid ? Number(player.total_points || 0).toFixed(0) : "-"}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

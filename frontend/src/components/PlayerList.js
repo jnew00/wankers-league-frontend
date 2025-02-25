@@ -105,10 +105,10 @@ const PlayerList = ({
                       {/* Add Badge for Non-FedUp Players */}
                       {!player.season_paid && (
                         <span
-                          className="px-2 py-1 text-xs font-bold text-yellow-800 bg-yellow-200 rounded-lg"
+                          className="px-2 py-1 text-s font-bold rounded-lg"
                           data-tippy-content="Not a FedUp Cup Participant"
                         >
-                          🏷️
+                          ⛔️
                         </span>
                       )}
                     </div>
