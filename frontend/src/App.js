@@ -8,6 +8,7 @@ import AddEventPage from "./pages/AddEventPage";
 import AddPlayerPage from "./pages/AddPlayerPage";
 import AddCourse from "./pages/AddCoursePage";
 import Rules from "./pages/RulesPage";
+import Polls from "./pages/PollPage";
 import PrintScorecardPage from "./pages/PrintScorecardPage";
 import './App.css';
 import './css/print.css';
@@ -27,6 +28,7 @@ function App() {
       <Route path="/admin/manage-players" element={<AddPlayerPage />} />
       <Route path="/rules" element={<Rules />} />
       <Route path="/printScorecard" element={<PrintScorecardPage />} />
+      <Route path="/polls" element={<Polls />} />
     </Routes>
   );
 }
