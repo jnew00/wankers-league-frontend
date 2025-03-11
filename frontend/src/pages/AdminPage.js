@@ -137,8 +137,10 @@ const AdminPage = () => {
       alert("No event selected.");
       return;
     }
-
+  
     try {
+      await handleSavePlayer();
+
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/admin/events/${selectedEvent.id}/close`,
         {},

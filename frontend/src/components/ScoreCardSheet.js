@@ -99,7 +99,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
                 <tr key={index}>
                   <td className="border border-black p-2 h-[50px]"></td>
                   <td className="w-[125px] h-[50px] p-1 border border-black text-left font-bold text-[clamp(8px,5vw,50px)]">
-                         {abbreviatedName}
+                         {abbreviatedName}{player.new_player && " 🧢"}
                 </td>
 
                 {holes.map((hole) => {

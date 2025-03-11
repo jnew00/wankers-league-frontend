@@ -147,7 +147,7 @@ const PlayerList = ({
                   <td className="p-4 w-24 text-center h-8">
                     {player.isEditing ? (
                       <input
-                        type="text" // Change to text to remove number input arrows
+                        type="text" 
                         value={player.score === 0 || player.score === null ? "" : player.score}
                         placeholder="score"
                         onChange={(e) => {
