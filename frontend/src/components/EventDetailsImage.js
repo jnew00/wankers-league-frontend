@@ -101,7 +101,7 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers, coordinat
       </p>
       <p className="text-black">
         <span className="font-semibold">Notes:</span>{" "}
-        {event.notes} yards
+        {event.notes}
       </p>
 
       </div>
