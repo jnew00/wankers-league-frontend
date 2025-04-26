@@ -45,7 +45,12 @@ const EventDailyImage = forwardRef(({ event, eventPlayers, upcomingEvents }, ref
               <span className="font-semibold">Cost:</span>{" $"}
               {event.cost}
             </p>
-          </div>
+            <p className="text-black">
+              <span className="font-semibold">Notes:</span>{" "}
+              {event.notes}
+            </p>
+     
+            </div>
 
           {/* Wankers Signed Up */}
           <div className="mt-4">
@@ -96,11 +101,14 @@ const EventDailyImage = forwardRef(({ event, eventPlayers, upcomingEvents }, ref
               longitude={event.longitude}
               teeTime={event.teeTime}
               date={event.date}
-            />
+            />    
+            <div className="mt-7">
+            <span className="font-semibold text-2xl text-blue-700">gulfcoasthackers.com</span> 
+     </div>
           </div>
 
           {/* Upcoming Events - Perfectly Aligned with Wankers Table */}
-          <div className="mt-4 pt-7">
+          <div className="mt-4">
             <h3 className="text-lg font-bold text-gray-700 mb-2">Upcoming Events:</h3>
             <div className="overflow-x-auto">
               <table className="table-auto border-collapse border border-gray-300 w-full">

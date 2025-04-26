@@ -99,6 +99,10 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers, coordinat
         <span className="font-semibold">Total Yardage:</span>{" "}
         {event.total_yardage || "N/A"} yards
       </p>
+      <p className="text-black">
+        <span className="font-semibold">Notes:</span>{" "}
+        {event.notes} yards
+      </p>
 
       </div>
      
@@ -109,8 +113,10 @@ const EventDetailsImage = forwardRef(({ event, pairings, eventPlayers, coordinat
               teeTime={event.teeTime}
               date={event.date}
             />
-          </div>
-      
+            <div className="align-bottom mt-10">
+             <span className="font-semibold text-2xl text-blue-700">gulfcoasthackers.com</span> 
+            </div>
+          </div>      
       </div>
 
  
