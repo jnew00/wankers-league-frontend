@@ -236,7 +236,7 @@ const RulesPage = () => {
                   </li>
                   <li>
                     Unless you have an approved medical condition, must partake
-                    in birdie fireball shots.
+                    in birdie <strike>fireball</strike> shots.
                   </li>
                 </ol>
               </li>
