@@ -6,7 +6,7 @@ const ScorecardSheet = ({ eventDetails, players, scorecard }) => {
   .filter((hole) => Number(hole.par) === 3)
   .map((hole) => hole.hole);
 
-  const emptyPlayerSlots = 2;
+  const emptyPlayerSlots = 4;
 
   const getHardestHoles = (start, end, count) => {
     return scorecard

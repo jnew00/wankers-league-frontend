@@ -129,7 +129,7 @@ const PlayerList = ({
                         className="border border-gray-300 rounded-lg p-0 h-8 w-full text-sm"
                         >
                         <option value="">--</option>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((rank) => (
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((rank) => (
                           <option key={rank} value={rank}>
                             {rank}
                           </option>

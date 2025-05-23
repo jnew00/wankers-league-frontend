@@ -274,7 +274,7 @@ const RulesPage = () => {
                       <li>3rd: 80 points</li>
                       <li>4th: 70 points</li>
                       <li>5th: 60 points</li>
-                      <li>...down to max 8th place</li>
+                      <li>...down to max 12th place</li>
                     </ul>
                   </li>
                   <li>
@@ -295,7 +295,7 @@ const RulesPage = () => {
                       <li>1st: 150 points</li>
                       <li>2nd: 135 points</li>
                       <li>3rd: 120 points</li>
-                      <li>...down to max 8th place</li>
+                      <li>...down to max 12th place</li>
                     </ul>
                   </li>
                   <li>

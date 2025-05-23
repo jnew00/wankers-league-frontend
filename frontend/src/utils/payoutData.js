@@ -24,6 +24,14 @@ const payoutData = [
     { players: 26, places: 8, payouts: [75, 50, 40, 30, 25, 20, 15, 5] },
     { players: 27, places: 8, payouts: [75, 50, 40, 30, 25, 20, 10, 10] },
     { players: 28, places: 8, payouts: [75, 50, 40, 30, 25, 25, 20, 15] },
+    { players: 29, places: 8, payouts: [85, 50, 40, 30, 25, 20, 20, 10, 10] },
+    { players: 30, places: 8, payouts: [85, 50, 40, 30, 25, 20, 20, 15, 15] },
+    { players: 31, places: 8, payouts: [85, 55, 45, 30, 25, 20, 20, 15, 15] },
+    { players: 32, places: 8, payouts: [85, 55, 45, 30, 25, 20, 20, 15, 15, 10] },
+    { players: 33, places: 8, payouts: [85, 55, 45, 35, 30, 25, 25, 15, 15, 10] },
+    { players: 34, places: 8, payouts: [85, 55, 45, 35, 30, 25, 25, 15, 15, 10] },
+    { players: 35, places: 8, payouts: [85, 55, 45, 35, 30, 25, 25, 15, 15, 10, 10] },
+    { players: 36, places: 8, payouts: [85, 55, 45, 35, 30, 25, 25, 15, 15, 10, 10, 10] },
   ];
   
   export default payoutData;
