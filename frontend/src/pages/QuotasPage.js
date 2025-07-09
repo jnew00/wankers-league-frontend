@@ -53,14 +53,17 @@ const QuotasPage = () => {
           }
         );
 
-        const processedQuotas = response.data.quotas.map((player) => ({
-          name: player.player_name || "N/A",
-          current_quota: player.current_quota || 0,
-          lowest_score: player.lowest_score || 0,
-          best_score: player.best_score || 0,
-          average_score: parseFloat(player.average_score) || 0,
-          date: new Date(player.date),
-        }));
+        const processedQuotas = response.data.quotas
+          .map((player) => ({
+            name: player.player_name || "N/A",
+            current_quota: player.current_quota || 0,
+            lowest_score: player.lowest_score || 0,
+            best_score: player.best_score || 0,
+            average_score: parseFloat(player.average_score) || 0,
+            date: new Date(player.date),
+            events_played: player.events_played || 0, 
+          }))
+          .filter((player) => player.events_played >= 5); 
 
         setQuotas(processedQuotas);
         setFilteredQuotas(processedQuotas);
@@ -157,7 +160,7 @@ const QuotasPage = () => {
         updatedText={latestUpdateTime ? `Updated on: ${new Date(latestUpdateTime).toLocaleString()}` : ""}
       />
       <div className="max-w-7xl mx-auto px-4 py-1">
-      <div className="flex items-center mb-4 space-x-2">
+        <div className="flex items-center mb-4 space-x-2">
           <label htmlFor="season-selector" className="block text-lg font-medium">
             Select Season
             </label>
@@ -169,7 +172,9 @@ const QuotasPage = () => {
             className="w-28"
             styles={customStyles}
           />
-         
+        </div>
+        <div className="mb-2 text-sm text-gray-600">
+          * Only players with a minimum of 5 events played are shown.
         </div>
         <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
           <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
