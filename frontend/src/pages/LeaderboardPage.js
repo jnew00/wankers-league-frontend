@@ -213,6 +213,17 @@ const LeaderboardPage = () => {
               </th>
               <th
                 className="p-2 text-center cursor-pointer"
+                onClick={() => handleSort("top_10")}
+              >
+                Top 10
+                {sortConfig.key === "top_10"
+                  ? sortConfig.direction === "asc"
+                    ? " ▲"
+                    : " ▼"
+                  : ""}
+              </th>
+              <th
+                className="p-2 text-center cursor-pointer"
                 onClick={() => handleSort("events_played")}
               >
                 Events
@@ -233,6 +244,7 @@ const LeaderboardPage = () => {
                     : " ▼"
                   : ""}
               </th>
+
             </tr>
           </thead>
           <tbody>
@@ -277,6 +289,7 @@ const LeaderboardPage = () => {
                 <td className="p-2 text-center">{player.ctps}</td>
                 <td className="p-2 text-center">{player.wins}</td>
                 <td className="p-2 text-center">{player.top_3}</td>
+                <td className="p-2 text-center">{player.top_10}</td>
                 <td className="p-2 text-center">{player.events_played}</td>
                 <td className="p-2 text-center font-bold">
                   {Number(player.total_points || 0).toFixed(0)}
@@ -364,6 +377,9 @@ const LeaderboardPage = () => {
                   </p>
                   <p>
                     <strong>Top 3 Finishes:</strong> {selectedPlayer.top_3 || 0}
+                  </p>
+                  <p>
+                    <strong>Top 10 Finishes:</strong> {selectedPlayer.top_10 || 0}
                   </p>
                 </div>
               )}
