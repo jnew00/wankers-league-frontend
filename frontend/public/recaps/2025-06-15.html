@@ -1,0 +1,118 @@
+<html>
+<head>
+    <script>
+    function sendHeight() {
+      var height = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      window.parent.postMessage(
+        { type: "recapHeight", height: height },
+        "*"
+      );
+    }
+    window.onload = sendHeight;
+    window.onresize = sendHeight;
+    setTimeout(sendHeight, 100); // In case images/fonts load late
+  </script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 14px;
+    color: #222;
+    font-weight: normal;
+  }
+  h1 {
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 30px;
+  }
+  h2 {
+    font-weight: bold;
+    font-size: 15px;
+    margin-top: 25px;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 15px 0;
+    width: auto;
+  }
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  td {
+    font-weight: normal;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td strong {
+    font-weight: normal;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏌️‍♂️ Gulf Coast Hackers Recap – Buffalo Creek</h1>
+
+<p><strong>👥 Players:</strong> 14</p>
+<p><strong>🎯 CTPs:</strong> Dre, Adam D., DJ, Jeff S.</p>
+<p><strong>💣 Skins:</strong> Dre, Adam D., DJ, Nick, Bryan G.</p>
+<p><strong>🏅 Top Finishers:</strong> Dre (1), Lizard (2), Romeo (T3), Jamey (T3)</p>
+<hr>
+<h2>🥇 Performance of the Week</h2>
+<p><strong>Dre Johnson</strong> lit up Hole 18 like it was 4:20 and it owed him money. That’s two eagles now on Buffalo Creek’s closer, and it helped him post a field-best 27 and move up 2 spots on the season leaderboard. Call him the Buffalo Soldier: fightin’ on arrival, smokin’ on departure.</p>
+<hr>
+<h2>🫠 Worst Performance of the Week</h2>
+<p><strong>Nick Peyton</strong> and <strong>Dahl Phillips</strong> both clocked in at –5 to quota, tying for the week’s most forgettable outing. Rough days happen—just not usually this rough. Someone check if their carts were parked in a bunker.</p>
+<hr>
+<h2>📈 Other Notables</h2>
+<ul>
+  <li><strong>Jamey Nelson</strong> continues to melt fairways and egos. The only thing hotter than his game right now is the sweat dripping off everyone trying to keep up.</li>
+  <li><strong>Romeo McKenzie</strong> dropped a smooth 26 and still looked like he didn’t give a single damn. We respect it.</li>
+  <li><strong>DJ</strong> quietly collected another skin and a 23 like it was just Sunday brunch. Consistent as a hangover.</li>
+  <li><strong>Adam Shorts</strong> and <strong>Jeff Shorts</strong>—that’s not a wardrobe choice, that’s a Father/Son power duo. Father’s Day brought the Shorts out in full force. We don’t know who wore the pants, but we sure hope someone bought them matching transfusions 🍹🍹</li>
+  <li><strong>Lizard</strong> padded his already massive lead again. We’re not saying he’s using foot wedges…but his shoes are scuffed in all the wrong places. We need to get this man back on the wagon—it’s the only chance we have.</li>
+</ul>
+<hr>
+<h2>🌴 Course Conditions</h2>
+<p>Buffalo Creek was in classic form: plenty of sunshine, just enough breeze to mess with your head, and greens slicker than a used car salesman. If you weren’t dialed in, you were toast.</p>
+<hr>
+<h2>📏 Rule(s) of the Week</h2>
+<p>Remember: All putts must be holed out unless explicitly given. Don’t be that guy who pockets a three-footer with no witnesses.</p>
+<hr>
+<h2>🧨 Best Shooters This Week</h2>
+<table>
+  <tr><th>Player</th><th>Score</th></tr>
+  <tr><td><strong>Dre Johnson</strong></td><td>27</td></tr>
+  <tr><td><strong>Romeo McKenzie</strong></td><td>26</td></tr>
+  <tr><td><strong>Adam Dickson</strong></td><td>25</td></tr>
+  <tr><td><strong>Daniel Jones (DJ)</strong></td><td>23</td></tr>
+  <tr><td><strong>Jamey Nelson</strong></td><td>21</td></tr>
+</table>
+<hr>
+<h2>🏆 Top 10 Leaderboard</h2>
+<table>
+  <tr><th>Rank</th><th>Player</th><th>Points</th><th>Movement</th></tr>
+  <tr><td>1</td><td><strong>Lizard</strong></td><td>883</td><td>–</td></tr>
+  <tr><td>2</td><td><strong>Jamey Nelson</strong></td><td>783</td><td>⬆️ 1</td></tr>
+  <tr><td>3</td><td><strong>Nash Kanji</strong></td><td>746</td><td>⬇️ 1</td></tr>
+  <tr><td>4</td><td><strong>David McCord</strong></td><td>660</td><td>–</td></tr>
+  <tr><td>5</td><td><strong>Nick Peyton</strong></td><td>608</td><td>–</td></tr>
+  <tr><td>6</td><td><strong>Dovid Goldfarb</strong></td><td>599</td><td>–</td></tr>
+  <tr><td>7</td><td><strong>Dre Johnson</strong></td><td>557</td><td>⬆️ 2</td></tr>
+  <tr><td>8</td><td><strong>Jeff Morris</strong></td><td>531</td><td>⬇️ 1</td></tr>
+  <tr><td>9</td><td><strong>Mario Blanchet</strong></td><td>524</td><td>⬇️ 1</td></tr>
+  <tr><td>10</td><td><strong>Q</strong></td><td>434</td><td>–</td></tr>
+</table>
+
+</body>
+</html>

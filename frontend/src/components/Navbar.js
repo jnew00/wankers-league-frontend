@@ -18,6 +18,7 @@ const Navbar = () => {
     { name: "Score Stats", href: "/quotas" },
     { name: "Events", href: "/events" },
     { name: "Rules", href: "/rules" },
+    { name: "Recaps", href: "/recaps" },
   ];
 
   const isAdminPage = location.pathname.startsWith("/admin");
