@@ -247,7 +247,7 @@ const RulesPage = () => {
 
   {/* FedUp Cup Rules Section */}
         <section>
-          <h2 className="text-3xl font-bold mb-6 text-blue-600">
+          <h2 id="fedup-cup" className="text-3xl font-bold mb-6 text-blue-600">
             FedUp Cup Rules
           </h2>
           <div className="bg-white border border-gray-300 shadow-md rounded-lg p-8">        

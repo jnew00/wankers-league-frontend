@@ -3,6 +3,7 @@ const recaps = [
   { id: "2025-06-22", title: "June 22, 2025 - Gator vs. Seminole Lake CC" },
   { id: "2025-07-06", title: "July 6, 2025 - Sherman Hills Showdown" },
   { id: "2025-07-13", title: "July 13, 2025 - Jamey's Birthday Bash at Bardmoor" },
+  { id: "2025-07-20", title: "July 20, 2025 - Bugs, Beers, and Buffalo Creek" },
 ];
 
 export default recaps;
