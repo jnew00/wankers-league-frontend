@@ -414,7 +414,7 @@ const FantasyGolf = () => {
   return (
     <div>
       <Navbar />
-      <PageHeader title="Fantasy Golf League" />
+      <PageHeader title="Fireball Fantasy Fiasco" />
       <div className="max-w-6xl mx-auto p-6">
         
         {/* Event Selection */}
