@@ -7,7 +7,7 @@ const Footer = () => {
         {/* Left Section */}
         <div className="text-center sm:text-left mb-4 sm:mb-0">
           <p className="text-gray-600 text-sm">
-            © {new Date().getFullYear()} Wankers United. All rights reserved.
+            © {new Date().getFullYear()} Gulf Coast Hackers League. All rights reserved.
           </p>
         </div>
 
