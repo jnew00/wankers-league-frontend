@@ -44,9 +44,8 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', href: '/', current: false },
     { name: 'Leaderboard', href: '/leaderboard', current: false },
-    { name: 'Scorestats', href: '/quotas', current: false },
     { name: 'Events', href: '/events', current: false },
-    { name: 'Recaps', href: '/past-events', current: false },
+    { name: 'Past Events', href: '/past-events', current: false },
     { 
       name: 'Fantasy Golf', 
       href: '#', 

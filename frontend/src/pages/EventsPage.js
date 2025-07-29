@@ -9,7 +9,8 @@ import EventDetailsImage from "../components/EventDetailsImage";
 import EventDailyImage from "../components/EventDailyImage";
 import ImageModal from "../components/ImageModal";
 import ScorecardSheet from "../components/ScoreCardSheet";
-import { useUser } from "../context/UserContext";
+import EventSignup from "../components/EventSignup";
+import { useAuth } from "../context/UnifiedAuthContext";
 import Footer from "../components/Footer";
 import { formatTime } from "../utils/formatTime";
 import PayoutTablePrint from "../components/PayoutTablePrint";
@@ -27,7 +28,7 @@ tippy('.Xtooltip', {
 
 
 const EventsPage = () => {
-  const { hasRole } = useUser();
+  const { hasRole } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [fedupEvents, setFedupEvents] = useState([]);
@@ -247,6 +248,16 @@ const EventsPage = () => {
       const response = await axios.get(`${API_BASE_URL}/admin/events/${eventId}`);
       const event = response.data;
 
+      // Also fetch event signups from the auth system
+      let authSignups = [];
+      try {
+        const signupsResponse = await axios.get(`${API_BASE_URL}/auth/events/${eventId}/signups`, {
+          withCredentials: true
+        });
+        authSignups = signupsResponse.data || [];
+      } catch (signupError) {
+        console.log('No auth signups found or not authenticated');
+      }
 
       setEventDetails({
         ...event.details, 
@@ -257,8 +268,28 @@ const EventsPage = () => {
         group_pairings: response.data.group_pairings,
       });
   
+      // Combine old event.players with new auth signups
+      const existingPlayers = event.players || [];
+      
+      // Add auth signups to the players list if they're not already there
+      const combinedPlayers = [...existingPlayers];
+      
+      authSignups.forEach(signup => {
+        // Check if player is already in the list
+        const existingPlayer = combinedPlayers.find(p => p.player_id === signup.player_id);
+        if (!existingPlayer) {
+          // Add new signup to the list
+          combinedPlayers.push({
+            player_id: signup.player_id,
+            name: signup.player_name || `${signup.first_name} ${signup.last_name}`.trim() || signup.username,
+            quota: null, // Will be populated when admin sets it
+            current_quota: null,
+            signup_date: signup.signup_date
+          });
+        }
+      });
 
-      const normalizedPlayers = event.players
+      const normalizedPlayers = combinedPlayers
       .map((player) => ({
         ...player,
         quota: player.player_quota || player.current_quota, // Normalize quota field
@@ -498,6 +529,14 @@ const EventsPage = () => {
                 {selectedEvent === event.id && (
   <div className="mt-4 p-6 bg-white rounded-lg shadow-lg">
 
+    {/* Event Signup Component */}
+    <div className="mb-6">
+      <EventSignup event={event} onSignupChange={() => {
+        // Refresh event data after signup/withdrawal
+        console.log('Signup status changed - refreshing event details');
+        fetchEventDetails(event.id);
+      }} />
+    </div>
 
 <div className="flex items-center justify-between">
 <div
@@ -611,7 +650,7 @@ const EventsPage = () => {
           <th className="border p-1 text-left">#</th>
           <th className="border p-1 text-left">Name</th>
           <th className="border p-1 text-left">Quota</th>
-          <th className="border p-1 text-right">Actions</th>
+          {hasRole('admin') && <th className="border p-1 text-right">Actions</th>}
         </tr>
       </thead>
       <tbody>
@@ -620,14 +659,16 @@ const EventsPage = () => {
             <td className="border p-1">{index + 1}</td>
             <td className="border p-1">{player.name}</td>
             <td className="border p-1">{player.quota}</td>
-            <td className="border p-1 text-right">
-              <button
-                onClick={() => handleDeletePlayer(player.player_id, player.name)}
-                className="Xtooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
-              >
-                X
-              </button>
-            </td>
+            {hasRole('admin') && (
+              <td className="border p-1 text-right">
+                <button
+                  onClick={() => handleDeletePlayer(player.player_id, player.name)}
+                  className="Xtooltip bg-red-500 text-white hover:bg-red-700 font-bold w-5 h-5 flex items-center justify-center rounded border border-red-700"
+                >
+                  X
+                </button>
+              </td>
+            )}
           </tr>
         ))}
       </tbody>

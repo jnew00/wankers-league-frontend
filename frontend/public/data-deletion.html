@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deletion Request - Wankers League</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.6; 
+        }
+        h1, h2 { color: #333; }
+        .form-container { 
+            background: #f9f9f9; 
+            padding: 20px; 
+            border-radius: 5px; 
+            margin: 20px 0; 
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        button { 
+            background: #007cba; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #005a87; }
+        .info-box { 
+            background: #e7f3ff; 
+            border-left: 4px solid #007cba; 
+            padding: 15px; 
+            margin: 20px 0; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Deletion Request</h1>
+    
+    <div class="info-box">
+        <h2>What Data Will Be Deleted</h2>
+        <p>When you request data deletion, we will remove:</p>
+        <ul>
+            <li>Your social media login associations (Google, Facebook, Apple)</li>
+            <li>Your email address and profile information</li>
+            <li>Your golf scores and statistics</li>
+            <li>Any personal data linked to your account</li>
+        </ul>
+        <p><strong>Note:</strong> Historical leaderboard data may be anonymized rather than deleted to preserve league integrity.</p>
+    </div>
+
+    <div class="form-container">
+        <h2>Request Data Deletion</h2>
+        <form id="deletionForm">
+            <div class="form-group">
+                <label for="email">Email Address Associated with Account:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="provider">Login Method Used:</label>
+                <select id="provider" name="provider" required>
+                    <option value="">Select your login method</option>
+                    <option value="google">Google</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="apple">Apple</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="playerName">Player Name (if linked to a player profile):</label>
+                <input type="text" id="playerName" name="playerName">
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">Reason for Deletion (optional):</label>
+                <textarea id="reason" name="reason" rows="3" placeholder="Help us improve by letting us know why you're leaving"></textarea>
+            </div>
+            
+            <button type="submit">Submit Deletion Request</button>
+        </form>
+    </div>
+
+    <h2>Alternative Contact Methods</h2>
+    <p>You can also request data deletion by:</p>
+    <ul>
+        <li>Email: privacy@wankersleague.com</li>
+        <li>Subject line: "Data Deletion Request"</li>
+        <li>Include your email address and login method used</li>
+    </ul>
+
+    <h2>Processing Time</h2>
+    <p>Data deletion requests are typically processed within 30 days. You will receive a confirmation email once your data has been deleted.</p>
+
+    <script>
+        document.getElementById('deletionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // For now, just show an alert - in production you'd send this to your backend
+            alert('Data deletion request submitted successfully. You will receive a confirmation email within 24 hours.');
+            
+            // You could send this to your backend API:
+            // fetch('/api/data-deletion-request', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // });
+        });
+    </script>
+</body>
+</html>

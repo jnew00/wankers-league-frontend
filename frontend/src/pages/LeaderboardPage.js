@@ -4,9 +4,11 @@ import Navbar from "../components/Navbar";
 import PageHeader from "../components/PageHeader";
 import Footer from "../components/Footer";
 import Modal from "../components/Modal";
+import PlayerProfileModal from "../components/PlayerProfileModal";
 import { FaMoneyBillAlt } from "react-icons/fa";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
+import { useAuth } from "../context/UnifiedAuthContext";
 
 
 const LeaderboardPage = () => {
@@ -17,8 +19,8 @@ const LeaderboardPage = () => {
     direction: "desc",
   });
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [showHistorical, setShowHistorical] = useState(false);
   const [onlyPaid, setOnlyPaid] = useState(false);
+  const { user } = useAuth();
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const [latestUpdateTime, setLatestUpdateTime] = useState(null);
   const formatUpdatedText = (latestUpdateTime) => {
@@ -29,6 +31,14 @@ const LeaderboardPage = () => {
 
   const getPlayerImageUrl = (player) => {
     const BASE_URL = API_BASE_URL.replace(/\/api$/, ""); // Remove /api from the end
+    
+    // If this player is linked to the current user and they have a profile picture, use that
+    if (user?.player_id && player.id === user.player_id && user.profilePicture) {
+      if (user.profilePicture.startsWith('http')) return user.profilePicture;
+      return `${BASE_URL}${user.profilePicture}`;
+    }
+    
+    // Otherwise use the player's image
     if (player.image_path) {
       // Construct the full URL using the base URL and the image path
       return `${BASE_URL}${player.image_path}`;
@@ -58,7 +68,12 @@ const LeaderboardPage = () => {
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/leaderboard`);
-        setPlayers(response.data.leaderboard);
+        // Map the data to ensure consistent structure for PlayerProfileModal
+        const mappedPlayers = response.data.leaderboard.map(player => ({
+          ...player,
+          id: player.player_id // Map player_id to id for consistency
+        }));
+        setPlayers(mappedPlayers);
         setLatestUpdateTime(response.data.latest_update);
 
       } catch (error) {
@@ -300,95 +315,10 @@ const LeaderboardPage = () => {
         </table>
       </div>
       {selectedPlayer && (
-        <Modal onClose={closeModal}>
-          <div className="relative p-6">
-            {/* Rank */}
-            <div className="absolute top-2 right-4 text-lg font-bold text-blue-600">
-              Season Rank: #{selectedPlayer.rank || "N/A"}
-            </div>
-
-            {/* Player Information */}
-            <div className="text-center mb-6">
-              <img
-                src={getPlayerImageUrl(selectedPlayer, API_BASE_URL)}
-                alt="Profile"
-                className="w-36 h-36 rounded-full mx-auto mb-4 cursor-pointer transition-transform transform hover:scale-105 hover:ring-2 hover:ring-blue-500"
-                onClick={() =>    
-                  setEnlargedImage(getPlayerImageUrl(selectedPlayer, API_BASE_URL))}
-              />
-              <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
-              <p className="text-gray-500 text-sm">
-                {selectedPlayer.email}
-              </p>
-              <p className="text-gray-500 text-sm">
-                {selectedPlayer.phone_number}
-              </p>
-            </div>
-
-            {/* Current Season Stats */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2 border-b pb-2">
-                Current Season Stats
-              </h3>
-              <p>
-                <strong>Events Played :</strong>{" "}
-                {selectedPlayer.events_played || 0}
-              </p>
-              <p>
-                <strong>Total Money Won:</strong> $
-                {selectedPlayer.money_won || 0}
-              </p>
-              <p>
-                <strong>Total CTPs:</strong> {selectedPlayer.ctps || 0}
-              </p>
-              <p>
-                <strong>Total Skins:</strong> {selectedPlayer.skins || 0}
-              </p>
-              <p>
-                <strong>Top 3 Finishes:</strong> {selectedPlayer.top_3 || 0}
-              </p>
-            </div>
-
-            {/* Collapsible Historical Stats */}
-            {/* Collapsible Historical Stats */}
-            <div>
-              <h3
-                className="text-lg font-semibold text-gray-700 mb-2 border-b pb-2 cursor-pointer flex items-center justify-between"
-                onClick={() => setShowHistorical(!showHistorical)}
-              >
-                Historical Stats
-                <span>{showHistorical ? "▼" : "►"}</span>
-              </h3>
-              {showHistorical && (
-                <div className="mt-4">
-                  <p>
-                    <strong>Events Played:</strong>{" "}
-                    {selectedPlayer.events_played || 0}
-                  </p>
-                  <p>
-                    <strong>Total Money Won:</strong> $
-                    {selectedPlayer.money_won || 0}
-                  </p>
-                  <p>
-                    <strong>Total CTPs:</strong> {selectedPlayer.ctps || 0}
-                  </p>
-                  <p>
-                    <strong>Total Skins:</strong> {selectedPlayer.skins || 0}
-                  </p>
-                  <p>
-                    <strong>Top 3 Finishes:</strong> {selectedPlayer.top_3 || 0}
-                  </p>
-                  <p>
-                    <strong>Top 10 Finishes:</strong> {selectedPlayer.top_10 || 0}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </Modal>
-
-
-
+        <PlayerProfileModal 
+          player={selectedPlayer} 
+          onClose={closeModal} 
+        />
       )}
                 {enlargedImage && (
             <Modal onClose={() => setEnlargedImage(null)}>

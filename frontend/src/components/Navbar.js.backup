@@ -1,0 +1,365 @@
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/UnifiedAuthConte      {/* General Navigation Links */}
+      <div className="flex-1 flex justify-center space-x-8">
+        {navLinks.map((link) => {
+          if (link.dropdown) {
+            // Handle dropdown links
+            return (
+              <div
+                key={link.name}
+                className="relative"
+                onMouseEnter={handleFantasyMouseEnter}
+                onMouseLeave={handleFantasyMouseLeave}
+              >
+                <button
+                  className={`relative py-3 text-lg font-medium ${
+                    isFantasyPage
+                      ? "text-blue-600"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {link.name}
+                  {isFantasyPage && (
+                    <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
+                  )}
+                </button>
+                {isFantasyDropdownOpen && (
+                  <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                    {link.dropdown.map((dropdownLink) => (
+                      <Link
+                        key={dropdownLink.name}
+                        to={dropdownLink.href}
+                        className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                      >
+                        {dropdownLink.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          } else {
+            // Handle regular links
+            return (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`relative py-3 text-lg font-medium ${
+                  location.pathname === link.href
+                    ? "text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {link.name}
+                {location.pathname === link.href && (
+                  <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
+                )}
+              </Link>
+            );
+          }
+        })}
+      </div>al from "./AuthModal";
+import PlayerProfileModal from "./PlayerProfileModal";
+
+const Navbar = () => {
+  const location = useLocation();
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isFantasyDropdownOpen, setIsFantasyDropdownOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [playerData, setPlayerData] = useState(null);
+  const adminTimeoutRef = useRef(null);
+  const userTimeoutRef = useRef(null);
+  const { user, isAuthenticated, logout, hasRole, userVersion } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
+  // Update playerData when user's player_id changes (e.g., after linking)
+  useEffect(() => {
+    if (isProfileModalOpen && user?.player_id && (!playerData || playerData.id !== user.player_id)) {
+      // User has been linked, fetch the new player data
+      const fetchPlayerData = async () => {
+        try {
+          const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+          const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
+            credentials: 'include'
+          });
+          if (response.ok) {
+            const player = await response.json();
+            setPlayerData(player);
+          }
+        } catch (error) {
+          console.error('Error fetching updated player data:', error);
+        }
+      };
+      fetchPlayerData();
+    }
+  }, [user?.player_id, userVersion, isProfileModalOpen, playerData]);
+  
+
+  // Helper function to get display name for user
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    
+    // If user has first/last name, use that
+    if (user.first_name && user.last_name) {
+      return `${user.first_name} ${user.last_name}`;
+    }
+    if (user.first_name) {
+      return user.first_name;
+    }
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user.firstName) {
+      return user.firstName;
+    }
+    
+    // If linked to a player, use player name
+    if (user.player_name) {
+      return user.player_name;
+    }
+    
+    // Fall back to email (extract name part before @)
+    if (user.email) {
+      const emailName = user.email.split('@')[0];
+      // Capitalize first letter and replace dots/underscores with spaces
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1).replace(/[._]/g, ' ');
+    }
+    
+    // Final fallback to username
+    return user.username || 'User';
+  };
+
+    const navLinks = [
+    { name: 'Home', href: '/', current: false },
+    { name: 'Leaderboard', href: '/leaderboard', current: false },
+    { name: 'Events', href: '/events', current: false },
+    { name: 'Past Events', href: '/past-events', current: false },
+    { 
+      name: 'Fantasy Golf', 
+      href: '#', 
+      current: false,
+      dropdown: [
+        { name: 'Submit Picks', href: '/fantasy-golf' },
+        { name: 'Leaderboard', href: '/fantasy-leaderboard' }
+      ]
+    },
+  ];
+
+  const isAdminPage = location.pathname.startsWith("/admin");
+  const isFantasyPage = location.pathname.startsWith("/fantasy");
+
+  const handleMouseEnter = () => {
+    if (adminTimeoutRef.current) {
+      clearTimeout(adminTimeoutRef.current);
+    }
+    setIsAdminDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    adminTimeoutRef.current = setTimeout(() => {
+      setIsAdminDropdownOpen(false);
+    }, 300);
+  };
+
+  const handleUserMouseEnter = () => {
+    if (userTimeoutRef.current) {
+      clearTimeout(userTimeoutRef.current);
+    }
+    setIsUserDropdownOpen(true);
+  };
+
+  const handleUserMouseLeave = () => {
+    userTimeoutRef.current = setTimeout(() => {
+      setIsUserDropdownOpen(false);
+    }, 300);
+  };
+
+  // Mouse hover handlers for Fantasy Golf dropdown
+  const fantasyTimeoutRef = useRef(null);
+  
+  const handleFantasyMouseEnter = () => {
+    if (fantasyTimeoutRef.current) {
+      clearTimeout(fantasyTimeoutRef.current);
+    }
+    setIsFantasyDropdownOpen(true);
+  };
+
+  const handleFantasyMouseLeave = () => {
+    fantasyTimeoutRef.current = setTimeout(() => {
+      setIsFantasyDropdownOpen(false);
+    }, 300);
+  };
+
+  const handleProfileClick = async () => {
+    if (user?.player_id) {
+      try {
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+        const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const player = await response.json();
+          setPlayerData(player);
+        }
+      } catch (error) {
+        console.error('Error fetching player data:', error);
+      }
+    } else {
+      // Create a dummy player object for unlinked users
+      setPlayerData({
+        id: null,
+        name: user?.first_name || user?.firstName || user?.email || 'Unknown User',
+        email: user?.email,
+        current_quota: null
+      });
+    }
+    setIsProfileModalOpen(true);
+    setIsUserDropdownOpen(false);
+  };
+
+  return (
+    <nav className="bg-white border-b border-gray-300 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      {/* General Navigation Links */}
+      <div className="flex-1 flex justify-center space-x-8">
+      {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`relative py-3 text-lg font-medium ${
+                  location.pathname === link.href
+                    ? "text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {link.name}
+                {location.pathname === link.href && (
+                  <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
+                )}
+              </Link>
+            ))}
+       
+
+          {/* Admin Dropdown (Visible to Admins Only) */}
+          {(hasRole("admin") || hasRole("moderator")) && (
+            <div
+              className="relative"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                className={`relative py-3 text-lg font-medium ${
+                  isAdminPage
+                    ? "text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Admin
+                {isAdminPage && (
+                  <span className="absolute bottom-0 left-1/2 w-4/5 h-[3px] bg-blue-600 rounded-full transform -translate-x-1/2" />
+                )}
+              </button>
+              {isAdminDropdownOpen && (
+                <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                  <Link
+                    to="/admin/manage-event"
+                    className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                  >
+                    Manage Events
+                  </Link>
+                  <Link
+                    to="/admin/manage-players"
+                    className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                  >
+                    Manage Players
+                  </Link>
+                  <Link
+                    to="/admin/manage-course"
+                    className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                  >
+                    Manage Courses
+                  </Link>
+            {/* "Record Results" is only visible to Admin */}
+            {hasRole("admin") && (
+                  <Link
+                    to="/admin/record-results"
+                    className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                  >
+                    Record Results
+                  </Link>
+            )}
+                </div>
+              )}
+            </div>
+          )}
+   </div>
+          {/* User Account Links */}
+          <div className="flex justify-end items-center space-x-4">
+            {!isAuthenticated ? (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Login
+              </button>
+            ) : (
+              <div 
+                className="relative"
+                onMouseEnter={handleUserMouseEnter}
+                onMouseLeave={handleUserMouseLeave}
+              >
+                <button className="flex items-center space-x-2 text-gray-700 hover:text-blue-600">
+                  <span className="text-sm font-medium">
+                    Hi, {getUserDisplayName()}
+                  </span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isUserDropdownOpen && (
+                  <div className="absolute right-0 top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                      <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                    
+                    <button
+                      onClick={handleProfileClick}
+                      className="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-sm"
+                    >
+                      My Profile
+                    </button>
+                    {user?.player_id && (
+                      <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
+                        Linked: {user.player_name}
+                      </div>
+                    )}
+                    <button
+                      onClick={logout}
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 text-sm"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+        {isProfileModalOpen && playerData && (
+          <PlayerProfileModal 
+            player={playerData} 
+            onClose={() => setIsProfileModalOpen(false)} 
+          />
+        )}
+ 
+    </nav>
+  );
+};
+
+export default Navbar;
