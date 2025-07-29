@@ -192,17 +192,19 @@ const FantasyLeaderboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <span className="text-lg font-bold text-blue-600">
-                            {participant.total_points}
+                            {participant.total_points || 0}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <span className="text-sm text-gray-900">
-                            {participant.avg_points_per_event?.toFixed(1)}
+                            {participant.avg_points_per_event && !isNaN(participant.avg_points_per_event) 
+                              ? Number(participant.avg_points_per_event).toFixed(1) 
+                              : '0.0'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <span className="text-sm font-semibold text-green-600">
-                            {participant.best_week}
+                            {participant.best_week || 0}
                           </span>
                         </td>
                       </tr>
