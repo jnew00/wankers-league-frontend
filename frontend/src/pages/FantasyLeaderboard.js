@@ -35,9 +35,11 @@ const FantasyLeaderboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/fantasy/standings`);
-      setStandings(response.data.standings);
+      // Ensure we always set an array, even if response structure is unexpected
+      setStandings(Array.isArray(response.data.standings) ? response.data.standings : []);
     } catch (error) {
       console.error('Error fetching standings:', error);
+      setStandings([]);
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,8 @@ const FantasyLeaderboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/fantasy/scores/${eventId}`);
-      setWeeklyScores(response.data.scores);
+      // Ensure we always set an array, even if response structure is unexpected
+      setWeeklyScores(Array.isArray(response.data.scores) ? response.data.scores : []);
     } catch (error) {
       console.error('Error fetching weekly scores:', error);
       setWeeklyScores([]);
@@ -140,11 +143,11 @@ const FantasyLeaderboard = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Season Standings</h2>
               <div className="text-sm text-gray-600">
-                {standings.length} participants
+                {(standings || []).length} participants
               </div>
             </div>
             
-            {standings.length > 0 ? (
+            {standings && standings.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead className="bg-gray-50">
@@ -250,7 +253,7 @@ const FantasyLeaderboard = () => {
               </div>
             </div>
 
-            {!loading && selectedEvent && weeklyScores.length > 0 && (
+            {!loading && selectedEvent && weeklyScores && weeklyScores.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead className="bg-gray-50">
@@ -273,7 +276,7 @@ const FantasyLeaderboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {weeklyScores
+                    {(weeklyScores || [])
                       .sort((a, b) => (b.total_points || 0) - (a.total_points || 0))
                       .map((score, index) => (
                       <tr key={score.participant_id} className={index < 3 ? 'bg-yellow-50' : ''}>
@@ -316,7 +319,7 @@ const FantasyLeaderboard = () => {
               </div>
             )}
 
-            {!loading && selectedEvent && weeklyScores.length === 0 && (
+            {!loading && selectedEvent && (!weeklyScores || weeklyScores.length === 0) && (
               <div className="text-center py-8">
                 <p className="text-gray-500">No scores available for this event.</p>
                 <p className="text-sm text-gray-400 mt-2">
