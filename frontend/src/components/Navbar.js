@@ -60,6 +60,7 @@ const Navbar = () => {
   ];
 
   const adminLinks = [
+    { name: 'Record Results', href: '/admin/record-results' },
     { name: 'Manage Events', href: '/admin/manage-event' },
     { name: 'Manage Players', href: '/admin/manage-players' },
     { name: 'Admin Panel', href: '/admin' }
