@@ -321,15 +321,21 @@ const Navbar = () => {
               </button>
               {isAdminDropdownOpen && (
                 <div className="absolute top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                  {adminLinks.map((adminLink) => (
-                    <Link
-                      key={adminLink.name}
-                      to={adminLink.href}
-                      className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
-                    >
-                      {adminLink.name}
-                    </Link>
-                  ))}
+                  {adminLinks.map((adminLink) => {
+                    // "Record Results" is only visible to Admin
+                    if (adminLink.name === 'Record Results' && !hasRole("admin")) {
+                      return null;
+                    }
+                    return (
+                      <Link
+                        key={adminLink.name}
+                        to={adminLink.href}
+                        className="block px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
+                      >
+                        {adminLink.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
