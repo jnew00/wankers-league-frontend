@@ -22,8 +22,9 @@ const PlayerProfileModal = ({ player, onClose }) => {
   // Check if the current user is linked to this player
   useEffect(() => {
     if (user && player) {
-      // Only consider linked if both player_id and player.id are not null AND they match
-      const linked = !!(user.player_id && player.id && user.player_id === player.id);
+      // Check for linked player using either player_id field or player object
+      const userPlayerId = user.player_id || user.player?.id;
+      const linked = !!(userPlayerId && player.id && userPlayerId === player.id);
       setIsLinked(linked);
     }
   }, [user, player, userVersion]); // Include userVersion to force re-evaluation
@@ -35,10 +36,10 @@ const PlayerProfileModal = ({ player, onClose }) => {
 
   // Fetch available players for linking - only if user has no linked player at all
   useEffect(() => {
-    if (isAuthenticated && !user?.player_id) {
+    if (isAuthenticated && !user?.player_id && !user?.player?.id) {
       fetchAvailablePlayers();
     }
-  }, [isAuthenticated, user?.player_id]);
+  }, [isAuthenticated, user?.player_id, user?.player?.id]);
 
   const fetchAvailablePlayers = async () => {
     try {

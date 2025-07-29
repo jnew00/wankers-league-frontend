@@ -6,6 +6,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:400
 const AuthModal = ({ isOpen, onClose, initialMode = 'magic' }) => {
   const [mode, setMode] = useState(initialMode); // 'login', 'magic'
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -15,6 +16,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'magic' }) => {
 
   const resetForm = () => {
     setEmail('');
+    setUsername('');
     setPassword('');
     setMessage('');
     setMagicLinkSent(false);
@@ -30,7 +32,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'magic' }) => {
     setLoading(true);
     setMessage('');
 
-    const result = await login(email, password);
+    const result = await login(username, password, true); // Pass true for admin login
     
     if (result.success) {
       handleClose();
@@ -196,8 +198,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'magic' }) => {
               </label>
               <input
                 type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter admin username"
                 required

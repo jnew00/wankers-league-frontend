@@ -37,9 +37,30 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true
       });
       
-      // Set user data from new auth system
+      // Set basic user data from validate endpoint
       setUser(response.data.user);
       setIsAuthenticated(true);
+      
+      // Now fetch the full profile data which includes linked player info
+      try {
+        const profileResponse = await axios.get(`${API_BASE_URL}/auth/profile`, {
+          withCredentials: true
+        });
+        
+        // Update user with complete profile data including player info
+        const fullUserData = {
+          ...response.data.user,
+          ...profileResponse.data,
+          // Map the player data to maintain backward compatibility
+          player_id: profileResponse.data.player?.id || null
+        };
+        
+        setUser(fullUserData);
+      } catch (profileError) {
+        console.log('Profile fetch failed, using basic user data:', profileError);
+        // Continue with basic user data if profile fetch fails
+      }
+      
       setUserVersion(prev => prev + 1); // Force re-renders
       
       // Preserve existing role system
@@ -63,12 +84,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("roles", JSON.stringify(newRoles));
   };
 
-  const login = async (email, password) => {
+  const login = async (emailOrUsername, password, isAdminLogin = false) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password
-      }, { withCredentials: true });
+      const requestBody = isAdminLogin 
+        ? { username: emailOrUsername, password }
+        : { email: emailOrUsername, password };
+        
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, requestBody, { 
+        withCredentials: true 
+      });
       
       setUser(response.data.user);
       setIsAuthenticated(true);
@@ -166,16 +190,14 @@ export const AuthProvider = ({ children }) => {
   const linkPlayer = async (playerId) => {
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/compat-auth/link-player`,
+        `${API_BASE_URL}/auth/link-player`,
         { playerId },
         { withCredentials: true }
       );
       
       if (response.data.message) {
-        // Refresh user data after linking
+        // Refresh user data after linking to get updated profile with player info
         await checkAuthStatus();
-        // Small delay to ensure state updates have propagated
-        await new Promise(resolve => setTimeout(resolve, 100));
         return { success: true };
       }
       

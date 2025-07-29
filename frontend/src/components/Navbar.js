@@ -21,12 +21,13 @@ const Navbar = () => {
 
   // Update playerData when user's player_id changes (e.g., after linking)
   useEffect(() => {
-    if (isProfileModalOpen && user?.player_id && (!playerData || playerData.id !== user.player_id)) {
+    const userPlayerId = user?.player_id || user?.player?.id;
+    if (isProfileModalOpen && userPlayerId && (!playerData || playerData.id !== userPlayerId)) {
       // User has been linked, fetch the new player data
       const fetchPlayerData = async () => {
         try {
           const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
-          const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
+          const response = await fetch(`${API_BASE_URL}/players/${userPlayerId}`, {
             credentials: 'include'
           });
           if (response.ok) {
@@ -39,7 +40,7 @@ const Navbar = () => {
       };
       fetchPlayerData();
     }
-  }, [user?.player_id, userVersion, isProfileModalOpen, playerData]);
+  }, [user?.player_id, user?.player?.id, userVersion, isProfileModalOpen, playerData]);
 
   const navLinks = [
     { name: 'Home', href: '/', current: false },
@@ -118,21 +119,100 @@ const Navbar = () => {
 
   // Helper function to get display name for user
   const getDisplayName = () => {
-    if (user?.first_name) return user.first_name;
-    if (user?.firstName) return user.firstName;
+    // Try to get full name from linked player first
+    if (user?.player?.name) {
+      return user.player.name;
+    }
+    
+    // Try to construct from first_name and last_name
+    if (user?.first_name || user?.last_name) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    }
+    
+    // Try firstName and lastName (alternative naming)
+    if (user?.firstName || user?.lastName) {
+      return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+    
+    // Extract name from email if available
     if (user?.email) {
       const emailName = user.email.split('@')[0];
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+      // Convert email username to a more readable format
+      return emailName
+        .split(/[._-]/)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
     }
+    
     return 'User';
+  };
+
+  // Helper function to get user profile picture URL
+  const getProfilePictureUrl = () => {
+    // Try to get profile picture from linked player
+    if (user?.player?.image_path) {
+      return `http://localhost:4000${user.player.image_path}`;
+    }
+    
+    // Try to get from user's profile picture field
+    if (user?.profilePicture) {
+      return `http://localhost:4000${user.profilePicture}`;
+    }
+    
+    // Try to get from image_path field directly on user
+    if (user?.image_path) {
+      return `http://localhost:4000${user.image_path}`;
+    }
+    
+    return null;
+  };
+
+  // Helper function to get user initials for avatar fallback
+  const getUserInitials = () => {
+    const displayName = getDisplayName();
+    if (displayName === 'User') return 'U';
+    
+    const nameParts = displayName.split(' ');
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+    }
+    return displayName.charAt(0).toUpperCase();
+  };
+
+  // Component for user avatar (with fallback to initials)
+  const UserAvatar = ({ size = 'w-8 h-8', textSize = 'text-sm' }) => {
+    const profilePicUrl = getProfilePictureUrl();
+    const [imageError, setImageError] = useState(false);
+    
+    if (profilePicUrl && !imageError) {
+      return (
+        <div className="relative">
+          <img
+            src={profilePicUrl}
+            alt={getDisplayName()}
+            className={`${size} rounded-full object-cover border-2 border-white shadow-sm`}
+            onError={() => setImageError(true)}
+            onLoad={() => setImageError(false)}
+          />
+        </div>
+      );
+    }
+    
+    // Fallback to initials avatar
+    return (
+      <div className={`${size} bg-blue-600 text-white rounded-full flex items-center justify-center ${textSize} font-medium shadow-sm`}>
+        {getUserInitials()}
+      </div>
+    );
   };
 
   const handleProfileClick = async () => {
     // Fetch player data if user has a linked player
-    if (user?.player_id) {
+    const userPlayerId = user?.player_id || user?.player?.id;
+    if (userPlayerId) {
       try {
         const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
-        const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
+        const response = await fetch(`${API_BASE_URL}/players/${userPlayerId}`, {
           credentials: 'include'
         });
         if (response.ok) {
@@ -260,7 +340,7 @@ const Navbar = () => {
           {!isAuthenticated ? (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Login
             </button>
@@ -270,23 +350,50 @@ const Navbar = () => {
               onMouseEnter={handleUserMouseEnter}
               onMouseLeave={handleUserMouseLeave}
             >
-              <button className="text-gray-700 hover:text-blue-600 transition-colors">
-                {getDisplayName()}
+              <button className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-gray-50">
+                {/* User Avatar with Profile Picture */}
+                <UserAvatar />
+                {/* User Name */}
+                <span className="font-medium text-gray-900">{getDisplayName()}</span>
+                {/* Dropdown Arrow */}
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
               {isUserDropdownOpen && (
-                <div className="absolute right-0 top-full w-48 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                  <button
-                    className="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
-                    onClick={handleProfileClick}
-                  >
-                    Profile
-                  </button>
-                  <button
-                    className="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 text-lg"
-                    onClick={logout}
-                  >
-                    Logout
-                  </button>
+                <div className="absolute right-0 top-full w-56 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-2">
+                  {/* User Info Header */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <UserAvatar size="w-10 h-10" textSize="text-sm" />
+                      <div>
+                        <div className="font-medium text-gray-900">{getDisplayName()}</div>
+                        <div className="text-sm text-gray-500">{user?.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      className="flex items-center w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                      onClick={handleProfileClick}
+                    >
+                      <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Profile
+                    </button>
+                    <button
+                      className="flex items-center w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors"
+                      onClick={logout}
+                    >
+                      <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Logout
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

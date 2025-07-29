@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/UnifiedAuthContext";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import QuotasPage from "./pages/QuotasPage";
@@ -35,6 +35,7 @@ function App() {
         <Route path="/past-events" element={<PastEventsPage />} />
         <Route path="/fantasy-golf" element={<FantasyGolf />} />
         <Route path="/fantasy-leaderboard" element={<FantasyLeaderboard />} />
+        <Route path="/fantasy" element={<Navigate to="/fantasy-golf" replace />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/auth/magic" element={<MagicLinkVerification />} />
         <Route path="/auth/success" element={<AuthSuccess />} />

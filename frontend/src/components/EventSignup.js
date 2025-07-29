@@ -24,7 +24,8 @@ const EventSignup = ({ event, onSignupChange }) => {
       const signups = await response.json();
       
       // Check if current user is signed up (compare by player_id)
-      const userSignup = signups.find(signup => signup.player_id === user.player_id);
+      const userPlayerId = user?.player_id || user?.player?.id;
+      const userSignup = signups.find(signup => signup.player_id === userPlayerId);
       setIsSignedUp(!!userSignup);
       
       // Set basic signup status - the real check will happen on the server during signup
@@ -50,7 +51,8 @@ const EventSignup = ({ event, onSignupChange }) => {
       return;
     }
 
-    if (!user.player_id) {
+    const userPlayerId = user?.player_id || user?.player?.id;
+    if (!userPlayerId) {
       setMessage({ type: 'error', text: 'Please link a player account to sign up for events' });
       return;
     }
@@ -166,7 +168,7 @@ const EventSignup = ({ event, onSignupChange }) => {
           <div className="w-full bg-gray-100 text-gray-600 py-2 px-4 rounded-md text-center">
             Log in to sign up for events
           </div>
-        ) : !user?.player_id ? (
+        ) : !(user?.player_id || user?.player?.id) ? (
           <div className="w-full bg-yellow-100 text-yellow-700 py-2 px-4 rounded-md text-center">
             Link a player account to sign up
           </div>

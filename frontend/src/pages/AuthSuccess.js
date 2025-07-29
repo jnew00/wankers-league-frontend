@@ -11,9 +11,9 @@ const AuthSuccess = () => {
       // Check auth status to refresh user data
       await checkAuthStatus();
       
-      // Redirect to fantasy page
+      // Redirect to home page
       setTimeout(() => {
-        navigate('/fantasy');
+        navigate('/');
       }, 2000);
     };
 
@@ -25,7 +25,7 @@ const AuthSuccess = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
         <div className="text-6xl mb-4">✅</div>
         <h2 className="text-2xl font-bold text-green-600 mb-2">Login Successful!</h2>
-        <p className="text-gray-600 mb-4">You've been successfully logged in. Redirecting to Fantasy Golf...</p>
+        <p className="text-gray-600 mb-4">You've been successfully logged in. Redirecting to home page...</p>
         <div className="animate-pulse">
           <div className="h-2 bg-green-200 rounded-full">
             <div className="h-2 bg-green-600 rounded-full transition-all duration-2000" style={{width: '100%'}}></div>

@@ -27,7 +27,7 @@ const MagicLinkVerification = () => {
       setStatus('success');
       setMessage('Successfully logged in! Redirecting...');
       setTimeout(() => {
-        navigate('/fantasy');
+        navigate('/');
       }, 2000);
     } else {
       setStatus('error');
@@ -81,10 +81,10 @@ const MagicLinkVerification = () => {
               <p className="text-gray-600 mb-6">{message}</p>
               <div className="space-y-3">
                 <button
-                  onClick={() => navigate('/fantasy')}
+                  onClick={() => navigate('/')}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Go to Fantasy Golf
+                  Go to Home
                 </button>
                 <button
                   onClick={() => window.location.reload()}
