@@ -165,6 +165,9 @@ export const AuthProvider = ({ children }) => {
       setRoles(userRoles);
       localStorage.setItem("roles", JSON.stringify(userRoles));
       
+      // Refresh user data to get complete profile with player info
+      await checkAuthStatus();
+      
       return { success: true, user: response.data.user };
     } catch (error) {
       return { 

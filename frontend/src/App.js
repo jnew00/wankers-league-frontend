@@ -5,6 +5,8 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import QuotasPage from "./pages/QuotasPage";
 import EventsPage from "./pages/EventsPage";
 import PastEventsPage from "./pages/PastEventsPage";
+import RecapsPage from "./pages/RecapsPage";
+import RecapDetail from "./pages/RecapDetail";
 import AdminPage from "./pages/AdminPage";
 import AddEventPage from "./pages/AddEventPage";
 import AddPlayerPage from "./pages/AddPlayerPage";
@@ -32,7 +34,8 @@ function App() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/quotas" element={<QuotasPage />} />
         <Route path="/events" element={<EventsPage />} />
-        <Route path="/past-events" element={<PastEventsPage />} />
+        <Route path="/past-events" element={<RecapsPage />} />
+        <Route path="/recaps/:id" element={<RecapDetail />} />
         <Route path="/fantasy-golf" element={<FantasyGolf />} />
         <Route path="/fantasy-leaderboard" element={<FantasyLeaderboard />} />
         <Route path="/fantasy" element={<Navigate to="/fantasy-golf" replace />} />

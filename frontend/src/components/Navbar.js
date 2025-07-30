@@ -43,9 +43,8 @@ const Navbar = () => {
   }, [user?.player_id, user?.player?.id, userVersion, isProfileModalOpen, playerData]);
 
   const navLinks = [
-    { name: 'Home', href: '/', current: false },
     { name: 'Leaderboard', href: '/leaderboard', current: false },
-    { name: 'Scorestats', href: '/quotas', current: false },
+    { name: 'Score Stats', href: '/quotas', current: false },
     { name: 'Events', href: '/events', current: false },
     { name: 'Recaps', href: '/past-events', current: false },
     { 

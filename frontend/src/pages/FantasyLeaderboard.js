@@ -8,6 +8,20 @@ import AuthModal from '../components/AuthModal';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
+// Fantasy Scoring Configuration - Easy to modify
+const FANTASY_SCORING = {
+  quotaPerformance: {
+    overQuota: 1,        // Points per stroke over quota
+    underQuota: -1       // Points per stroke under quota
+  },
+  skins: 1.5,           // Points per skin
+  ctps: 2,              // Points per CTP
+  bonuses: {
+    mostOverQuota: 2,   // Bonus for best quota performance (tied players get it too)
+    leastToQuota: -2    // Penalty for worst quota performance (tied players get it too)
+  }
+};
+
 const FantasyLeaderboard = () => {
   const { isAuthenticated } = useAuth();
   const [standings, setStandings] = useState([]);
@@ -96,10 +110,15 @@ const FantasyLeaderboard = () => {
 
   const ScoreBreakdown = ({ score }) => (
     <div className="text-xs text-gray-600">
-      <div>Ranking: {score.ranking_points || 0}pts</div>
-      <div>Skins: {score.skins_count || 0} × 4 = {(score.skins_count || 0) * 4}pts</div>
-      <div>CTPs: {score.ctp_count || 0} × 2 = {(score.ctp_count || 0) * 2}pts</div>
-      <div>Quota: {score.quota_performance || 0}pts</div>
+      <div>Quota Performance: {score.quota_performance || 0}pts</div>
+      <div>Skins: {score.skins_count || 0} × {FANTASY_SCORING.skins} = {((score.skins_count || 0) * FANTASY_SCORING.skins).toFixed(1)}pts</div>
+      <div>CTPs: {score.ctp_count || 0} × {FANTASY_SCORING.ctps} = {(score.ctp_count || 0) * FANTASY_SCORING.ctps}pts</div>
+      {score.most_over_quota_bonus && (
+        <div className="text-green-600">Best Quota Bonus: +{FANTASY_SCORING.bonuses.mostOverQuota}pts</div>
+      )}
+      {score.least_to_quota_penalty && (
+        <div className="text-red-600">Worst Quota Penalty: {FANTASY_SCORING.bonuses.leastToQuota}pts</div>
+      )}
       <div className="font-semibold border-t pt-1 mt-1">
         Total: {score.total_points || 0}pts
       </div>
@@ -109,7 +128,7 @@ const FantasyLeaderboard = () => {
   return (
     <div>
       <Navbar />
-      <PageHeader title="Fantasy Golf Leaderboard" />
+      <PageHeader title="Fireball Fantasy Fiasco Leaderboard" />
       <div className="max-w-7xl mx-auto p-6">
         
         {/* Tab Navigation */}
@@ -555,21 +574,25 @@ const FantasyLeaderboard = () => {
           <h3 className="text-lg font-bold text-blue-800 mb-3">Fantasy Scoring Rules</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Ranking Points</h4>
+              <h4 className="font-semibold text-blue-700 mb-2">Performance Points</h4>
               <ul className="space-y-1 text-blue-600">
-                <li>🥇 1st place: +10 points</li>
-                <li>🥈 2nd place: +8 points</li>
-                <li>🥉 3rd-5th place: +5 points</li>
+                <li>📊 Quota performance: +{FANTASY_SCORING.quotaPerformance.overQuota} per point over, {FANTASY_SCORING.quotaPerformance.underQuota} per point under</li>
+                <li>🎯 Each skin: +{FANTASY_SCORING.skins} points</li>
+                <li>📍 Each CTP: +{FANTASY_SCORING.ctps} points</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Performance Points</h4>
+              <h4 className="font-semibold text-blue-700 mb-2">Bonus/Penalty Points</h4>
               <ul className="space-y-1 text-blue-600">
-                <li>🎯 Each skin: +4 points</li>
-                <li>📍 Each CTP: +2 points</li>
-                <li>📊 Quota performance: +1 per point over, -1 per point under</li>
+                <li>� Best quota performance: +{FANTASY_SCORING.bonuses.mostOverQuota} points (tied players all get bonus)</li>
+                <li>� Worst quota performance: {FANTASY_SCORING.bonuses.leastToQuota} points (tied players all get penalty)</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+            <p className="text-blue-800 text-sm">
+              💡 <strong>Note:</strong> Scoring is now purely performance-based, focusing on quota achievement, skins, and CTPs rather than tournament placement.
+            </p>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/UnifiedAuthContext';
 
-const EventSignup = ({ event, onSignupChange }) => {
+const EventSignup = ({ event, pairings = [], onSignupChange }) => {
   const { user, isAuthenticated, signUpForEvent, withdrawFromEvent } = useAuth();
   const [isSignedUp, setIsSignedUp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,18 +28,21 @@ const EventSignup = ({ event, onSignupChange }) => {
       const userSignup = signups.find(signup => signup.player_id === userPlayerId);
       setIsSignedUp(!!userSignup);
       
-      // Set basic signup status - the real check will happen on the server during signup
+      // Check if pairings exist (use prop if available, otherwise fetch)
+      const hasPairings = Array.isArray(pairings) && pairings.length > 0;
+      
+      // Set signup status
       setSignupStatus({
-        canSignup: true,
-        reason: '',
+        canSignup: !hasPairings, // Cannot signup if pairings exist
+        reason: hasPairings ? 'Please email Nash and/or Rules Committee to be added or withdraw after the pairings are set or max players have been reached' : '',
         currentCount: signups.length,
         maxPlayers: event.max_players,
-        hasPairings: false // We'll let the server handle this check
+        hasPairings: hasPairings
       });
     } catch (error) {
       console.error('Error checking signup status:', error);
     }
-  }, [user, event]);
+  }, [user, event, pairings]);
 
   useEffect(() => {
     checkSignupStatus();
@@ -181,13 +184,19 @@ const EventSignup = ({ event, onSignupChange }) => {
             {signupStatus.reason}
           </div>
         ) : isSignedUp ? (
-          <button
-            onClick={handleWithdraw}
-            disabled={loading}
-            className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : 'Withdraw from Event'}
-          </button>
+          signupStatus.hasPairings ? (
+            <div className="w-full bg-gray-100 text-gray-600 py-2 px-4 rounded-md text-center">
+              Please email Nash and/or Rules Committee to be added or withdraw after the pairings are set or max players have been reached
+            </div>
+          ) : (
+            <button
+              onClick={handleWithdraw}
+              disabled={loading}
+              className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              {loading ? 'Processing...' : 'Withdraw from Event'}
+            </button>
+          )
         ) : (
           <button
             onClick={handleSignup}

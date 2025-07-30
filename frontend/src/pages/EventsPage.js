@@ -531,11 +531,15 @@ const EventsPage = () => {
 
     {/* Event Signup Component */}
     <div className="mb-6">
-      <EventSignup event={event} onSignupChange={() => {
-        // Refresh event data after signup/withdrawal
-        console.log('Signup status changed - refreshing event details');
-        fetchEventDetails(event.id);
-      }} />
+      <EventSignup 
+        event={event} 
+        pairings={pairings} 
+        onSignupChange={() => {
+          // Refresh event data after signup/withdrawal
+          console.log('Signup status changed - refreshing event details');
+          fetchEventDetails(event.id);
+        }} 
+      />
     </div>
 
 <div className="flex items-center justify-between">

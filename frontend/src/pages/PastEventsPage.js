@@ -15,7 +15,7 @@ const PastEventsPage = () => {
     const fetchPastEvents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/past-events`);
+        const response = await axios.get(`${API_BASE_URL}/api/past-events`);
         setPastEvents(response.data);
       } catch (err) {
         console.error("Error fetching past events:", err);

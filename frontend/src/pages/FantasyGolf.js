@@ -14,11 +14,26 @@ import AuthModal from '../components/AuthModal';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
+// Fantasy Scoring Configuration - Easy to modify
+const FANTASY_SCORING = {
+  quotaPerformance: {
+    overQuota: 1,        // Points per stroke over quota
+    underQuota: -1       // Points per stroke under quota
+  },
+  skins: 1.5,           // Points per skin
+  ctps: 2,              // Points per CTP
+  bonuses: {
+    mostOverQuota: 2,   // Bonus for best quota performance (tied players get it too)
+    leastToQuota: -2    // Penalty for worst quota performance (tied players get it too)
+  }
+};
+
 const FantasyGolf = () => {
   const { user, isAuthenticated } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [tiers, setTiers] = useState({ Tier1: [], Tier2: [], Tier3: [] });
+  const [tierSnapshot, setTierSnapshot] = useState(null); // Store the tier snapshot from when tiers were first displayed
   const [selectedPicks, setSelectedPicks] = useState({ tier1: '', tier2: '', tier3: '' });
   const [submittedPicks, setSubmittedPicks] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -26,6 +41,8 @@ const FantasyGolf = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [timeUntilLockout, setTimeUntilLockout] = useState(null);
   const [isPicksLocked, setIsPicksLocked] = useState(false);
+  const [timeUntilTierFreeze, setTimeUntilTierFreeze] = useState(null);
+  const [areTiersFrozen, setAreTiersFrozen] = useState(false);
 
   // Fetch events on component mount
   useEffect(() => {
@@ -50,6 +67,26 @@ const FantasyGolf = () => {
     }
     // Fallback to placeholder
     return `${BASE_URL}/uploads/players/placeholder.png`;
+  };
+
+  // Helper function to calculate tier freeze time (24 hours before tee time)
+  const calculateTierFreezeTime = (eventDate, teeTime) => {
+    if (!eventDate || !teeTime) return null;
+    
+    // Parse the event date (e.g., "2025-08-03T04:00:00.000Z")
+    const eventDateObj = new Date(eventDate);
+    
+    // Parse the tee time (e.g., "16:02:00")
+    const [hours, minutes, seconds] = teeTime.split(':').map(Number);
+    
+    // Create the tee time datetime
+    const teeTimeDate = new Date(eventDateObj);
+    teeTimeDate.setHours(hours, minutes, seconds, 0);
+    
+    // Subtract 24 hours for tier freeze
+    const tierFreezeTime = new Date(teeTimeDate.getTime() - 24 * 60 * 60 * 1000);
+    
+    return tierFreezeTime;
   };
 
   // Helper function to calculate lockout time (10 minutes after tee time)
@@ -96,11 +133,13 @@ const FantasyGolf = () => {
     }
   };
 
-  // Timer effect to update countdown
+  // Timer effect to update countdown for both tier freeze and picks lockout
   useEffect(() => {
     if (!selectedEvent) {
       setTimeUntilLockout(null);
       setIsPicksLocked(false);
+      setTimeUntilTierFreeze(null);
+      setAreTiersFrozen(false);
       return;
     }
 
@@ -108,14 +147,18 @@ const FantasyGolf = () => {
     if (!selectedEventData) return;
 
     const lockoutTime = calculateLockoutTime(selectedEventData.date, selectedEventData.tee_time);
-    if (!lockoutTime) return;
+    const tierFreezeTime = calculateTierFreezeTime(selectedEventData.date, selectedEventData.tee_time);
+    if (!lockoutTime || !tierFreezeTime) return;
 
     const updateTimer = () => {
       const now = new Date();
-      const timeRemaining = lockoutTime.getTime() - now.getTime();
+      const timeUntilPicksLockout = lockoutTime.getTime() - now.getTime();
+      const timeUntilTierFreezeDeadline = tierFreezeTime.getTime() - now.getTime();
       
-      setTimeUntilLockout(timeRemaining);
-      setIsPicksLocked(timeRemaining <= 0);
+      setTimeUntilLockout(timeUntilPicksLockout);
+      setIsPicksLocked(timeUntilPicksLockout <= 0);
+      setTimeUntilTierFreeze(timeUntilTierFreezeDeadline);
+      setAreTiersFrozen(timeUntilTierFreezeDeadline <= 0);
     };
 
     // Update immediately
@@ -165,12 +208,17 @@ const FantasyGolf = () => {
       // Find current user's picks - try multiple matching strategies
       let userPicks = null;
       
-      // First try exact email match
-      if (user?.email) {
+      // First try user ID match (primary method for admin users)
+      if (user?.id) {
+        userPicks = response.data.find(pick => pick.participant_id === user.id.toString());
+      }
+      
+      // If no match and user has email, try email match
+      if (!userPicks && user?.email) {
         userPicks = response.data.find(pick => pick.participant_id === user.email);
       }
       
-      // If no match, try lowercase email match
+      // If still no match, try lowercase email match
       if (!userPicks && user?.email) {
         userPicks = response.data.find(pick => pick.participant_id.toLowerCase() === user.email.toLowerCase());
       }
@@ -183,28 +231,101 @@ const FantasyGolf = () => {
           tier3: userPicks.tier3_pick?.toString() || ''
         });
         
-        // Show existing picks - use passed tiersData instead of state
-        const allPlayers = [...(tiersData?.Tier1 || []), ...(tiersData?.Tier2 || []), ...(tiersData?.Tier3 || [])];
-        
-        const getPlayerFromTiers = (playerId) => {
-          return allPlayers.find(player => player.id === parseInt(playerId));
-        };
-        
-        const existingPickDetails = {
-          tier1: getPlayerFromTiers(userPicks.tier1_pick),
-          tier2: getPlayerFromTiers(userPicks.tier2_pick),
-          tier3: getPlayerFromTiers(userPicks.tier3_pick)
-        };
-        
-        // Check if we found all the players
-        const foundAllPlayers = existingPickDetails.tier1 && existingPickDetails.tier2 && existingPickDetails.tier3;
-        
-        if (foundAllPlayers) {
-          setSubmittedPicks(existingPickDetails);
-          setMessage('');
-        } else {
+        // For displaying existing picks, we need to fetch the actual player data
+        // and check if they're still in the current event (haven't withdrawn)
+        try {
+          const playerIds = [userPicks.tier1_pick, userPicks.tier2_pick, userPicks.tier3_pick].filter(Boolean);
+          
+          if (playerIds.length === 3) {
+            // Fetch player details directly from the players table
+            const playerPromises = playerIds.map(async (playerId) => {
+              try {
+                const response = await axios.get(`${API_BASE_URL}/players/${playerId}`);
+                return response.data;
+              } catch (error) {
+                console.error(`Error fetching player ${playerId}:`, error);
+                return null;
+              }
+            });
+            
+            const playerDetails = await Promise.all(playerPromises);
+            
+            // Check if each player is still in the current event tiers
+            const allCurrentPlayers = [...tiersData.Tier1, ...tiersData.Tier2, ...tiersData.Tier3];
+            
+            const existingPickDetails = {
+              tier1: playerDetails[0] ? {
+                ...playerDetails[0],
+                isWithdrawn: !allCurrentPlayers.some(p => p.id === playerDetails[0].id)
+              } : null,
+              tier2: playerDetails[1] ? {
+                ...playerDetails[1],
+                isWithdrawn: !allCurrentPlayers.some(p => p.id === playerDetails[1].id)
+              } : null,
+              tier3: playerDetails[2] ? {
+                ...playerDetails[2],
+                isWithdrawn: !allCurrentPlayers.some(p => p.id === playerDetails[2].id)
+              } : null
+            };
+            
+            // Show picks even if some players have withdrawn - we'll style them differently
+            if (existingPickDetails.tier1 && existingPickDetails.tier2 && existingPickDetails.tier3) {
+              setSubmittedPicks(existingPickDetails);
+              
+              // Check if any players have withdrawn and show appropriate message
+              const withdrawnPlayers = [existingPickDetails.tier1, existingPickDetails.tier2, existingPickDetails.tier3]
+                .filter(player => player.isWithdrawn);
+              
+              if (withdrawnPlayers.length > 0) {
+                const withdrawnNames = withdrawnPlayers.map(p => p.name).join(', ');
+                setMessage(`⚠️ ${withdrawnNames} ${withdrawnPlayers.length === 1 ? 'has' : 'have'} withdrawn from this event and will not earn fantasy points`);
+              } else {
+                setMessage('');
+              }
+              
+              // Check for tier changes - but only warn if they're problematic
+              // With the new append-only system (24h freeze), existing picks shouldn't move tiers
+              const tier1Pick = existingPickDetails.tier1;
+              const tier2Pick = existingPickDetails.tier2;
+              const tier3Pick = existingPickDetails.tier3;
+              
+              const tier1PlayerIds = tiersData.Tier1.map(p => p.id);
+              const tier2PlayerIds = tiersData.Tier2.map(p => p.id);
+              const tier3PlayerIds = tiersData.Tier3.map(p => p.id);
+              
+              let tierShiftWarning = '';
+              
+              // Only warn about tier shifts if tiers should be frozen (24h+ before tee time has passed)
+              if (areTiersFrozen) {
+                if (tier1Pick && !tier1Pick.isWithdrawn && !tier1PlayerIds.includes(tier1Pick.id)) {
+                  tierShiftWarning += `Your Tier 1 pick (${tier1Pick.name}) has moved to a different tier. `;
+                }
+                if (tier2Pick && !tier2Pick.isWithdrawn && !tier2PlayerIds.includes(tier2Pick.id)) {
+                  tierShiftWarning += `Your Tier 2 pick (${tier2Pick.name}) has moved to a different tier. `;
+                }
+                if (tier3Pick && !tier3Pick.isWithdrawn && !tier3PlayerIds.includes(tier3Pick.id)) {
+                  tierShiftWarning += `Your Tier 3 pick (${tier3Pick.name}) has moved to a different tier. `;
+                }
+                
+                if (tierShiftWarning) {
+                  console.warn('Unexpected tier shift after freeze period:', tierShiftWarning);
+                  if (!withdrawnPlayers.length) {
+                    setMessage(`⚠️ ${tierShiftWarning}This should not happen after tier freeze. Please contact admin.`);
+                  }
+                }
+              }
+            } else {
+              // Some players couldn't be fetched - show warning but don't clear picks
+              setSubmittedPicks(null);
+              setMessage('Some of your previously selected players may no longer be available');
+            }
+          } else {
+            setSubmittedPicks(null);
+            setMessage('');
+          }
+        } catch (error) {
+          console.error('Error fetching player details for existing picks:', error);
           setSubmittedPicks(null);
-          setSelectedPicks({ tier1: '', tier2: '', tier3: '' });
           setMessage('');
         }
       } else {
@@ -227,7 +348,17 @@ const FantasyGolf = () => {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/fantasy/tiers/${eventId}`);
       const tiersData = response.data.tiers;
+      
       setTiers(tiersData);
+      
+      // Capture tier snapshot when tiers are first displayed to the user
+      // This ensures we validate against the exact tier assignments the user saw
+      const snapshot = {
+        Tier1: tiersData.Tier1.map(p => p.id),
+        Tier2: tiersData.Tier2.map(p => p.id),
+        Tier3: tiersData.Tier3.map(p => p.id)
+      };
+      setTierSnapshot(snapshot);
       
       // Also check if user has existing picks for this event - pass the tiers data
       if (isAuthenticated) {
@@ -275,8 +406,27 @@ const FantasyGolf = () => {
       return;
     }
 
+    // Ensure we have a tier snapshot (this should always be available after fetchTiers)
+    if (!tierSnapshot) {
+      setMessage('Tier data not available. Please refresh the page and try again.');
+      return;
+    }
+
     const picks = [selectedPicks.tier1, selectedPicks.tier2, selectedPicks.tier3];
     
+    console.log('Pre-submit debug:');
+    console.log('selectedPicks object:', selectedPicks);
+    console.log('picks array before validation:', picks);
+    console.log('Adam Shorts should be ID 3, is it selected in tier2?', selectedPicks.tier2);
+    
+    // Debug: Show actual player data in each tier
+    console.log('Tier 2 players with IDs and names:');
+    tiers.Tier2.forEach(player => {
+      console.log(`- ID ${player.id}: ${player.name} ${player.id === selectedPicks.tier2 ? '(SELECTED)' : ''}`);
+    });
+    
+    console.log('Submit validation - selectedPicks:', selectedPicks);
+    console.log('Submit validation - picks array:', picks);
     if (picks.some(pick => !pick)) {
       setMessage('Please select one player from each tier');
       return;
@@ -291,9 +441,12 @@ const FantasyGolf = () => {
 
     try {
       setLoading(true);
+      
       await axios.post(`${API_BASE_URL}/fantasy/picks`, {
         eventId: selectedEvent,
-        picks: picks.map(Number)
+        picks: picks.map(Number),
+        // Send the tier snapshot that was captured when tiers were first displayed to the user
+        tierSnapshot: tierSnapshot
       }, { withCredentials: true });
       
       setSubmittedPicks(selectedPlayerDetails);
@@ -301,6 +454,7 @@ const FantasyGolf = () => {
       setSelectedPicks({ tier1: '', tier2: '', tier3: '' });
     } catch (error) {
       console.error('Error submitting picks:', error);
+      
       if (error.response?.status === 401) {
         setMessage('Please log in to submit picks');
         setShowAuthModal(true);
@@ -424,6 +578,14 @@ const FantasyGolf = () => {
             <p className="text-blue-800 text-sm">
               <strong>Fantasy Rules:</strong> Select one player from each tier. Only players who are signed up for the selected event will be available for selection. Your own player is shown but cannot be selected. Tiers are automatically generated first by current quota, then by leaderboard rank (higher tiers contain better players).
             </p>
+            <div className="mt-3 p-2 bg-blue-100 rounded border border-blue-300">
+              <p className="text-blue-900 text-xs">
+                <strong>🔒 Tier Freeze:</strong> {areTiersFrozen 
+                  ? "Tiers are now frozen. New players can still register but will be placed in appropriate tiers without affecting existing picks." 
+                  : "Tiers will freeze 24 hours before tee time to ensure fairness. After that, new signups won't move existing players between tiers."
+                }
+              </p>
+            </div>
           </div>
         
         <div className="grid grid-cols-1 gap-4 mb-4">
@@ -445,6 +607,17 @@ const FantasyGolf = () => {
                       {events.find(e => e.id.toString() === selectedEvent)?.course_name} - {' '}
                       {new Date(events.find(e => e.id.toString() === selectedEvent)?.date).toLocaleDateString()}
                     </p>
+                    {/* Tier freeze status */}
+                    {areTiersFrozen && (
+                      <p className="text-xs text-blue-700 font-medium flex items-center mt-1">
+                        🔒 Tiers frozen - fair picks guaranteed
+                      </p>
+                    )}
+                    {!areTiersFrozen && timeUntilTierFreeze !== null && timeUntilTierFreeze > 0 && (
+                      <p className="text-xs text-amber-700 font-medium flex items-center mt-1">
+                        ⏰ Tiers freeze in {formatTimeRemaining(timeUntilTierFreeze)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
@@ -513,61 +686,82 @@ const FantasyGolf = () => {
             {submittedPicks ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <div className={`bg-white rounded-lg p-3 border ${submittedPicks.tier1?.isWithdrawn ? 'border-red-200 bg-red-50' : 'border-blue-100'}`}>
                     <h4 className="font-semibold text-blue-700 mb-2">Tier 1 Pick</h4>
                     <div className="flex items-center space-x-3">
                       {submittedPicks.tier1?.image_path && (
                         <img 
                           src={getPlayerImageUrl(submittedPicks.tier1)}
                           alt={submittedPicks.tier1.name}
-                          className="w-12 h-12 rounded-full"
+                          className={`w-12 h-12 rounded-full ${submittedPicks.tier1.isWithdrawn ? 'opacity-50 grayscale' : ''}`}
                         />
                       )}
                       <div>
-                        <p className="font-medium">{submittedPicks.tier1?.name}</p>
-                        <p className="text-sm text-gray-600">Quota: {submittedPicks.tier1?.current_quota}</p>
+                        <p className={`font-medium ${submittedPicks.tier1?.isWithdrawn ? 'text-gray-500 line-through' : ''}`}>
+                          {submittedPicks.tier1?.name}
+                          {submittedPicks.tier1?.isWithdrawn && <span className="text-red-600 text-xs ml-2">(Withdrawn)</span>}
+                        </p>
+                        <p className={`text-sm ${submittedPicks.tier1?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Quota: {submittedPicks.tier1?.current_quota || 'N/A'}
+                        </p>
                         {submittedPicks.tier1?.leaderboard_rank && submittedPicks.tier1.leaderboard_rank < 999 && (
-                          <p className="text-sm text-gray-600">Rank: #{submittedPicks.tier1.leaderboard_rank}</p>
+                          <p className={`text-sm ${submittedPicks.tier1?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Rank: #{submittedPicks.tier1.leaderboard_rank}
+                          </p>
                         )}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <div className={`bg-white rounded-lg p-3 border ${submittedPicks.tier2?.isWithdrawn ? 'border-red-200 bg-red-50' : 'border-blue-100'}`}>
                     <h4 className="font-semibold text-blue-700 mb-2">Tier 2 Pick</h4>
                     <div className="flex items-center space-x-3">
                       {submittedPicks.tier2?.image_path && (
                         <img 
                           src={getPlayerImageUrl(submittedPicks.tier2)}
                           alt={submittedPicks.tier2.name}
-                          className="w-12 h-12 rounded-full"
+                          className={`w-12 h-12 rounded-full ${submittedPicks.tier2.isWithdrawn ? 'opacity-50 grayscale' : ''}`}
                         />
                       )}
                       <div>
-                        <p className="font-medium">{submittedPicks.tier2?.name}</p>
-                        <p className="text-sm text-gray-600">Quota: {submittedPicks.tier2?.current_quota}</p>
+                        <p className={`font-medium ${submittedPicks.tier2?.isWithdrawn ? 'text-gray-500 line-through' : ''}`}>
+                          {submittedPicks.tier2?.name}
+                          {submittedPicks.tier2?.isWithdrawn && <span className="text-red-600 text-xs ml-2">(Withdrawn)</span>}
+                        </p>
+                        <p className={`text-sm ${submittedPicks.tier2?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Quota: {submittedPicks.tier2?.current_quota || 'N/A'}
+                        </p>
                         {submittedPicks.tier2?.leaderboard_rank && submittedPicks.tier2.leaderboard_rank < 999 && (
-                          <p className="text-sm text-gray-600">Rank: #{submittedPicks.tier2.leaderboard_rank}</p>
+                          <p className={`text-sm ${submittedPicks.tier2?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Rank: #{submittedPicks.tier2.leaderboard_rank}
+                          </p>
                         )}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                  <div className={`bg-white rounded-lg p-3 border ${submittedPicks.tier3?.isWithdrawn ? 'border-red-200 bg-red-50' : 'border-blue-100'}`}>
                     <h4 className="font-semibold text-blue-700 mb-2">Tier 3 Pick</h4>
                     <div className="flex items-center space-x-3">
                       {submittedPicks.tier3?.image_path && (
                         <img 
                           src={getPlayerImageUrl(submittedPicks.tier3)}
                           alt={submittedPicks.tier3.name}
-                          className="w-12 h-12 rounded-full"
+                          className={`w-12 h-12 rounded-full ${submittedPicks.tier3.isWithdrawn ? 'opacity-50 grayscale' : ''}`}
                         />
                       )}
                       <div>
-                        <p className="font-medium">{submittedPicks.tier3?.name}</p>
-                        <p className="text-sm text-gray-600">Quota: {submittedPicks.tier3?.current_quota}</p>
+                        <p className={`font-medium ${submittedPicks.tier3?.isWithdrawn ? 'text-gray-500 line-through' : ''}`}>
+                          {submittedPicks.tier3?.name}
+                          {submittedPicks.tier3?.isWithdrawn && <span className="text-red-600 text-xs ml-2">(Withdrawn)</span>}
+                        </p>
+                        <p className={`text-sm ${submittedPicks.tier3?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Quota: {submittedPicks.tier3?.current_quota || 'N/A'}
+                        </p>
                         {submittedPicks.tier3?.leaderboard_rank && submittedPicks.tier3.leaderboard_rank < 999 && (
-                          <p className="text-sm text-gray-600">Rank: #{submittedPicks.tier3.leaderboard_rank}</p>
+                          <p className={`text-sm ${submittedPicks.tier3?.isWithdrawn ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Rank: #{submittedPicks.tier3.leaderboard_rank}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -667,19 +861,18 @@ const FantasyGolf = () => {
           <h3 className="text-lg font-bold text-blue-800 mb-3">Fantasy Scoring Rules</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Ranking Points</h4>
+              <h4 className="font-semibold text-blue-700 mb-2">Performance Points</h4>
               <ul className="space-y-1 text-blue-600">
-                <li>1st place: +10 points</li>
-                <li>2nd place: +8 points</li>
-                <li>3rd-5th place: +5 points</li>
+                <li>📊 Quota performance: +{FANTASY_SCORING.quotaPerformance.overQuota} per point over, {FANTASY_SCORING.quotaPerformance.underQuota} per point under</li>
+                <li>🎯 Each skin: +{FANTASY_SCORING.skins} points</li>
+                <li>📍 Each CTP: +{FANTASY_SCORING.ctps} points</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-700 mb-2">Performance Points</h4>
+              <h4 className="font-semibold text-blue-700 mb-2">Bonus/Penalty Points</h4>
               <ul className="space-y-1 text-blue-600">
-                <li>Each skin: +4 points</li>
-                <li>Each CTP: +2 points</li>
-                <li>Quota performance: +1 per point over, -1 per point under</li>
+                <li>🏆 Best quota performance: +{FANTASY_SCORING.bonuses.mostOverQuota} points (tied players all get bonus)</li>
+                <li>💔 Worst quota performance: {FANTASY_SCORING.bonuses.leastToQuota} points (tied players all get penalty)</li>
               </ul>
             </div>
           </div>
