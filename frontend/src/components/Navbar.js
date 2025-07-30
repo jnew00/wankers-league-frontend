@@ -3,6 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/UnifiedAuthContext";
 import AuthModal from "./AuthModal";
 import PlayerProfileModal from "./PlayerProfileModal";
+import { API_BASE_URL } from '../utils/apiConfig';
+
+const API_BACKEND_URL = API_BASE_URL.replace('/api', '');
 
 const Navbar = () => {
   const location = useLocation();
@@ -26,7 +29,6 @@ const Navbar = () => {
       // User has been linked, fetch the new player data
       const fetchPlayerData = async () => {
         try {
-          const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
           const response = await fetch(`${API_BASE_URL}/players/${userPlayerId}`, {
             credentials: 'include'
           });
@@ -151,17 +153,17 @@ const Navbar = () => {
   const getProfilePictureUrl = () => {
     // Try to get profile picture from linked player
     if (user?.player?.image_path) {
-      return `http://localhost:4000${user.player.image_path}`;
+      return `${API_BACKEND_URL}${user.player.image_path}`;
     }
     
     // Try to get from user's profile picture field
     if (user?.profilePicture) {
-      return `http://localhost:4000${user.profilePicture}`;
+      return `${API_BACKEND_URL}${user.profilePicture}`;
     }
     
     // Try to get from image_path field directly on user
     if (user?.image_path) {
-      return `http://localhost:4000${user.image_path}`;
+      return `${API_BACKEND_URL}${user.image_path}`;
     }
     
     return null;
@@ -211,7 +213,6 @@ const Navbar = () => {
     const userPlayerId = user?.player_id || user?.player?.id;
     if (userPlayerId) {
       try {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
         const response = await fetch(`${API_BASE_URL}/players/${userPlayerId}`, {
           credentials: 'include'
         });

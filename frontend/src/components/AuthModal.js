@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/UnifiedAuthContext';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'magic' }) => {
   const [mode, setMode] = useState(initialMode); // 'login', 'magic'

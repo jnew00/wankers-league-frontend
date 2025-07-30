@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/UnifiedAuthContext';
+import { API_BASE_URL } from '../utils/apiConfig';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
 
 const UserProfile = () => {
   const { user, updateProfile, uploadProfilePicture, getProfile, linkPlayer } = useAuth();
@@ -38,7 +37,7 @@ const UserProfile = () => {
 
   const loadAvailablePlayers = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/players');
+      const response = await fetch(`${API_BASE_URL}/players`);
       const players = await response.json();
       
       // Filter out players that are already linked to users

@@ -12,7 +12,7 @@ import AuthModal from '../components/AuthModal';
  * Main interface for making fantasy golf picks with authentication
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
 
 // Fantasy Scoring Configuration - Easy to modify
 const FANTASY_SCORING = {

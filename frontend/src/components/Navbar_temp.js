@@ -25,7 +25,7 @@ const Navbar = () => {
       // User has been linked, fetch the new player data
       const fetchPlayerData = async () => {
         try {
-          const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+          const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://signin.gulfcoasthackers.com/api';
           const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
             credentials: 'include'
           });
@@ -130,7 +130,7 @@ const Navbar = () => {
     // Fetch player data if user has a linked player
     if (user?.player_id) {
       try {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://signin.gulfcoasthackers.com/api';
         const response = await fetch(`${API_BASE_URL}/players/${user.player_id}`, {
           credentials: 'include'
         });

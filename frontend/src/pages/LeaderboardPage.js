@@ -21,7 +21,7 @@ const LeaderboardPage = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [onlyPaid, setOnlyPaid] = useState(false);
   const { user } = useAuth();
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://signin.gulfcoasthackers.com/api';
   const [latestUpdateTime, setLatestUpdateTime] = useState(null);
   const formatUpdatedText = (latestUpdateTime) => {
     return latestUpdateTime
@@ -31,20 +31,23 @@ const LeaderboardPage = () => {
 
   const getPlayerImageUrl = (player) => {
     const BASE_URL = API_BASE_URL.replace(/\/api$/, ""); // Remove /api from the end
-    
+    let url;
     // If this player is linked to the current user and they have a profile picture, use that
     if (user?.player_id && player.id === user.player_id && user.profilePicture) {
-      if (user.profilePicture.startsWith('http')) return user.profilePicture;
-      return `${BASE_URL}${user.profilePicture}`;
-    }
-    
+      if (user.profilePicture.startsWith('http')) url = user.profilePicture;
+      else url = `${BASE_URL}${user.profilePicture}`;
+    } 
     // Otherwise use the player's image
-    if (player.image_path) {
+    else if (player.image_path) {
       // Construct the full URL using the base URL and the image path
-      return `${BASE_URL}${player.image_path}`;
-    }
+      url = `${BASE_URL}${player.image_path}`;
+    } 
     // Fallback to the placeholder image
-    return `${BASE_URL}/uploads/players/placeholder.png`;
+    else {
+      url = `${BASE_URL}/uploads/players/placeholder.png`;
+    }
+    console.log('Leaderboard image URL:', url, player);
+    return url;
   };
   
   

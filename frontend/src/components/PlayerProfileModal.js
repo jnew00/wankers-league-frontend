@@ -5,7 +5,7 @@ import axios from 'axios';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:4000/api';
+const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
 
 const PlayerProfileModal = ({ player, onClose }) => {
   const { user, isAuthenticated, linkPlayer, userVersion, uploadProfilePicture } = useAuth();
@@ -133,10 +133,13 @@ const PlayerProfileModal = ({ player, onClose }) => {
       return `${apiBaseUrl.replace('/api', '')}${user.profilePicture}`;
     }
     
+    // Get base URL for images (remove /api from the API base URL)
+    const imageBaseUrl = apiBaseUrl.replace('/api', '');
+    
     // Otherwise use the player's image
-    if (!player?.image) return `${apiBaseUrl.replace('/api', '')}/uploads/players/placeholder.png`;
+    if (!player?.image) return `${imageBaseUrl}/uploads/players/placeholder.png`;
     if (player.image.startsWith('http')) return player.image;
-    return `${apiBaseUrl.replace('/api', '')}/uploads/players/${player.image}`;
+    return `${imageBaseUrl}/uploads/players/${player.image}`;
   };
 
   if (!player) return null;

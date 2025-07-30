@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "homepage": "/",
   "private": true,
-  "proxy": "http://localhost:4000",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/sortable": "10.0.0",
@@ -29,7 +28,7 @@
     "web-vitals": "5.0.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "DANGEROUSLY_DISABLE_HOST_CHECK=true WDS_SOCKET_HOST=0.0.0.0 WDS_SOCKET_PORT=0 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -37,7 +37,7 @@ const EventsPage = () => {
   const [allPlayers, setAllPlayers] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [eventPlayers, setEventPlayers] = useState([]);
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://signin.gulfcoasthackers.com/api';
   const navigate = useNavigate();
   const [selectedCourseDetails, setSelectedCourseDetails] = useState(null);
   const [showModal, setShowModal] = useState(false);
