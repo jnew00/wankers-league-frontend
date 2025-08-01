@@ -32,6 +32,7 @@ const FantasyGolf = () => {
   const { user, isAuthenticated } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
+  const [nextEventInfo, setNextEventInfo] = useState(null); // Info about the chronologically next event
   const [tiers, setTiers] = useState({ Tier1: [], Tier2: [], Tier3: [] });
   const [tierSnapshot, setTierSnapshot] = useState(null); // Store the tier snapshot from when tiers were first displayed
   const [selectedPicks, setSelectedPicks] = useState({ tier1: '', tier2: '', tier3: '' });
@@ -44,12 +45,58 @@ const FantasyGolf = () => {
   const [timeUntilTierFreeze, setTimeUntilTierFreeze] = useState(null);
   const [areTiersFrozen, setAreTiersFrozen] = useState(false);
 
+  const fetchEvents = useCallback(async () => {
+    try {
+      // Fetch ALL upcoming events (not closed) - no fantasy filter initially
+      const response = await axios.get(`${API_BASE_URL}/admin/events?type=upcoming`);
+      const allUpcomingEvents = response.data.filter(event => !event.closed); // Only open events
+      
+      if (allUpcomingEvents.length === 0) {
+        // No upcoming events at all
+        setEvents([]);
+        setSelectedEvent(null);
+        setNextEventInfo(null);
+        setMessage('No upcoming events scheduled.');
+        return;
+      }
+      
+      // Sort by date to find the chronologically next event
+      const sortedEvents = allUpcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const nextEvent = sortedEvents[0];
+      
+      // Check if the next event has fantasy enabled
+      if (nextEvent.fantasy_enabled) {
+        // Next event is fantasy-enabled - show it normally
+        setEvents([nextEvent]);
+        setSelectedEvent(nextEvent.id.toString());
+        setNextEventInfo(null);
+        setMessage('');
+      } else {
+        // Next event exists but fantasy is disabled
+        setEvents([]);
+        setSelectedEvent(null);
+        setNextEventInfo({
+          course_name: nextEvent.course_name,
+          date: nextEvent.date,
+          id: nextEvent.id
+        });
+        setMessage('');
+      }
+      
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setMessage('Failed to load events');
+      setEvents([]);
+      setSelectedEvent(null);
+      setNextEventInfo(null);
+    }
+  }, []);
+
   // Fetch events on component mount
   useEffect(() => {
     if (isAuthenticated) {
       fetchEvents();
     }
-  // eslint-disable-next-line no-use-before-define
   }, [isAuthenticated, user, fetchEvents]);
 
   // Helper function to get the correct player image URL
@@ -182,23 +229,6 @@ const FantasyGolf = () => {
     loadEventData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEvent, isAuthenticated, user]);
-
-  const fetchEvents = useCallback(async () => {
-    try {
-      // Fetch upcoming events (not closed) for fantasy picks
-      const response = await axios.get(`${API_BASE_URL}/admin/events?type=upcoming`);
-      const upcomingEvents = response.data.filter(event => !event.closed); // Only open events
-      setEvents(upcomingEvents);
-      
-      // Auto-select the first upcoming event
-      if (upcomingEvents.length > 0 && !selectedEvent) {
-        setSelectedEvent(upcomingEvents[0].id.toString());
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      setMessage('Failed to load events');
-    }
-  }, [selectedEvent]);
 
   const checkExistingPicks = async (eventId, tiersData) => {
     try {
@@ -388,68 +418,6 @@ const FantasyGolf = () => {
   const getPlayerById = (playerId) => {
     const allPlayers = [...tiers.Tier1, ...tiers.Tier2, ...tiers.Tier3];
     return allPlayers.find(player => player.id === parseInt(playerId));
-  };
-
-  // Helper function to calculate projected fantasy points for selected picks
-  const calculateProjectedPoints = () => {
-    const picks = [selectedPicks.tier1, selectedPicks.tier2, selectedPicks.tier3];
-    let total = 0;
-    let details = [];
-    
-    picks.forEach((pick, idx) => {
-      const player = getPlayerById(pick);
-      if (!player) return;
-      
-      // Simple projection based on player's current quota and estimated performance
-      // This is a basic projection - could be enhanced with historical data
-      let projectedQuotaPerf = 0;
-      let projectedSkins = 0;
-      let projectedCtps = 0;
-      
-      // Estimate quota performance based on current quota
-      // Players with lower quotas (better players) tend to perform better
-      if (player.current_quota <= 20) {
-        projectedQuotaPerf = -2; // Expected to beat quota by 2
-      } else if (player.current_quota <= 25) {
-        projectedQuotaPerf = -1; // Expected to beat quota by 1
-      } else if (player.current_quota <= 30) {
-        projectedQuotaPerf = 0; // Expected to meet quota
-      } else {
-        projectedQuotaPerf = 1; // Expected to miss quota by 1
-      }
-      
-      // Estimate skins based on tier (higher tier players get more skins)
-      if (idx === 0) { // Tier 1
-        projectedSkins = 1.5;
-      } else if (idx === 1) { // Tier 2
-        projectedSkins = 1.0;
-      } else { // Tier 3
-        projectedSkins = 0.5;
-      }
-      
-      // Estimate CTPs (everyone has roughly equal chance)
-      projectedCtps = 0.3;
-      
-      // Calculate projected points
-      let projectedPts = 0;
-      projectedPts += projectedQuotaPerf * (projectedQuotaPerf > 0 ? FANTASY_SCORING.quotaPerformance.overQuota : Math.abs(FANTASY_SCORING.quotaPerformance.underQuota));
-      projectedPts += projectedSkins * FANTASY_SCORING.skins;
-      projectedPts += projectedCtps * FANTASY_SCORING.ctps;
-      
-      details.push({
-        name: player.name,
-        tier: idx + 1,
-        quota: player.current_quota,
-        projectedQuotaPerf,
-        projectedSkins: projectedSkins.toFixed(1),
-        projectedCtps: projectedCtps.toFixed(1),
-        projectedPts: projectedPts.toFixed(1)
-      });
-      
-      total += projectedPts;
-    });
-    
-    return { total: total.toFixed(1), details };
   };
 
   const submitPicks = async () => {
@@ -653,7 +621,7 @@ const FantasyGolf = () => {
         
         <div className="grid grid-cols-1 gap-4 mb-4">
           {/* Combined Event Display with Countdown Timer */}
-          {selectedEvent && events.length > 0 && (
+          {selectedEvent && events.length > 0 ? (
             <div className={`p-4 rounded-lg border ${
               isPicksLocked 
                 ? 'bg-red-50 border-red-200' 
@@ -711,7 +679,35 @@ const FantasyGolf = () => {
                 )}
               </div>
             </div>
-          )}
+          ) : nextEventInfo ? (
+            /* Next event exists but fantasy is disabled */
+            <div className="p-4 rounded-lg border bg-amber-50 border-amber-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">⏳</div>
+                <div>
+                  <h3 className="font-semibold text-amber-800">Fantasy Not Available Yet</h3>
+                  <p className="text-sm text-amber-700">
+                    The next event is {nextEventInfo.course_name} on {new Date(nextEventInfo.date).toLocaleDateString()}, 
+                    but fantasy picks are not enabled for this event yet.
+                  </p>
+                  <p className="text-xs text-amber-600 mt-1">
+                    Check back later or contact an admin if you think this is an error.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : message ? (
+            /* Show general message (like "No upcoming events") */
+            <div className="p-4 rounded-lg border bg-gray-50 border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">📅</div>
+                <div>
+                  <h3 className="font-semibold text-gray-700">No Events Available</h3>
+                  <p className="text-sm text-gray-600">{message}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
           
           {/* Authentication Status */}
           {!isAuthenticated && (
@@ -743,7 +739,7 @@ const FantasyGolf = () => {
         )}
 
         {/* Display current picks for selected event */}
-        {selectedEvent && isAuthenticated && (
+        {selectedEvent && isAuthenticated && events.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <h3 className="text-lg font-bold text-blue-800 mb-3">🎯 Your Fantasy Picks</h3>
             {submittedPicks ? (
@@ -845,7 +841,7 @@ const FantasyGolf = () => {
       </div>
 
       {/* Tier Selection */}
-      {selectedEvent && !loading && isAuthenticated && (
+      {selectedEvent && !loading && isAuthenticated && events.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <TierSection
             tierName="Tier 1"
@@ -877,7 +873,7 @@ const FantasyGolf = () => {
       )}
 
       {/* Not Authenticated Message */}
-      {selectedEvent && !isAuthenticated && (
+      {selectedEvent && !isAuthenticated && events.length > 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔒</div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Authentication Required</h3>
@@ -891,22 +887,112 @@ const FantasyGolf = () => {
         </div>
       )}
 
+      {/* Fantasy Not Available Message for Authenticated Users */}
+      {nextEventInfo && isAuthenticated && (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">⏳</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Fantasy Picks Not Available</h3>
+          <p className="text-gray-600 mb-4">
+            The next event ({nextEventInfo.course_name} on {new Date(nextEventInfo.date).toLocaleDateString()}) 
+            does not have fantasy picks enabled yet.
+          </p>
+          <p className="text-sm text-gray-500">
+            This typically happens when the event is still being set up. Check back later!
+          </p>
+        </div>
+      )}
+
         {/* Projected Fantasy Points Preview */}
-        {selectedEvent && isAuthenticated && (selectedPicks.tier1 || selectedPicks.tier2 || selectedPicks.tier3) && (
+        {selectedEvent && isAuthenticated && events.length > 0 && (selectedPicks.tier1 || selectedPicks.tier2 || selectedPicks.tier3) && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
               <span className="text-2xl mr-2">🔮</span>
               Projected Fantasy Points
             </h3>
-            {selectedPicks.tier1 && selectedPicks.tier2 && selectedPicks.tier3 ? (
-              (() => {
-                const projection = calculateProjectedPoints();
-                return (
-                  <div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {projection.details.map((detail, idx) => (
-                        <div key={idx} className="bg-white rounded-lg p-4 border border-blue-100">
-                          <h4 className="font-semibold text-blue-700 mb-2">Tier {detail.tier}: {detail.name}</h4>
+            {(() => {
+              // Calculate partial projections for selected picks
+              const tierPicks = [
+                { tierName: 'Tier 1', playerId: selectedPicks.tier1, tierIndex: 0 },
+                { tierName: 'Tier 2', playerId: selectedPicks.tier2, tierIndex: 1 },
+                { tierName: 'Tier 3', playerId: selectedPicks.tier3, tierIndex: 2 }
+              ];
+              
+              const projectionDetails = [];
+              let totalProjectedPoints = 0;
+              
+              tierPicks.forEach(({ tierName, playerId, tierIndex }) => {
+                if (playerId) {
+                  const player = getPlayerById(playerId);
+                  if (player) {
+                    // Calculate projection for this player
+                    let projectedQuotaPerf = 0;
+                    let projectedSkins = 0;
+                    let projectedCtps = 0;
+                    
+                    // Estimate quota performance based on current quota
+                    if (player.current_quota <= 20) {
+                      projectedQuotaPerf = -2;
+                    } else if (player.current_quota <= 25) {
+                      projectedQuotaPerf = -1;
+                    } else if (player.current_quota <= 30) {
+                      projectedQuotaPerf = 0;
+                    } else {
+                      projectedQuotaPerf = 1;
+                    }
+                    
+                    // Estimate skins based on tier
+                    if (tierIndex === 0) { // Tier 1
+                      projectedSkins = 1.5;
+                    } else if (tierIndex === 1) { // Tier 2
+                      projectedSkins = 1.0;
+                    } else { // Tier 3
+                      projectedSkins = 0.5;
+                    }
+                    
+                    // Estimate CTPs
+                    projectedCtps = 0.3;
+                    
+                    // Calculate projected points
+                    let projectedPts = 0;
+                    projectedPts += projectedQuotaPerf * (projectedQuotaPerf > 0 ? FANTASY_SCORING.quotaPerformance.overQuota : Math.abs(FANTASY_SCORING.quotaPerformance.underQuota));
+                    projectedPts += projectedSkins * FANTASY_SCORING.skins;
+                    projectedPts += projectedCtps * FANTASY_SCORING.ctps;
+                    
+                    projectionDetails.push({
+                      tierName,
+                      name: player.name,
+                      quota: player.current_quota,
+                      projectedQuotaPerf,
+                      projectedSkins: projectedSkins.toFixed(1),
+                      projectedCtps: projectedCtps.toFixed(1),
+                      projectedPts: projectedPts.toFixed(1)
+                    });
+                    
+                    totalProjectedPoints += projectedPts;
+                  }
+                } else {
+                  // Show placeholder for unselected tier
+                  projectionDetails.push({
+                    tierName,
+                    name: null,
+                    quota: null,
+                    projectedQuotaPerf: null,
+                    projectedSkins: null,
+                    projectedCtps: null,
+                    projectedPts: null
+                  });
+                }
+              });
+              
+              return (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    {projectionDetails.map((detail, idx) => (
+                      <div key={idx} className={`bg-white rounded-lg p-4 border ${detail.name ? 'border-blue-100' : 'border-gray-200'}`}>
+                        <h4 className={`font-semibold mb-2 ${detail.name ? 'text-blue-700' : 'text-gray-400'}`}>
+                          {detail.tierName}: {detail.name || 'No selection'}
+                        </h4>
+                        {detail.name ? (
                           <div className="text-sm text-gray-600 space-y-1">
                             <div>Current Quota: {detail.quota}</div>
                             <div>Projected vs Quota: {detail.projectedQuotaPerf > 0 ? '+' : ''}{detail.projectedQuotaPerf}</div>
@@ -916,31 +1002,36 @@ const FantasyGolf = () => {
                               Projected Points: {detail.projectedPts}
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="text-center bg-white rounded-lg p-4 border-2 border-blue-300">
-                      <div className="text-2xl font-bold text-blue-700">
-                        Total Projected Points: {projection.total}
+                        ) : (
+                          <div className="text-sm text-gray-400 space-y-1">
+                            <div>Select a player to see projection</div>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        *Projections based on current quotas and historical performance patterns
-                      </p>
-                    </div>
+                    ))}
                   </div>
-                );
-              })()
-            ) : (
-              <div className="text-center text-gray-600 py-4">
-                <p className="text-lg">Select one player from each tier to see projected points</p>
-                <p className="text-sm mt-1">Projections help you estimate potential fantasy performance</p>
-              </div>
-            )}
+                  <div className="text-center bg-white rounded-lg p-4 border-2 border-blue-300">
+                    <div className="text-2xl font-bold text-blue-700">
+                      {projectionDetails.filter(d => d.name).length === 3 ? 'Total ' : 'Partial '}
+                      Projected Points: {totalProjectedPoints.toFixed(1)}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      *Projections based on current quotas and historical performance patterns
+                    </p>
+                    {projectionDetails.filter(d => d.name).length < 3 && (
+                      <p className="text-sm text-amber-600 mt-1">
+                        Complete all three picks to see total projection
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
         {/* Submit Button */}
-        {selectedEvent && isAuthenticated && (
+        {selectedEvent && isAuthenticated && events.length > 0 && (
           <div className="text-center mb-8">
             <button
               onClick={submitPicks}

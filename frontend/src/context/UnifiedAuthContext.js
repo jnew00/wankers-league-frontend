@@ -114,6 +114,12 @@ export const AuthProvider = ({ children }) => {
       setRoles(userRoles);
       localStorage.setItem("roles", JSON.stringify(userRoles));
       
+      // Refresh user data to get complete profile with player info
+      await checkAuthStatus();
+      
+      // Force re-renders in components that depend on user data
+      setUserVersion(prev => prev + 1);
+      
       return { success: true, user: response.data.user };
     } catch (error) {
       return { 
@@ -138,6 +144,12 @@ export const AuthProvider = ({ children }) => {
       const userRoles = response.data.user?.roles || ['player'];
       setRoles(userRoles);
       localStorage.setItem("roles", JSON.stringify(userRoles));
+      
+      // Refresh user data to get complete profile with player info
+      await checkAuthStatus();
+      
+      // Force re-renders in components that depend on user data
+      setUserVersion(prev => prev + 1);
       
       return { success: true, user: response.data.user };
     } catch (error) {
@@ -213,6 +225,10 @@ export const AuthProvider = ({ children }) => {
       if (response.data.message) {
         // Refresh user data after linking to get updated profile with player info
         await checkAuthStatus();
+        
+        // Force re-renders in components that depend on user data
+        setUserVersion(prev => prev + 1);
+        
         return { success: true };
       }
       
