@@ -45,10 +45,11 @@ const Navbar = () => {
   }, [user?.player_id, user?.player?.id, userVersion, isProfileModalOpen, playerData]);
 
   const navLinks = [
-    { name: 'Leaderboard', href: '/leaderboard', current: false },
+    { name: 'Leaderboard', href: '/', current: false },
     { name: 'Score Stats', href: '/quotas', current: false },
     { name: 'Events', href: '/events', current: false },
-    { name: 'Recaps', href: '/past-events', current: false },
+    { name: 'Rules', href: '/rules', current: false },
+    { name: 'Recaps', href: '/recaps', current: false },
     { 
       name: 'Fantasy Golf', 
       href: '#', 

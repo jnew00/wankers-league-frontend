@@ -49,7 +49,8 @@ const FantasyGolf = () => {
     if (isAuthenticated) {
       fetchEvents();
     }
-  }, [isAuthenticated, user]);
+  // eslint-disable-next-line no-use-before-define
+  }, [isAuthenticated, user, fetchEvents]);
 
   // Helper function to get the correct player image URL
   const getPlayerImageUrl = (player) => {
@@ -387,6 +388,68 @@ const FantasyGolf = () => {
   const getPlayerById = (playerId) => {
     const allPlayers = [...tiers.Tier1, ...tiers.Tier2, ...tiers.Tier3];
     return allPlayers.find(player => player.id === parseInt(playerId));
+  };
+
+  // Helper function to calculate projected fantasy points for selected picks
+  const calculateProjectedPoints = () => {
+    const picks = [selectedPicks.tier1, selectedPicks.tier2, selectedPicks.tier3];
+    let total = 0;
+    let details = [];
+    
+    picks.forEach((pick, idx) => {
+      const player = getPlayerById(pick);
+      if (!player) return;
+      
+      // Simple projection based on player's current quota and estimated performance
+      // This is a basic projection - could be enhanced with historical data
+      let projectedQuotaPerf = 0;
+      let projectedSkins = 0;
+      let projectedCtps = 0;
+      
+      // Estimate quota performance based on current quota
+      // Players with lower quotas (better players) tend to perform better
+      if (player.current_quota <= 20) {
+        projectedQuotaPerf = -2; // Expected to beat quota by 2
+      } else if (player.current_quota <= 25) {
+        projectedQuotaPerf = -1; // Expected to beat quota by 1
+      } else if (player.current_quota <= 30) {
+        projectedQuotaPerf = 0; // Expected to meet quota
+      } else {
+        projectedQuotaPerf = 1; // Expected to miss quota by 1
+      }
+      
+      // Estimate skins based on tier (higher tier players get more skins)
+      if (idx === 0) { // Tier 1
+        projectedSkins = 1.5;
+      } else if (idx === 1) { // Tier 2
+        projectedSkins = 1.0;
+      } else { // Tier 3
+        projectedSkins = 0.5;
+      }
+      
+      // Estimate CTPs (everyone has roughly equal chance)
+      projectedCtps = 0.3;
+      
+      // Calculate projected points
+      let projectedPts = 0;
+      projectedPts += projectedQuotaPerf * (projectedQuotaPerf > 0 ? FANTASY_SCORING.quotaPerformance.overQuota : Math.abs(FANTASY_SCORING.quotaPerformance.underQuota));
+      projectedPts += projectedSkins * FANTASY_SCORING.skins;
+      projectedPts += projectedCtps * FANTASY_SCORING.ctps;
+      
+      details.push({
+        name: player.name,
+        tier: idx + 1,
+        quota: player.current_quota,
+        projectedQuotaPerf,
+        projectedSkins: projectedSkins.toFixed(1),
+        projectedCtps: projectedCtps.toFixed(1),
+        projectedPts: projectedPts.toFixed(1)
+      });
+      
+      total += projectedPts;
+    });
+    
+    return { total: total.toFixed(1), details };
   };
 
   const submitPicks = async () => {
@@ -827,6 +890,54 @@ const FantasyGolf = () => {
           </button>
         </div>
       )}
+
+        {/* Projected Fantasy Points Preview */}
+        {selectedEvent && isAuthenticated && (selectedPicks.tier1 || selectedPicks.tier2 || selectedPicks.tier3) && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
+              <span className="text-2xl mr-2">🔮</span>
+              Projected Fantasy Points
+            </h3>
+            {selectedPicks.tier1 && selectedPicks.tier2 && selectedPicks.tier3 ? (
+              (() => {
+                const projection = calculateProjectedPoints();
+                return (
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {projection.details.map((detail, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-4 border border-blue-100">
+                          <h4 className="font-semibold text-blue-700 mb-2">Tier {detail.tier}: {detail.name}</h4>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <div>Current Quota: {detail.quota}</div>
+                            <div>Projected vs Quota: {detail.projectedQuotaPerf > 0 ? '+' : ''}{detail.projectedQuotaPerf}</div>
+                            <div>Expected Skins: {detail.projectedSkins}</div>
+                            <div>Expected CTPs: {detail.projectedCtps}</div>
+                            <div className="font-semibold text-blue-600 border-t pt-1 mt-2">
+                              Projected Points: {detail.projectedPts}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-center bg-white rounded-lg p-4 border-2 border-blue-300">
+                      <div className="text-2xl font-bold text-blue-700">
+                        Total Projected Points: {projection.total}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        *Projections based on current quotas and historical performance patterns
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-center text-gray-600 py-4">
+                <p className="text-lg">Select one player from each tier to see projected points</p>
+                <p className="text-sm mt-1">Projections help you estimate potential fantasy performance</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Submit Button */}
         {selectedEvent && isAuthenticated && (

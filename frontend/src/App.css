@@ -23,6 +23,25 @@
   appearance: none;
 }
 
+/* Fantasy tooltip improvements */
+.tippy-box {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Bonus/penalty highlight improvements */
+.fantasy-bonus-highlight {
+  background: linear-gradient(135deg, #d4f4dd, #a7f3d0);
+  border: 2px solid #10b981;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.fantasy-penalty-highlight {
+  background: linear-gradient(135deg, #fed7d7, #fca5a5);
+  border: 2px solid #ef4444;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
 
 .App-header {
   background-color: #282c34;

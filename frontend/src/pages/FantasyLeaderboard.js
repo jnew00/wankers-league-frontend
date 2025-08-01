@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 import axios from 'axios';
 import { useAuth } from '../context/UnifiedAuthContext';
 import Navbar from '../components/Navbar';
@@ -46,6 +48,36 @@ const FantasyLeaderboard = () => {
       fetchPlayerBreakdown(selectedEvent);
     }
   }, [selectedEvent]);
+
+  // Initialize tooltips for player names in picks
+  useEffect(() => {
+    tippy('.player-name-tooltip', {
+      placement: 'top',
+      arrow: true,
+      maxWidth: 200,
+      delay: [500, 200],
+    });
+  }, [weeklyScores]);
+
+  // Initialize tooltips for participant names in season standings
+  useEffect(() => {
+    tippy('.participant-name-tooltip', {
+      placement: 'top',
+      arrow: true,
+      maxWidth: 200,
+      delay: [500, 200],
+    });
+  }, [standings]);
+
+  // Initialize tooltips for participant names in weekly breakdown
+  useEffect(() => {
+    tippy('.weekly-participant-name-tooltip', {
+      placement: 'top',
+      arrow: true,
+      maxWidth: 200,
+      delay: [500, 200],
+    });
+  }, [weeklyScores]);
 
   const fetchStandings = async () => {
     try {
@@ -108,22 +140,27 @@ const FantasyLeaderboard = () => {
     }
   };
 
-  const ScoreBreakdown = ({ score }) => (
-    <div className="text-xs text-gray-600">
-      <div>Quota Performance: {score.quota_performance || 0}pts</div>
-      <div>Skins: {score.skins_count || 0} × {FANTASY_SCORING.skins} = {((score.skins_count || 0) * FANTASY_SCORING.skins).toFixed(1)}pts</div>
-      <div>CTPs: {score.ctp_count || 0} × {FANTASY_SCORING.ctps} = {(score.ctp_count || 0) * FANTASY_SCORING.ctps}pts</div>
-      {score.most_over_quota_bonus && (
-        <div className="text-green-600">Best Quota Bonus: +{FANTASY_SCORING.bonuses.mostOverQuota}pts</div>
-      )}
-      {score.least_to_quota_penalty && (
-        <div className="text-red-600">Worst Quota Penalty: {FANTASY_SCORING.bonuses.leastToQuota}pts</div>
-      )}
-      <div className="font-semibold border-t pt-1 mt-1">
-        Total: {score.total_points || 0}pts
+  // ScoreBreakdown: show correct sign for quota, highlight bonus, bonuses already included in total_points
+  const ScoreBreakdown = ({ score }) => {
+    // Quota sign logic: positive if over quota, negative if under
+    let quotaPoints = score.quota_performance || 0;
+    const quotaSign = quotaPoints > 0 ? '+' : '';
+    return (
+      <div className="text-xs text-gray-600 space-y-1">
+        <div>
+          Quota: <span className={quotaPoints > 0 ? 'text-green-600 font-semibold' : quotaPoints < 0 ? 'text-red-600 font-semibold' : ''}>{quotaSign}{quotaPoints}pts</span>
+        </div>
+        <div>Skins: {((score.skins_count || 0) * FANTASY_SCORING.skins).toFixed(1)}pts</div>
+        <div>CTPs: {(score.ctp_count || 0) * FANTASY_SCORING.ctps}pts</div>
+        {score.most_over_quota_bonus && (
+          <div>Bonus: <span className="text-green-600 font-semibold">+{FANTASY_SCORING.bonuses.mostOverQuota}pts</span></div>
+        )}
+        {score.least_to_quota_penalty && (
+          <div>Penalty: <span className="text-red-600 font-semibold">{FANTASY_SCORING.bonuses.leastToQuota}pts</span></div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div>
@@ -206,71 +243,60 @@ const FantasyLeaderboard = () => {
 
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead className="bg-gray-50">
+                  <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+                    <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rank
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Participant
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Events Played
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Total Points
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Average/Event
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Best Week
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Winnings
-                        </th>
+                        <th className="p-2 text-center">Rank</th>
+                        <th className="p-2 text-left">Participant</th>
+                        <th className="p-2 text-center">Events Played</th>
+                        <th className="p-2 text-center">Total Points</th>
+                        <th className="p-2 text-center">Average/Event</th>
+                        <th className="p-2 text-center">Best Week</th>
+                        <th className="p-2 text-center">Winnings</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody>
                       {standings.map((participant, index) => (
-                        <tr key={participant.participant_id} className={index < 3 ? 'bg-yellow-50' : ''}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
+                        <tr key={participant.participant_id} className={`${
+                          index % 2 === 0 ? "bg-blue-50" : "bg-white"
+                        } hover:bg-blue-100 ${
+                          index < 3 ? "border-l-4 border-yellow-400" : ""
+                        }`}>
+                          <td className="p-4 text-center font-semibold">
+                            <div className="flex items-center justify-center">
                               {index === 0 && <span className="text-2xl mr-2">🥇</span>}
                               {index === 1 && <span className="text-2xl mr-2">🥈</span>}
                               {index === 2 && <span className="text-2xl mr-2">🥉</span>}
-                              <span className="text-lg font-bold text-gray-900">
+                              <span className="text-lg font-bold">
                                 {index + 1}
                               </span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {participant.participant_id}
-                            </div>
+                          <td className="p-4 text-left">
+                            <span 
+                              className="cursor-help participant-name-tooltip"
+                              data-tippy-content={participant.participant_name || participant.participant_id}
+                            >
+                              {participant.participant_name || participant.participant_id}
+                            </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className="text-sm text-gray-900">{participant.events_played}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <td className="p-4 text-center">{participant.events_played}</td>
+                          <td className="p-4 text-center">
                             <span className="text-lg font-bold text-blue-600">
                               {participant.total_points || 0}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className="text-sm text-gray-900">
-                              {participant.avg_points_per_event && !isNaN(participant.avg_points_per_event) 
-                                ? Number(participant.avg_points_per_event).toFixed(1) 
-                                : '0.0'}
-                            </span>
+                          <td className="p-4 text-center">
+                            {participant.avg_points_per_event && !isNaN(participant.avg_points_per_event) 
+                              ? Number(participant.avg_points_per_event).toFixed(1) 
+                              : '0.0'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className="text-sm font-semibold text-green-600">
+                          <td className="p-4 text-center">
+                            <span className="font-semibold text-green-600">
                               {participant.best_week || 0}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <td className="p-4 text-center">
                             <span className={`text-lg font-bold ${
                               participant.winnings > 0 ? 'text-green-600' : 'text-gray-400'
                             }`}>
@@ -326,32 +352,26 @@ const FantasyLeaderboard = () => {
 
             {!loading && selectedEvent && weeklyScores && weeklyScores.length > 0 && (
               <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
+                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+                  <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rank
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Participant
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Picks & Performance
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Score Breakdown
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Points
-                      </th>
+                      <th className="p-2 text-center">Rank</th>
+                      <th className="p-2 text-left">Participant</th>
+                      <th className="p-2 text-center">Picks & Performance</th>
+                      <th className="p-2 text-center">Score Breakdown</th>
+                      <th className="p-2 text-center">Total Points</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody>
                     {(weeklyScores || [])
                       .sort((a, b) => (b.total_points || 0) - (a.total_points || 0))
                       .map((score, index) => (
-                      <tr key={score.participant_id} className={index < 3 ? 'bg-yellow-50' : ''}>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <tr key={score.participant_id} className={`${
+                        index % 2 === 0 ? "bg-blue-50" : "bg-white"
+                      } hover:bg-blue-100 ${
+                        index < 3 ? "border-l-4 border-yellow-400" : ""
+                      }`}>
+                        <td className="px-6 py-4 whitespace-nowrap border-r border-gray-300">
                           <div className="flex items-center">
                             {index === 0 && <span className="text-xl mr-2">🥇</span>}
                             {index === 1 && <span className="text-xl mr-2">🥈</span>}
@@ -361,31 +381,87 @@ const FantasyLeaderboard = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {score.participant_id}
+                        <td className="px-3 py-4 whitespace-nowrap border-r border-gray-300">
+                          <div 
+                            className="text-sm font-medium text-gray-900 cursor-help weekly-participant-name-tooltip"
+                            data-tippy-content={score.participant_name || score.participant_id}
+                          >
+                            {score.participant_name || score.participant_id}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 border-r border-gray-300">
                           <div className="space-y-2">
-                            {score.picks && Object.entries(score.picks).map(([tier, pick], i) => (
-                              <div key={i} className="text-xs">
-                                <div className="font-medium text-gray-900">
-                                  Tier {i + 1}: {pick.name}
+                            {score.picks && Object.entries(score.picks).map(([tier, pick], i) => {
+                              const quotaDiff = pick.score && pick.quota ? pick.score - pick.quota : null;
+                              const quotaSign = quotaDiff > 0 ? '+' : '';
+                              // Highlight bonus/penalty for correct pick
+                              let highlight = '';
+                              const pickQuotaPerf = pick.score && pick.quota ? pick.score - pick.quota : null;
+                              
+                              if (pick.bonus_points > 0) {
+                                highlight = 'bg-green-200 text-green-900 font-bold border-2 border-green-500';
+                              } else if (pick.penalty_points < 0) {
+                                highlight = 'bg-red-200 text-red-900 font-bold border-2 border-red-500';
+                              } else if (score.most_over_quota_bonus && pickQuotaPerf !== null && pickQuotaPerf > 0) {
+                                const allPickQuotaPerfs = Object.values(score.picks).map(p => p.score && p.quota ? p.score - p.quota : null).filter(v => v !== null);
+                                const maxQuotaPerf = Math.max(...allPickQuotaPerfs);
+                                if (pickQuotaPerf === maxQuotaPerf) {
+                                  highlight = 'bg-green-200 text-green-900 font-bold border-2 border-green-500';
+                                }
+                              } else if (score.least_to_quota_penalty && pickQuotaPerf !== null) {
+                                const allPickQuotaPerfs = Object.values(score.picks).map(p => p.score && p.quota ? p.score - p.quota : null).filter(v => v !== null);
+                                const minQuotaPerf = Math.min(...allPickQuotaPerfs);
+                                if (pickQuotaPerf === minQuotaPerf) {
+                                  highlight = 'bg-red-200 text-red-900 font-bold border-2 border-red-500';
+                                }
+                              }
+                              
+                              if (!highlight) {
+                                highlight = 'text-gray-900';
+                              }
+                              return (
+          <div key={i} className="text-xs flex items-center gap-x-2 py-0">
+            {/* Tier indicator */}
+            <span className={`w-8 text-center rounded-full text-[10px] font-bold flex-shrink-0 ${
+              i === 0 ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' :
+              i === 1 ? 'bg-gray-100 text-gray-700 border border-gray-300' :
+              'bg-orange-100 text-orange-700 border border-orange-300'
+            }`}>T{i+1}</span>
+            {/* Name with Tippy hover and highlight if bonus/penalty */}
+            <span 
+              className={'font-medium px-1 py-0.5 rounded cursor-help player-name-tooltip flex-grow min-w-0 ' + highlight}
+              data-tippy-content={pick.name}
+            >
+              {pick.name}
+            </span>
+            {/* Quota diff */}
+            <span className="text-center flex-shrink-0 w-8">
+              {quotaDiff !== null && (
+                <span className={quotaDiff >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  {quotaSign}{quotaDiff}
+                </span>
+              )}
+            </span>
+            {/* Skins */}
+            <span className="text-center flex-shrink-0 w-12">
+              {pick.skins > 0 ? (
+                <span className="text-blue-600 font-medium">{pick.skins} 🎯</span>
+              ) : ''}
+            </span>
+            {/* CTPs */}
+            <span className="text-center flex-shrink-0 w-12">
+              {pick.ctps > 0 ? (
+                <span className="text-purple-600 font-medium">{pick.ctps} 📍</span>
+              ) : ''}
+            </span>
+            {/* Points */}
+            <span className={`font-bold text-right flex-shrink-0 w-12 ${pick.points >= 0 ? 'text-green-700' : 'text-red-700'}`}>{pick.points}pts</span>
                                 </div>
-                                <div className="text-gray-600 ml-2">
-                                  Score: {pick.score || 'N/A'} | Quota: {pick.quota || 'N/A'} | 
-                                  Rank: {pick.rank || 'N/A'} | 
-                                  Skins: {pick.skins} | CTPs: {pick.ctps} | 
-                                  <span className={`font-semibold ${pick.points >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {pick.points}pts
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 border-r border-gray-300">
                           <ScoreBreakdown score={score} />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -446,87 +522,79 @@ const FantasyLeaderboard = () => {
 
             {!loading && selectedEvent && playerBreakdown && playerBreakdown.length > 0 && (
               <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
+                <table className="w-full border-collapse bg-white shadow-lg rounded-lg overflow-hidden">
+                  <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Player
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tier
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rank
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Score/Quota
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Skins
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CTPs
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Fantasy Points
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Picked By
-                      </th>
+                      <th className="p-2 text-left">Player</th>
+                      <th className="p-2 text-center">Tier</th>
+                      <th className="p-2 text-center">Score/Quota</th>
+                      <th className="p-2 text-center">Skins</th>
+                      <th className="p-2 text-center">CTPs</th>
+                      <th className="p-2 text-center">Fantasy Points</th>
+                      <th className="p-2 text-left">Picked By</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {playerBreakdown.map((player, index) => (
-                      <tr key={`${player.player_name}-${player.tier}`} className={
-                        player.fantasy_points >= 10 ? 'bg-green-50' : 
-                        player.fantasy_points < 0 ? 'bg-red-50' : ''
-                      }>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {player.player_name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            player.tier === 1 ? 'bg-yellow-100 text-yellow-800' :
-                            player.tier === 2 ? 'bg-gray-100 text-gray-800' :
-                            'bg-orange-100 text-orange-800'
+                  <tbody>
+                    {(() => {
+                      // Find best and worst quota performance for highlighting
+                      let minQuota = null;
+                      let maxQuota = null;
+                      playerBreakdown.forEach(player => {
+                        if (player.score != null && player.quota != null) {
+                          const quotaPerf = player.score - player.quota;
+                          if (minQuota === null || quotaPerf < minQuota) minQuota = quotaPerf;
+                          if (maxQuota === null || quotaPerf > maxQuota) maxQuota = quotaPerf;
+                        }
+                      });
+                      return playerBreakdown.map((player, index) => {
+                        let pickedBy = player.picked_by || 'None';
+                        let quotaPerf = player.score != null && player.quota != null ? player.score - player.quota : null;
+                        const isWorst = quotaPerf !== null && quotaPerf === minQuota;
+                        const isBest = quotaPerf !== null && quotaPerf === maxQuota && maxQuota > 0;
+                        return (
+                          <tr key={`${player.player_name}-${player.tier}`} className={`${
+                            index % 2 === 0 ? "bg-blue-50" : "bg-white"
+                          } hover:bg-blue-100 ${
+                            player.fantasy_points >= 10 ? 'border-l-4 border-green-400' : 
+                            player.fantasy_points < 0 ? 'border-l-4 border-red-400' :
+                            isBest ? 'border-l-4 border-yellow-400' :
+                            isWorst ? 'border-l-4 border-gray-400' : ''
                           }`}>
-                            Tier {player.tier}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className="text-sm text-gray-900">
-                            {player.rank || 'N/A'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="text-sm text-gray-900">
-                            {player.score || 'N/A'} / {player.quota || 'N/A'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className="text-sm text-gray-900">{player.skins}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className="text-sm text-gray-900">{player.ctps}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`text-lg font-bold ${
-                            player.fantasy_points >= 10 ? 'text-green-600' :
-                            player.fantasy_points < 0 ? 'text-red-600' :
-                            'text-blue-600'
-                          }`}>
-                            {player.fantasy_points}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {player.picked_by}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="p-4 text-left">
+                              <div className="font-medium">
+                                {player.player_name}
+                                {isBest && <span className="ml-2 text-xs text-green-700 font-bold">🏆 Best Quota</span>}
+                                {isWorst && <span className="ml-2 text-xs text-red-700 font-bold">💀 Worst Quota</span>}
+                              </div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                player.tier === 1 ? 'bg-yellow-100 text-yellow-800' :
+                                player.tier === 2 ? 'bg-gray-100 text-gray-800' :
+                                'bg-orange-100 text-orange-800'
+                              }`}>
+                                Tier {player.tier}
+                              </span>
+                            </td>
+                            <td className="p-4 text-center">
+                              {player.score || 'N/A'} / {player.quota || 'N/A'}
+                            </td>
+                            <td className="p-4 text-center">{player.skins}</td>
+                            <td className="p-4 text-center">{player.ctps}</td>
+                            <td className="p-4 text-center">
+                              <span className={`text-lg font-bold ${
+                                player.fantasy_points >= 10 ? 'text-green-600' :
+                                player.fantasy_points < 0 ? 'text-red-600' :
+                                'text-blue-600'
+                              }`}>
+                                {player.fantasy_points}
+                              </span>
+                            </td>
+                            <td className="p-4 text-left">{pickedBy}</td>
+                          </tr>
+                        );
+                      });
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -584,16 +652,12 @@ const FantasyLeaderboard = () => {
             <div>
               <h4 className="font-semibold text-blue-700 mb-2">Bonus/Penalty Points</h4>
               <ul className="space-y-1 text-blue-600">
-                <li>� Best quota performance: +{FANTASY_SCORING.bonuses.mostOverQuota} points (tied players all get bonus)</li>
-                <li>� Worst quota performance: {FANTASY_SCORING.bonuses.leastToQuota} points (tied players all get penalty)</li>
+                <li>🏆 Best quota performance: +{FANTASY_SCORING.bonuses.mostOverQuota} points (tied players all get bonus)</li>
+                <li>💔 Worst quota performance: {FANTASY_SCORING.bonuses.leastToQuota} points (tied players all get penalty)</li>
               </ul>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
-            <p className="text-blue-800 text-sm">
-              💡 <strong>Note:</strong> Scoring is now purely performance-based, focusing on quota achievement, skins, and CTPs rather than tournament placement.
-            </p>
-          </div>
+
         </div>
 
         {/* Authentication Modal */}
