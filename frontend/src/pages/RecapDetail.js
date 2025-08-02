@@ -34,7 +34,7 @@ const RecapDetail = () => {
         <div className="flex flex-col items-center justify-center h-screen">
           <h2 className="text-xl font-bold mb-4">Recap Not Found</h2>
           <button
-            onClick={() => navigate("/past-events")}
+            onClick={() => navigate("/recaps")}
             className="text-blue-600 hover:underline"
           >
             Back to Recaps

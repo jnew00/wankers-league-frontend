@@ -7,11 +7,9 @@
 function calculateQuota(previousQuota, score) {
   
   if (previousQuota == null) {
-    console.warn("Warning: previousQuota is null or undefined!");
     return 0; // Default to 0 if invalid
   }
   if (score == null) { // Only check for null or undefined, not 0
-    console.warn("Warning: score is null or undefined!");
     return previousQuota;
   }
 

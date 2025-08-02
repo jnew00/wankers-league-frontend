@@ -8,7 +8,8 @@ import PageHeader from '../components/PageHeader';
 import Footer from '../components/Footer';
 import AuthModal from '../components/AuthModal';
 
-const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+// const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // Fantasy Scoring Configuration - Easy to modify
 const FANTASY_SCORING = {
@@ -86,7 +87,6 @@ const FantasyLeaderboard = () => {
       // Ensure we always set an array, even if response structure is unexpected
       setStandings(Array.isArray(response.data.standings) ? response.data.standings : []);
     } catch (error) {
-      console.error('Error fetching standings:', error);
       setStandings([]);
     } finally {
       setLoading(false);
@@ -95,14 +95,10 @@ const FantasyLeaderboard = () => {
 
   const fetchEvents = async () => {
     try {
-      console.log('Fetching events from:', `${API_BASE_URL}/fantasy/events`);
       // Fetch only events that have fantasy picks data
       const response = await axios.get(`${API_BASE_URL}/fantasy/events`);
-      console.log('Events response:', response.data);
       setEvents(response.data);
     } catch (error) {
-      console.error('Error fetching fantasy events:', error);
-      console.error('Error details:', error.response);
       setEvents([]);
     }
   };
@@ -110,14 +106,10 @@ const FantasyLeaderboard = () => {
   const fetchWeeklyScores = async (eventId) => {
     try {
       setLoading(true);
-      console.log('Fetching weekly scores for event:', eventId);
       const response = await axios.get(`${API_BASE_URL}/fantasy/scores/${eventId}`);
-      console.log('Weekly scores response:', response.data);
       // Ensure we always set an array, even if response structure is unexpected
       setWeeklyScores(Array.isArray(response.data.scores) ? response.data.scores : []);
     } catch (error) {
-      console.error('Error fetching weekly scores:', error);
-      console.error('Error details:', error.response);
       setWeeklyScores([]);
     } finally {
       setLoading(false);
@@ -127,13 +119,9 @@ const FantasyLeaderboard = () => {
   const fetchPlayerBreakdown = async (eventId) => {
     try {
       setLoading(true);
-      console.log('Fetching player breakdown for event:', eventId);
       const response = await axios.get(`${API_BASE_URL}/fantasy/player-breakdown/${eventId}`);
-      console.log('Player breakdown response:', response.data);
       setPlayerBreakdown(Array.isArray(response.data.players) ? response.data.players : []);
     } catch (error) {
-      console.error('Error fetching player breakdown:', error);
-      console.error('Error details:', error.response);
       setPlayerBreakdown([]);
     } finally {
       setLoading(false);
@@ -340,7 +328,6 @@ const FantasyLeaderboard = () => {
                   className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Choose an event...</option>
-                  {console.log('Rendering events:', events)}
                   {events.map(event => (
                     <option key={event.id} value={event.id}>
                       {event.course_name} - {new Date(event.date).toLocaleDateString()}

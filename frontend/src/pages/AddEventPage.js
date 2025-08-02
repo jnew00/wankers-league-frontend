@@ -47,7 +47,7 @@ const AddEventPage = () => {
           ...formattedEvents,
         ]);
       } catch (error) {
-        console.error("Error fetching courses and events:", error.message);
+        // Silently handle fetch error
       }
     };
 
@@ -105,7 +105,7 @@ const AddEventPage = () => {
       setFedupEligible(event.fedup_eligible);
       setNumTeetimes(event.num_teetimes);
     } catch (error) {
-      console.error("Error fetching event details:", error.message);
+      // Silently handle event details fetch error
     }
   };
 
@@ -180,7 +180,6 @@ const AddEventPage = () => {
 
 
     } catch (error) {
-      console.error("Error saving event:", error.message);
       setFeedbackMessage({
         type: "error",
         text: `Failed to add player. Please try again.`,

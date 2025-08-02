@@ -46,7 +46,6 @@ const LeaderboardPage = () => {
     else {
       url = `${BASE_URL}/uploads/players/placeholder.png`;
     }
-    console.log('Leaderboard image URL:', url, player);
     return url;
   };
   
@@ -55,6 +54,14 @@ const LeaderboardPage = () => {
     tippy('.paidToolTip',
     {
       content: 'Paid for the Season'
+    });
+    
+    tippy('.hpi-tooltip', {
+      allowHTML: true,
+      theme: 'light-border',
+      placement: 'top',
+      arrow: true,
+      maxWidth: 300,
     });
   }, [players]);
 
@@ -80,7 +87,7 @@ const LeaderboardPage = () => {
         setLatestUpdateTime(response.data.latest_update);
 
       } catch (error) {
-        console.error("Error fetching leaderboard:", error.message);
+        // Silently handle leaderboard fetch error
       }
     };
     fetchLeaderboard();
@@ -169,6 +176,18 @@ const LeaderboardPage = () => {
               >
                 Quota
                 {sortConfig.key === "current_quota"
+                  ? sortConfig.direction === "asc"
+                    ? " ▲"
+                    : " ▼"
+                  : ""}
+              </th>
+              <th
+                className="p-2 text-center cursor-pointer hpi-tooltip"
+                onClick={() => handleSort("hpi_score")}
+                data-tippy-content="Hacker Performance Index (HPI) = Average Quota + (Average Skins × 5) + (Average CTPs × 8). Higher values indicate better overall performance based on historical averages."
+              >
+                HPI
+                {sortConfig.key === "hpi_score"
                   ? sortConfig.direction === "asc"
                     ? " ▲"
                     : " ▼"
@@ -302,6 +321,7 @@ const LeaderboardPage = () => {
                 </td>
 
                 <td className="p-2 text-center">{player.current_quota}</td>
+                <td className="p-2 text-center">{Number(player.hpi_score || 0).toFixed(2)}</td>
                 <td className="p-2 text-center">${Number(player.money_won || 0).toFixed(2)}</td>
                 <td className="p-2 text-center">{player.skins}</td>
                 <td className="p-2 text-center">{player.ctps}</td>

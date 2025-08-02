@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+// const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 // Configure axios defaults for cross-origin requests
 axios.defaults.withCredentials = true;
 
-// Debug logging
-console.log('=== API BASE URL DEBUG ===');
-console.log('REACT_APP_API_BASE_URL env var:', process.env.REACT_APP_API_BASE_URL);
-console.log('Final API_BASE_URL:', API_BASE_URL);
 
 const AuthContext = createContext();
 
@@ -41,10 +39,6 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      console.log('=== MAKING AUTH REQUEST ===');
-      console.log('Full URL:', `${API_BASE_URL}/auth/validate`);
-      console.log('withCredentials:', true);
-      
       const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
         withCredentials: true
       });
@@ -69,7 +63,6 @@ export const AuthProvider = ({ children }) => {
         
         setUser(fullUserData);
       } catch (profileError) {
-        console.log('Profile fetch failed, using basic user data:', profileError);
         // Continue with basic user data if profile fetch fails
       }
       
@@ -234,7 +227,6 @@ export const AuthProvider = ({ children }) => {
       
       return { success: false, error: 'Failed to link player' };
     } catch (error) {
-      console.error('Error linking player:', error);
       return { 
         success: false, 
         error: error.response?.data?.error || 'Failed to link player' 

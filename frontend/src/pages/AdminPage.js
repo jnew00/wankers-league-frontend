@@ -55,13 +55,6 @@ const AdminPage = () => {
 
  
 
-  useEffect(() => {
-    players.forEach((player, index) => {
-      if (typeof player.player_id === "undefined" || player.player_id === null) {
-        console.error(`Player at index ${index} is missing a valid player_id:`, player);
-      }
-    });
-  }, [players]);
   
 
   useEffect(() => {
@@ -80,7 +73,7 @@ const AdminPage = () => {
             setCtpPot(remainingCtpPot);
           }
         } catch (error) {
-          console.error("Error fetching pot values:", error);
+          // Silently handle pot values fetch error
         }
       }
     };
@@ -118,7 +111,7 @@ const AdminPage = () => {
   
         setAllPlayers(allPlayersRes.data);
       } catch (error) {
-        console.error("Error fetching initial data:", error.message);
+        // Silently handle initial data fetch error
       }
     };
   
@@ -162,7 +155,6 @@ const AdminPage = () => {
       });
 
     } catch (error) {
-      console.error("Error closing event:", error.message);
       setFeedbackMessage({
         type: "error",
         text: `Failed to close event. Please try again or contact Jason!`,
@@ -183,7 +175,7 @@ const AdminPage = () => {
         { withCredentials: true }
       );
     } catch (error) {
-      console.error("Failed to sync players to database:", error.message);
+      // Silently handle sync error
     }
   };
   
@@ -191,7 +183,6 @@ const AdminPage = () => {
     async (eventId) => {
       const selected = events.find((e) => e.id === eventId);
       if (!selected) {
-        console.error("Event not found");
         return;
       }
 
@@ -239,8 +230,6 @@ const AdminPage = () => {
           
           
           
-        } else {
-          console.error("Unexpected format for players:", players);
         }
           setSelectedEvent({
           id: details.id,
@@ -271,7 +260,6 @@ const AdminPage = () => {
       prevPlayers.map((player) => {
         if (player.player_id === playerId) {
           if (!player.backup) {
-            console.warn(`No backup found for player with ID ${playerId}`);
             return { ...player, isEditing: false }; // Exit edit mode gracefully
           }
   
@@ -322,7 +310,6 @@ const AdminPage = () => {
         type: "error",
         text: "Failed to save players. Please try again or contact Jason!",
       });
-      console.error("Error saving players:", error.message);
     }
   };
   
@@ -382,7 +369,6 @@ const AdminPage = () => {
         confirmButtonColor: '#3085d6',
       });
     } catch (error) {
-      console.error("Error deleting player:", error);
   
       // Provide error feedback
       Swal.fire({
@@ -447,9 +433,6 @@ const AdminPage = () => {
     (playerId, updates) => {
   
       if (!playerId && !updates.player_id) {
-        console.error(
-          "Invalid player_id: Both playerId and updates.player_id are missing."
-        );
         return;
       }
   
@@ -464,7 +447,6 @@ const AdminPage = () => {
             const selectedPlayer = allPlayers.find((p) => p.id === updates.player_id);
   
             if (!selectedPlayer) {
-              console.error("Selected player not found in allPlayers:", updates.player_id);
               return player;
             }
 
@@ -521,7 +503,6 @@ const AdminPage = () => {
         });
   
         if (!playerUpdated) {
-          console.error("No matching player or blank row found to update for playerId:", playerId);
           return prevPlayers;
         }
     
@@ -571,7 +552,6 @@ const AdminPage = () => {
       setIsEditingPoints(false);
       alert("Points configuration saved successfully!");
     } catch (error) {
-      console.error("Error saving points configuration:", error.message);
       alert("Failed to save points configuration.");
     }
   };

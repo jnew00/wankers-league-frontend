@@ -82,7 +82,7 @@ const EventsPage = () => {
          
         
       } catch (error) {
-        console.error("Error fetching events:", error.message);
+        // Silently handle events fetch error
       }
     };
   
@@ -92,7 +92,7 @@ const EventsPage = () => {
         const response = await axios.get(`${API_BASE_URL}/players`);
         setAllPlayers(response.data);
       } catch (error) {
-        console.error("Error fetching players:", error.message);
+        // Silently handle players fetch error
       }
     };
 
@@ -108,7 +108,6 @@ const EventsPage = () => {
   
   const handleGenerateImage = async () => {
     if (!eventDetailsRef.current) {
-      console.error("Ref is not set. Ensure EventDetailsImage is rendered.");
       return;
     }
     try {
@@ -116,13 +115,12 @@ const EventsPage = () => {
       setGeneratedImage(imageData);
       setShowImageModal(true);
     } catch (error) {
-      console.error("Error generating image:", error);
+      // Silently handle image generation error
     }
   };
 
   const handleGenerateDailyImage = async () => {
     if (!eventDailyEmailRef.current) {
-      console.error("Ref is not set. Ensure EventDetailsImage is rendered.");
       return;
     }
     try {
@@ -130,7 +128,7 @@ const EventsPage = () => {
       setGeneratedImage(imageData);
       setShowImageModal(true);
     } catch (error) {
-      console.error("Error generating image:", error);
+      // Silently handle image generation error
     }
   };
   
@@ -148,7 +146,6 @@ const EventsPage = () => {
       });
       setPairings(updatedPairings);
     } catch (error) {
-      console.error("Error saving pairings:", error.message);
       setFeedbackMessage({
         type: "error",
         text: `Failed to save pairings.`,
@@ -256,7 +253,6 @@ const EventsPage = () => {
         });
         authSignups = signupsResponse.data || [];
       } catch (signupError) {
-        console.log('No auth signups found or not authenticated');
       }
 
       setEventDetails({
@@ -393,7 +389,6 @@ const EventsPage = () => {
       };
   
       if (!normalizedPlayer.name || !normalizedPlayer.player_id) {
-        console.error("New player data is incomplete:", normalizedPlayer);
         return;
       }
 
@@ -536,7 +531,6 @@ const EventsPage = () => {
         pairings={pairings} 
         onSignupChange={() => {
           // Refresh event data after signup/withdrawal
-          console.log('Signup status changed - refreshing event details');
           fetchEventDetails(event.id);
         }} 
       />

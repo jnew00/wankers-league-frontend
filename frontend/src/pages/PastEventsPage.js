@@ -18,7 +18,6 @@ const PastEventsPage = () => {
         const response = await axios.get(`${API_BASE_URL}/api/past-events`);
         setPastEvents(response.data);
       } catch (err) {
-        console.error("Error fetching past events:", err);
         setError("Failed to load past events");
       } finally {
         setLoading(false);

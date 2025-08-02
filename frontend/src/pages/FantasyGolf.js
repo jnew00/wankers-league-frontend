@@ -12,7 +12,8 @@ import AuthModal from '../components/AuthModal';
  * Main interface for making fantasy golf picks with authentication
  */
 
-const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+// const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // Fantasy Scoring Configuration - Easy to modify
 const FANTASY_SCORING = {
@@ -84,7 +85,6 @@ const FantasyGolf = () => {
       }
       
     } catch (error) {
-      console.error('Error fetching events:', error);
       setMessage('Failed to load events');
       setEvents([]);
       setSelectedEvent(null);
@@ -274,7 +274,6 @@ const FantasyGolf = () => {
                 const response = await axios.get(`${API_BASE_URL}/players/${playerId}`);
                 return response.data;
               } catch (error) {
-                console.error(`Error fetching player ${playerId}:`, error);
                 return null;
               }
             });
@@ -339,7 +338,6 @@ const FantasyGolf = () => {
                 }
                 
                 if (tierShiftWarning) {
-                  console.warn('Unexpected tier shift after freeze period:', tierShiftWarning);
                   if (!withdrawnPlayers.length) {
                     setMessage(`⚠️ ${tierShiftWarning}This should not happen after tier freeze. Please contact admin.`);
                   }
@@ -355,7 +353,6 @@ const FantasyGolf = () => {
             setMessage('');
           }
         } catch (error) {
-          console.error('Error fetching player details for existing picks:', error);
           setSubmittedPicks(null);
           setMessage('');
         }
@@ -367,7 +364,6 @@ const FantasyGolf = () => {
       }
     } catch (error) {
       // No existing picks found, or error - set to empty state
-      console.log('Error checking existing picks:', error);
       setSubmittedPicks(null);
       setSelectedPicks({ tier1: '', tier2: '', tier3: '' });
       setMessage('');
@@ -399,7 +395,6 @@ const FantasyGolf = () => {
         setSubmittedPicks(null);
       }
     } catch (error) {
-      console.error('Error fetching tiers:', error);
       setMessage('Failed to load tiers');
       setSubmittedPicks(null); // Clear picks on error
     } finally {
@@ -418,6 +413,23 @@ const FantasyGolf = () => {
   const getPlayerById = (playerId) => {
     const allPlayers = [...tiers.Tier1, ...tiers.Tier2, ...tiers.Tier3];
     return allPlayers.find(player => player.id === parseInt(playerId));
+  };
+
+  // Helper function to calculate Hacker Performance Index (HPI)
+  const calculateHPI = (player) => {
+    if (!player) return 0;
+    
+    // Higher average quota = better player, so quota contributes directly to HPI
+    const quotaScore = player.avg_quota || player.current_quota || 0;
+    
+    // Performance multipliers based on season averages
+    const skinsMultiplier = (player.avg_skins || 0) * 5;
+    const ctpMultiplier = (player.avg_ctps || 0) * 8;
+    
+    // Total HPI
+    const hpi = quotaScore + skinsMultiplier + ctpMultiplier;
+    
+    return Math.round(hpi * 10) / 10; // Round to 1 decimal place
   };
 
   const submitPicks = async () => {
@@ -444,20 +456,6 @@ const FantasyGolf = () => {
     }
 
     const picks = [selectedPicks.tier1, selectedPicks.tier2, selectedPicks.tier3];
-    
-    console.log('Pre-submit debug:');
-    console.log('selectedPicks object:', selectedPicks);
-    console.log('picks array before validation:', picks);
-    console.log('Adam Shorts should be ID 3, is it selected in tier2?', selectedPicks.tier2);
-    
-    // Debug: Show actual player data in each tier
-    console.log('Tier 2 players with IDs and names:');
-    tiers.Tier2.forEach(player => {
-      console.log(`- ID ${player.id}: ${player.name} ${player.id === selectedPicks.tier2 ? '(SELECTED)' : ''}`);
-    });
-    
-    console.log('Submit validation - selectedPicks:', selectedPicks);
-    console.log('Submit validation - picks array:', picks);
     if (picks.some(pick => !pick)) {
       setMessage('Please select one player from each tier');
       return;
@@ -484,7 +482,6 @@ const FantasyGolf = () => {
       setMessage('Picks submitted successfully!');
       setSelectedPicks({ tier1: '', tier2: '', tier3: '' });
     } catch (error) {
-      console.error('Error submitting picks:', error);
       
       if (error.response?.status === 401) {
         setMessage('Please log in to submit picks');
@@ -509,88 +506,85 @@ const FantasyGolf = () => {
           </p>
         )}
         
-        {/* Table Headers */}
-        <div className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-200">
-          <div className="w-6"></div> {/* Radio button space */}
-          <div className="w-8"></div> {/* Profile image space */}
-          <div className="flex-1 flex items-center min-w-0">
-            <div className="flex-1 min-w-0 pr-4">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Player
-              </span>
-            </div>
-            <div className="w-20 text-center flex-shrink-0">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Quota
-              </span>
-            </div>
-            <div className="w-16 text-center flex-shrink-0">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Rank
-              </span>
+        {/* Table layout without scrolling container */}
+        <div>
+          {/* Table Headers */}
+          <div className="flex items-center space-x-3 mb-2 pb-2 border-b border-gray-200">
+            <div className="w-6"></div> {/* Radio button space */}
+            <div className="w-8"></div> {/* Profile image space */}
+            <div className="flex-1 flex items-center min-w-0">
+              <div className="flex-1 min-w-0 pr-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Player
+                </span>
+              </div>
+              <div className="w-16 text-center flex-shrink-0">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Quota
+                </span>
+              </div>
+              <div className="w-16 text-center flex-shrink-0">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  HPI
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          {players.map(player => {
-            const isCurrentUser = user?.player_id && player.id === user.player_id;
-            const isDisabled = isCurrentUser || isPicksLocked;
-            
-            return (
-              <label 
-                key={player.id} 
-                className={`flex items-center space-x-2 ${
-                  isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={tierName.toLowerCase()}
-                  value={player.id}
-                  checked={selectedPick === player.id.toString()}
-                  onChange={(e) => !isPicksLocked && onPickChange(tierName.toLowerCase().replace(' ', ''), e.target.value)}
-                  disabled={isDisabled}
-                  className={`text-blue-600 focus:ring-blue-500 ${
-                    isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                />
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  {(player.image_path || (user?.player_id === player.id && user.profilePicture)) && (
-                    <img 
-                      src={getPlayerImageUrl(player)}
-                      alt={player.name}
-                      className="w-8 h-8 rounded-full flex-shrink-0"
+            <div className="space-y-2">
+              {players.map(player => {
+                const isCurrentUser = user?.player_id && player.id === user.player_id;
+                const isDisabled = isCurrentUser || isPicksLocked;
+                
+                return (
+                  <label 
+                    key={player.id} 
+                    className={`flex items-center space-x-2 ${
+                      isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={tierName.toLowerCase()}
+                      value={player.id}
+                      checked={selectedPick === player.id.toString()}
+                      onChange={(e) => !isPicksLocked && onPickChange(tierName.toLowerCase().replace(' ', ''), e.target.value)}
+                      disabled={isDisabled}
+                      className={`text-blue-600 focus:ring-blue-500 ${
+                        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
-                  )}
-                  <div className="flex-1 flex items-center min-w-0">
-                    <div className="flex-1 min-w-0 pr-4">
-                      <span className={`font-medium text-sm ${isCurrentUser ? 'text-blue-600' : ''}`}>
-                        {player.name}
-                        {isCurrentUser && <span className="text-xs ml-1">(You)</span>}
-                      </span>
-                    </div>
-                    <div className="w-20 text-center flex-shrink-0">
-                      <span className="text-gray-500 text-sm">
-                        {player.current_quota}
-                      </span>
-                    </div>
-                    <div className="w-16 text-center flex-shrink-0">
-                      {player.leaderboard_rank && player.leaderboard_rank < 999 ? (
-                        <span className="text-gray-500 text-sm">
-                          #{player.leaderboard_rank}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-sm">
-                          --
-                        </span>
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      {(player.image_path || (user?.player_id === player.id && user.profilePicture)) && (
+                        <img 
+                          src={getPlayerImageUrl(player)}
+                          alt={player.name}
+                          className="w-8 h-8 rounded-full flex-shrink-0"
+                        />
                       )}
+                      <div className="flex-1 flex items-center min-w-0">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <span className={`font-medium text-sm ${isCurrentUser ? 'text-blue-600' : ''}`}>
+                            {player.name}
+                            {isCurrentUser && <span className="text-xs ml-1">(You)</span>}
+                          </span>
+                        </div>
+                        <div className="w-16 text-center flex-shrink-0">
+                          <span className="text-gray-500 text-sm">
+                            {player.current_quota}
+                          </span>
+                        </div>
+                        <div className="w-16 text-center flex-shrink-0">
+                          <span className="text-blue-600 text-sm font-medium">
+                            {calculateHPI(player)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </label>
-            );
-          })}
+                  </label>
+                );
+              })}
+            </div>
         </div>
       </div>
     );
@@ -607,7 +601,7 @@ const FantasyGolf = () => {
           <h2 className="text-xl font-bold text-gray-700 mb-4">Make Your Picks</h2>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-blue-800 text-sm">
-              <strong>Fantasy Rules:</strong> Select one player from each tier. Only players who are signed up for the selected event will be available for selection. Your own player is shown but cannot be selected. Tiers are automatically generated first by current quota, then by leaderboard rank (higher tiers contain better players).
+              <strong>Fantasy Rules:</strong> Select one player from each tier. Only players who are signed up for the selected event will be available for selection. Your own player is shown but cannot be selected. Tiers are generated using a Hacker Performance Index (HPI) that combines average quota, season average skins, and season average CTPs to ensure fair skill-based groupings.
             </p>
             <div className="mt-3 p-2 bg-blue-100 rounded border border-blue-300">
               <p className="text-blue-900 text-xs">
@@ -924,35 +918,27 @@ const FantasyGolf = () => {
                 if (playerId) {
                   const player = getPlayerById(playerId);
                   if (player) {
-                    // Calculate projection for this player
+                    // Calculate projection based on player's actual performance data
                     let projectedQuotaPerf = 0;
-                    let projectedSkins = 0;
-                    let projectedCtps = 0;
+                    let projectedSkins = player.avg_skins || 0;
+                    let projectedCtps = player.avg_ctps || 0;
                     
-                    // Estimate quota performance based on current quota
-                    if (player.current_quota <= 20) {
+                    // Estimate quota performance based on current quota and historical average
+                    const avgQuota = player.avg_quota || player.current_quota;
+                    if (avgQuota <= 20) {
                       projectedQuotaPerf = -2;
-                    } else if (player.current_quota <= 25) {
+                    } else if (avgQuota <= 25) {
                       projectedQuotaPerf = -1;
-                    } else if (player.current_quota <= 30) {
+                    } else if (avgQuota <= 30) {
                       projectedQuotaPerf = 0;
                     } else {
                       projectedQuotaPerf = 1;
                     }
                     
-                    // Estimate skins based on tier
-                    if (tierIndex === 0) { // Tier 1
-                      projectedSkins = 1.5;
-                    } else if (tierIndex === 1) { // Tier 2
-                      projectedSkins = 1.0;
-                    } else { // Tier 3
-                      projectedSkins = 0.5;
-                    }
+                    // Use actual season averages for skins and CTPs
+                    // No need to estimate based on tier anymore!
                     
-                    // Estimate CTPs
-                    projectedCtps = 0.3;
-                    
-                    // Calculate projected points
+                    // Calculate projected points using actual performance metrics
                     let projectedPts = 0;
                     projectedPts += projectedQuotaPerf * (projectedQuotaPerf > 0 ? FANTASY_SCORING.quotaPerformance.overQuota : Math.abs(FANTASY_SCORING.quotaPerformance.underQuota));
                     projectedPts += projectedSkins * FANTASY_SCORING.skins;
@@ -962,6 +948,8 @@ const FantasyGolf = () => {
                       tierName,
                       name: player.name,
                       quota: player.current_quota,
+                      avgQuota: player.avg_quota,
+                      hpi: calculateHPI(player),
                       projectedQuotaPerf,
                       projectedSkins: projectedSkins.toFixed(1),
                       projectedCtps: projectedCtps.toFixed(1),
@@ -995,9 +983,15 @@ const FantasyGolf = () => {
                         {detail.name ? (
                           <div className="text-sm text-gray-600 space-y-1">
                             <div>Current Quota: {detail.quota}</div>
-                            <div>Projected vs Quota: {detail.projectedQuotaPerf > 0 ? '+' : ''}{detail.projectedQuotaPerf}</div>
-                            <div>Expected Skins: {detail.projectedSkins}</div>
-                            <div>Expected CTPs: {detail.projectedCtps}</div>
+                            {detail.avgQuota && detail.avgQuota !== detail.quota && (
+                              <div>Season Avg Quota: {detail.avgQuota.toFixed(1)}</div>
+                            )}
+                            <div>HPI Score: <span className="font-medium text-blue-600">{detail.hpi}</span></div>
+                            <div className="border-t pt-1 mt-1">
+                              <div>Projected vs Quota: {detail.projectedQuotaPerf > 0 ? '+' : ''}{detail.projectedQuotaPerf}</div>
+                              <div>Expected Skins: {detail.projectedSkins}</div>
+                              <div>Expected CTPs: {detail.projectedCtps}</div>
+                            </div>
                             <div className="font-semibold text-blue-600 border-t pt-1 mt-2">
                               Projected Points: {detail.projectedPts}
                             </div>
@@ -1016,7 +1010,7 @@ const FantasyGolf = () => {
                       Projected Points: {totalProjectedPoints.toFixed(1)}
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      *Projections based on current quotas and historical performance patterns
+                      *Projections based on individual player performance data (quota history, season averages)
                     </p>
                     {projectionDetails.filter(d => d.name).length < 3 && (
                       <p className="text-sm text-amber-600 mt-1">
@@ -1077,6 +1071,12 @@ const FantasyGolf = () => {
                 <li>💔 Worst quota performance: {FANTASY_SCORING.bonuses.leastToQuota} points (tied players all get penalty)</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+            <h5 className="font-semibold text-blue-800 mb-2">🧮 Hacker Performance Index (HPI)</h5>
+            <p className="text-blue-800 text-sm mb-2">
+              Players are ranked into tiers using HPI, which combines: <strong>Quota Score</strong> (average quota from season) + <strong>Skins Bonus</strong> (avg skins × 5) + <strong>CTP Bonus</strong> (avg CTPs × 8). Higher quota players get higher HPI scores, with additional bonuses for skins and CTPs to ensure well-rounded performance evaluation based on historical averages.
+            </p>
           </div>
           <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
             <p className="text-blue-800 text-sm">

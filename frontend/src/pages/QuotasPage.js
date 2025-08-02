@@ -30,7 +30,7 @@ const QuotasPage = () => {
         }));
         setAvailableYears([{ value: "All Time", label: "All Time" }, ...years]);
       } catch (error) {
-        console.error("Error fetching years:", error.message);
+        // Silently handle years fetch error
       }
     };
 
@@ -72,7 +72,7 @@ const QuotasPage = () => {
         setFilteredQuotas(processedQuotas);
         setLatestUpdateTime(response.data.latest_update);
       } catch (error) {
-        console.error("Error fetching quotas:", error.message);
+        // Silently handle quotas fetch error
       }
     };
 

@@ -103,22 +103,14 @@ const UserProfile = () => {
   };
 
   const handleProfilePictureClick = () => {
-    console.log('Profile picture clicked, opening file dialog');
-    console.log('fileInputRef.current:', fileInputRef.current);
     if (fileInputRef.current) {
-      console.log('File input found, calling click()');
       fileInputRef.current.click();
-    } else {
-      console.error('File input ref is null!');
     }
   };
 
   const handleProfilePictureChange = async (e) => {
-    console.log('File input changed', e.target.files);
     const file = e.target.files[0];
     if (!file) return;
-
-    console.log('Selected file:', file.name, file.type, file.size);
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -135,9 +127,7 @@ const UserProfile = () => {
     setUploadingPicture(true);
     setMessage({ type: '', text: '' });
 
-    console.log('Starting upload...');
     const result = await uploadProfilePicture(file);
-    console.log('Upload result:', result);
     
     if (result.success) {
       setMessage({ type: 'success', text: 'Profile picture updated successfully!' });
@@ -154,13 +144,6 @@ const UserProfile = () => {
     <div className="max-w-2xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">User Profile</h2>
       
-      {/* Debug Info */}
-      <div className="mb-4 p-3 bg-gray-100 rounded text-xs">
-        <strong>Debug Info:</strong><br/>
-        User: {user ? 'Loaded' : 'Not loaded'}<br/>
-        Profile Picture: {user?.profilePicture || 'None'}<br/>
-        User ID: {user?.id || 'None'}
-      </div>
       
       {message.text && (
         <div className={`mb-4 p-3 rounded ${
@@ -177,10 +160,7 @@ const UserProfile = () => {
         <div className="relative">
           <div 
             className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors overflow-hidden border-4 border-gray-300 hover:border-blue-400"
-            onClick={() => {
-              console.log('Main profile picture area clicked');
-              handleProfilePictureClick();
-            }}
+            onClick={handleProfilePictureClick}
           >
             {user?.profilePicture ? (
               <img 
@@ -222,15 +202,6 @@ const UserProfile = () => {
       
       <div className="text-center mb-6">
         <p className="text-xs text-gray-500">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
-        <button 
-          onClick={() => {
-            console.log('Test button clicked');
-            handleProfilePictureClick();
-          }}
-          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Test File Upload
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

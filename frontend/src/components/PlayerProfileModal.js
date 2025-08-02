@@ -5,7 +5,9 @@ import axios from 'axios';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
-const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+// const API_BASE_URL = 'https://signin.gulfcoasthackers.com/api';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const PlayerProfileModal = ({ player, onClose }) => {
   const { user, isAuthenticated, linkPlayer, userVersion, uploadProfilePicture } = useAuth();
@@ -75,22 +77,14 @@ const PlayerProfileModal = ({ player, onClose }) => {
   };
 
   const handleProfilePictureClick = () => {
-    console.log('Profile picture clicked, opening file dialog');
-    console.log('fileInputRef.current:', fileInputRef.current);
     if (fileInputRef.current) {
-      console.log('File input found, calling click()');
       fileInputRef.current.click();
-    } else {
-      console.error('File input ref is null!');
     }
   };
 
   const handleProfilePictureChange = async (e) => {
-    console.log('File input changed', e.target.files);
     const file = e.target.files[0];
     if (!file) return;
-
-    console.log('Selected file:', file.name, file.type, file.size);
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -107,9 +101,7 @@ const PlayerProfileModal = ({ player, onClose }) => {
     setUploadingPicture(true);
     setUploadMessage({ type: '', text: '' });
 
-    console.log('Starting upload...');
     const result = await uploadProfilePicture(file);
-    console.log('Upload result:', result);
     
     if (result.success) {
       setUploadMessage({ type: 'success', text: 'Profile picture updated successfully!' });

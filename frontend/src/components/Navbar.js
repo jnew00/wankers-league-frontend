@@ -37,7 +37,7 @@ const Navbar = () => {
             setPlayerData(player);
           }
         } catch (error) {
-          console.error('Error fetching updated player data:', error);
+          // Silently handle player data fetch error
         }
       };
       fetchPlayerData();
@@ -193,9 +193,10 @@ const Navbar = () => {
           <img
             src={profilePicUrl}
             alt={getDisplayName()}
-            className={`${size} rounded-full object-cover border-2 border-white shadow-sm`}
+            className={`${size} rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0`}
             onError={() => setImageError(true)}
             onLoad={() => setImageError(false)}
+            style={{ aspectRatio: '1 / 1' }}
           />
         </div>
       );
@@ -222,7 +223,7 @@ const Navbar = () => {
           setPlayerData(player);
         }
       } catch (error) {
-        console.error('Error fetching player data:', error);
+        // Silently handle player data fetch error
       }
     } else {
       // Create a dummy player object for unlinked users
@@ -373,10 +374,12 @@ const Navbar = () => {
                   {/* User Info Header */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center space-x-3">
-                      <UserAvatar size="w-10 h-10" textSize="text-sm" />
-                      <div>
-                        <div className="font-medium text-gray-900">{getDisplayName()}</div>
-                        <div className="text-sm text-gray-500">{user?.email}</div>
+                      <div className="flex-shrink-0">
+                        <UserAvatar size="w-10 h-10" textSize="text-sm" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate">{getDisplayName()}</div>
+                        <div className="text-sm text-gray-500 truncate">{user?.email}</div>
                       </div>
                     </div>
                   </div>

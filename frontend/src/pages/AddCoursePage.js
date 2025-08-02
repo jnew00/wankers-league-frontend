@@ -40,7 +40,7 @@ const AddCoursePage = () => {
         );
         setCourses(response.data);
       } catch (error) {
-        console.error("Error fetching courses:", error.message);
+        // Silently handle course fetch error
       }
     };
 
@@ -107,7 +107,6 @@ const AddCoursePage = () => {
 
       
     } catch (error) {
-      console.error("Error saving course:", error.message);
       setFeedbackMessage({
         type: "error",
         text: "Failed to save course. Please try again or contact Jason!",
@@ -150,7 +149,6 @@ const AddCoursePage = () => {
         text: `Course deleted successfully!`,
       });
     } catch (error) {
-      console.error("Error deleting course:", error.message);
       setFeedbackMessage({
         type: "error",
         text: "Failed to delete course. Please try again.",

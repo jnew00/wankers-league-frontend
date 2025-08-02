@@ -27,7 +27,6 @@ const EventWeather = memo(({ latitude, longitude, teeTime, date }) => {
     const fetchWeather = async () => {
       try {
         if (!latitude || !longitude || !date || !teeTime) {
-          console.error("Missing required props for weather fetching.");
           return;
         }
 
@@ -36,7 +35,6 @@ const EventWeather = memo(({ latitude, longitude, teeTime, date }) => {
         const teeTimeDateTime = new Date(formattedTeeTime);
 
         if (isNaN(teeTimeDateTime)) {
-          console.error("Invalid Tee Time:", formattedTeeTime);
           return;
         }
 
@@ -64,7 +62,6 @@ const EventWeather = memo(({ latitude, longitude, teeTime, date }) => {
         });
 
         if (teeTimeIndex === -1) {
-          console.error("Tee time not found in hourly data.");
           return;
         }
 
@@ -83,7 +80,7 @@ const EventWeather = memo(({ latitude, longitude, teeTime, date }) => {
           windSpeed: hourlyData.wind_speed_10m[teeTimeIndex].toFixed(0),
         });
       } catch (error) {
-        console.error("Error fetching weather data:", error.message);
+        // Silently handle weather fetch error
       }
     };
 

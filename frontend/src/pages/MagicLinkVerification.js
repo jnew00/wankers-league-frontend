@@ -14,12 +14,10 @@ const MagicLinkVerification = () => {
 
   const verify = useCallback(async (token, email) => {
     if (hasVerified.current) {
-      console.log('Magic link verification already attempted, skipping...');
       return;
     }
     
     hasVerified.current = true;
-    console.log('Starting magic link verification...');
     
     const result = await verifyMagicLink(token, email);
     

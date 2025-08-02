@@ -27,7 +27,7 @@ const generatePDF = async () => {
 
       pdf.save("Scorecard.pdf");
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      // Silently handle PDF generation error
     } finally {
       // Hide element again after rendering
       element.style.display = "none";
